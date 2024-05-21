@@ -102,4 +102,32 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         if (array->Type != RValueType.Array) return null;
         return this.functions.ArrayGetEntry(array->Pointer, index);
     }
+
+    public string GetString(RValue* value) {
+        if (value == null) return "nullptr";
+        if (value->Type == RValueType.Unset) return "unset";
+        var ptr = this.functions.YYGetString(value, 0);
+        return Marshal.PtrToStringAnsi((nint) ptr)!;
+    }
+
+    public CRoom* GetCurrentRoom() {
+        return this.hooks.CurrentRoom == null
+                   ? null
+                   : *this.hooks.CurrentRoom;
+    }
+
+    public List<string> GetStructKeys(RValue* value) {
+        var ret = new List<string>();
+        var count = this.functions.StructGetKeys(value, null, null);
+        var keys = new char*[count];
+
+        fixed (char** keysPtr = keys) {
+            this.functions.StructGetKeys(value, keysPtr, &count);
+            for (var i = 0; i < count; i++) {
+                ret.Add(Marshal.PtrToStringAnsi((nint) keys[i])!);
+            }
+        }
+
+        return ret;
+    }
 }

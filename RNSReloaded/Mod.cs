@@ -35,8 +35,7 @@ public class Mod : IMod, IExports {
     public void Suspend() { }
     public void Resume() { }
     public void Unload() { }
-    public bool CanUnload() => true;
+    public bool CanUnload() => false;
     public bool CanSuspend() => false;
-
     public Type[] GetTypes() => [typeof(IRNSReloaded)];
 }

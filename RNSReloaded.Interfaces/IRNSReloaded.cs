@@ -14,4 +14,7 @@ public unsafe interface IRNSReloaded {
     public CInstance* GetGlobalInstance();
     public RValue* FindValue(CInstance* instance, string name);
     public RValue* ArrayGetEntry(RValue* array, int index);
+    public string GetString(RValue* value);
+    public CRoom* GetCurrentRoom();
+    public List<string> GetStructKeys(RValue* value);
 }

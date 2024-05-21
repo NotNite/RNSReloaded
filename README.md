@@ -6,6 +6,6 @@ Toying with Rabbit and Steel modding through [Reloaded II](https://reloaded-proj
 
 - [x] Basic script hooking
 - [x] RValues, object access, array access
-- [ ] Room/layer/instance structs
-- [ ] Enumerating instance fields
+- [x] Room/layer/instance structs
+- [x] Enumerating instance fields
 - [ ] Figuring out how Reloaded publishing works

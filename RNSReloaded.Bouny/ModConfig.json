@@ -1,0 +1,12 @@
+{
+  "ModId": "RNSReloaded.Bouny",
+  "ModName": "Bouny",
+  "ModAuthor": "NotNite",
+  "ModVersion": "1.0.0",
+  "ModDescription": "Reverse engineering toolkit.",
+  "ModDll": "RNSReloaded.Bouny.dll",
+  "IsLibrary": false,
+  "ModDependencies": ["reloaded.sharedlib.hooks", "RNSReloaded"],
+  "SupportedAppId": ["rabbitsteel.exe"],
+  "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
+}

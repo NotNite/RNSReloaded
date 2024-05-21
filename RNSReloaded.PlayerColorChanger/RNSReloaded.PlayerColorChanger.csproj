@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net8.0-windows</TargetFramework>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -13,16 +12,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ReloadedLinkRoots Include="RNSReloaded"/>
+        <ReloadedLinkRoots Include="RNSReloaded.PlayerColorChanger"/>
     </ItemGroup>
 
-    <Import Project="Reloaded.Trimming.targets"/>
-    <Import Project="Reloaded.Checks.targets"/>
+    <Import Project="../Reloaded.Trimming.targets"/>
+    <Import Project="../Reloaded.Checks.targets"/>
 
     <ItemGroup>
         <None Remove="ModConfig.json"/>
-        <None Remove="Publish.ps1"/>
-        <None Remove="BuildLinked.ps1"/>
         <None Remove="Reloaded.Trimming.targets"/>
         <None Remove="Reloaded.Checks.targets"/>
     </ItemGroup>
@@ -39,6 +36,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\RNSReloaded\RNSReloaded.csproj"/>
+        <ProjectReference Include="..\RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj"/>
     </ItemGroup>
 </Project>

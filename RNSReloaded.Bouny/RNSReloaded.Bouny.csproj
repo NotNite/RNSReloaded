@@ -6,13 +6,13 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded</OutputPath>
+        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded.Bouny</OutputPath>
         <ImplicitUsings>enable</ImplicitUsings>
         <ReloadedILLink>false</ReloadedILLink>
     </PropertyGroup>
 
     <ItemGroup>
-        <ReloadedLinkRoots Include="RNSReloaded"/>
+        <ReloadedLinkRoots Include="RNSReloaded.Bouny"/>
     </ItemGroup>
 
     <Import Project="../Reloaded.Trimming.targets"/>
@@ -31,7 +31,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Reloaded.Memory.SigScan.ReloadedII.Interfaces" Version="1.2.0"/>
+        <PackageReference Include="Reloaded.Imgui.Hook" Version="4.0.1" />
+        <PackageReference Include="Reloaded.Imgui.Hook.Direct3D11" Version="1.0.2" />
         <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime"/>
         <PackageReference Include="Reloaded.SharedLib.Hooks" Version="1.9.0"/>
     </ItemGroup>

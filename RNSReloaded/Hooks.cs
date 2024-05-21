@@ -1,4 +1,5 @@
-﻿using Reloaded.Hooks.Definitions;
+﻿using System.Runtime.InteropServices;
+using Reloaded.Hooks.Definitions;
 using RNSReloaded.Interfaces.Structs;
 
 namespace RNSReloaded;
@@ -6,6 +7,9 @@ namespace RNSReloaded;
 // ReSharper disable InconsistentNaming
 public unsafe class Hooks : IDisposable {
     public SLLVMVars* LLVMVars = null;
+
+    // Not a great place to put static variables...
+    public CRoom** CurrentRoom = null;
 
     private Utils utils;
     private WeakReference<IReloadedHooks> hooksRef;
@@ -33,6 +37,12 @@ public unsafe class Hooks : IDisposable {
                 this.runStartHook = hooks.CreateHook<RunStartDelegate>(this.RunStartDetour, addr);
                 this.runStartHook.Enable();
                 this.runStartHook.Activate();
+            });
+
+            this.utils.Scan("48 8B 15 ?? ?? ?? ?? 48 85 D2 41 0F 95 C4", addr => {
+                var offset = Marshal.ReadInt32(addr + 3);
+                this.CurrentRoom = (CRoom**) (addr + 7 + offset);
+                Console.WriteLine($"CurrentRoom: {(nint) this.CurrentRoom:X}");
             });
         }
     }

@@ -1,7 +1,6 @@
-﻿// ReSharper disable InconsistentNaming
+﻿using System.Runtime.InteropServices;
 
-using System.Runtime.InteropServices;
-
+// ReSharper disable InconsistentNaming
 namespace RNSReloaded.Interfaces.Structs;
 
 public unsafe delegate RValue* ScriptDelegate(
@@ -46,7 +45,7 @@ public enum RValueType : uint {
     Unset = 0x0ffffff
 }
 
-[StructLayout(LayoutKind.Explicit, Pack = 1)]
+[StructLayout(LayoutKind.Explicit, Pack = 8)]
 public unsafe struct RValue {
     [FieldOffset(0x0)] public int Int32;
     [FieldOffset(0x0)] public long Int64;
@@ -73,6 +72,12 @@ public unsafe struct RValue {
     public RValue* this[int index] => this.Get(index);
     public RValue* this[string key] => this.Get(key);
 
+    public override string ToString() {
+        fixed (RValue* ptr = &this) {
+            return IRNSReloaded.Instance.GetString(ptr);
+        }
+    }
+
     // Constructors
     public RValue(CInstance* obj) {
         this.Type = RValueType.Object;
@@ -81,31 +86,193 @@ public unsafe struct RValue {
     }
 
     public static implicit operator RValue(CInstance* obj) => new(obj);
+
+    // TODO: creating other primitives, new objects, and new arrays
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public unsafe struct CInstance;
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CInstance; // TODO
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public unsafe struct CCode;
-
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
 public unsafe struct CScript {
     public nint VTable;
     public CCode* Code;
     public YYGMLFuncs* Functions;
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
 public unsafe struct YYGMLFuncs {
     public char* Name;
     public nint Function;
     public YYVAR* FunctionVariable;
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
 public unsafe struct RFunctionStringRef {
     public char* Name;
     public void* Routine;
     public int ArgumentCount;
 }
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct LinkedList<T> where T : unmanaged {
+    public T* First;
+    public T* Last;
+    public int Count;
+
+    // TODO: enumerator
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CArrayStructure<T> where T : unmanaged {
+    public int Length;
+    public T* Data;
+
+    public T this[int index] {
+        get => this.Data[index];
+        set => this.Data[index] = value;
+    }
+
+    // TODO: enumerator
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CHashMap<K, V> where K : unmanaged where V : unmanaged {
+    public int Size;
+    public int UsedCount;
+    public int CurrentMask;
+    public int GrowThreshold;
+    public CHashMapElement<K, V>* Elements;
+    public delegate* unmanaged<K*, V*, void> DeleteValue;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CHashMapElement<K, V> where K : unmanaged where V : unmanaged {
+    public V* Value;
+    public K Key;
+    public uint Hash;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CRoom {
+    public int LastTile;
+    public CRoom* InstanceHandle;
+    public char* Caption;
+    public int Speed;
+    public int Width;
+    public int Height;
+    public byte Persistent;
+    public uint Color;
+    public byte ShowColor;
+    public fixed long Backgrounds[8]; // CBackGM*
+    public byte EnableViews;
+    public byte ClearScreen;
+    public byte ClearDisplayBuffer;
+    public fixed long Views[8]; // CView*
+    public char* LegacyCode;
+    public CCode* CodeObject;
+    public byte HasPhysicsWorld;
+    public int PhysicsGravityX;
+    public int PhysicsGravityY;
+    public float PhysicsPixelToMeters;
+    public LinkedList<CInstance> ActiveInstances;
+    public LinkedList<CInstance> InactiveInstances;
+    public CInstance* MarkedFirst;
+    public CInstance* MarkedLast;
+    public int* CreationOrderList;
+    public int CreationOrderListSize;
+    public YYRoom* WadRoom;
+    public nint WadBaseAddress;
+    public CPhysicsWorld* PhysicsWorld;
+    public int TileCount;
+    public CArrayStructure<RTile> Tiles;
+    public YYRoomTiles* WadTiles;
+    public YYRoomInstances* WadInstances;
+    public char* Name;
+    public byte IsDuplicate;
+    public LinkedList<CLayer> Layers;
+    public CHashMap<int, CLayer> LayerLookup;
+    public CHashMap<int, CLayerElementBase> LayerElementLookup;
+    public CLayerElementBase* LastElementLookedUp;
+    public CHashMap<int, CLayerInstanceElement> InstanceElementLookup;
+    public int* SequenceInstanceIDs;
+    public int SequenceInstanceIDCount;
+    public int SequenceInstanceIDMax;
+    public int* EffectLayerIDs;
+    public int EffectLayerIDCount;
+    public int EffectLayerIDMax;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CLayer {
+    public int ID;
+    public int Depth;
+    public float XOffset;
+    public float YOffset;
+    public float HorizontalSpeed;
+    public float VerticalSpeed;
+    public byte Visible;
+    public byte Deleting;
+    public byte Dynamic;
+    public char* Name;
+    public RValue BeginScript;
+    public RValue EndScript;
+    public byte EffectEnabled;
+    public byte EffectPendingEnabled;
+    public RValue Effect;
+    public CLayerEffectInfo* InitialEffectInfo;
+    public int ShaderID;
+    public LinkedList<CLayerElementBase> Elements;
+    public CLayer* Next;
+    public CLayer* Previous;
+    public nint GCProxy;
+}
+
+public enum LayerElementType {
+    Instance = 2
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CLayerElementBase {
+    public LayerElementType Type;
+    public int ID;
+    public byte RuntimeDataInitialized;
+    public char* Name;
+    public CLayer* Layer;
+    public CLayerElementBase* Next;
+    public CLayerElementBase* Previous;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CLayerInstanceElement {
+    public CLayerElementBase Base;
+    public int InstanceID;
+    public CInstance* Instance;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CCode;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CBackGM;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CView;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct YYRoom;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CPhysicsWorld;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct RTile;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct YYRoomTiles;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct YYRoomInstances;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct CLayerEffectInfo;

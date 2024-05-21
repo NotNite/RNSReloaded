@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Interfaces", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Bouny", "RNSReloaded.Bouny\RNSReloaded.Bouny.csproj", "{1DB27577-B973-4861-9A18-7591EA32676F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.TextureSwapper", "RNSReloaded.TextureSwapper\RNSReloaded.TextureSwapper.csproj", "{79DAB48E-7AC6-4945-9003-582C0FBB052A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{1DB27577-B973-4861-9A18-7591EA32676F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DB27577-B973-4861-9A18-7591EA32676F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DB27577-B973-4861-9A18-7591EA32676F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79DAB48E-7AC6-4945-9003-582C0FBB052A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79DAB48E-7AC6-4945-9003-582C0FBB052A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79DAB48E-7AC6-4945-9003-582C0FBB052A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79DAB48E-7AC6-4945-9003-582C0FBB052A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

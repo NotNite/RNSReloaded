@@ -51,6 +51,10 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         this.OnReady?.Invoke();
     }
 
+    public void LimitOnlinePlay() {
+        this.hooks.LimitOnlinePlay = true;
+    }
+
     public CScript* GetScriptData(int id) {
         return this.functions.ScriptData(id);
     }
@@ -129,5 +133,11 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         }
 
         return ret;
+    }
+
+    public void CreateString(RValue* value, string str) {
+        var strPtr = Marshal.StringToHGlobalAnsi(str);
+        this.functions.YYCreateString(value, (char*) strPtr);
+        Marshal.FreeHGlobal(strPtr);
     }
 }

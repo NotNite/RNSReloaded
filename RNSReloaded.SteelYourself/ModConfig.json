@@ -1,0 +1,12 @@
+{
+  "ModId": "RNSReloaded.SteelYourself",
+  "ModName": "Steel Yourself",
+  "ModAuthor": "NotNite",
+  "ModVersion": "1.0.0",
+  "ModDescription": "**Limits online play.**\n\nForces all boss battles to be the same specified encounter. Useful for training.",
+  "ModDll": "RNSReloaded.SteelYourself.dll",
+  "IsLibrary": false,
+  "ModDependencies": ["reloaded.sharedlib.hooks", "RNSReloaded"],
+  "SupportedAppId": ["rabbitsteel.exe"],
+  "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
+}

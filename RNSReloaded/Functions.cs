@@ -14,6 +14,7 @@ public unsafe class Functions {
     public delegate RValue* ArrayGetEntryDelegate(nint array, int index);
     public delegate char* YYGetStringDelegate(RValue* value, int unk);
     public delegate int StructGetKeysDelegate(RValue* value, char** keys, int* count);
+    public delegate int YYCreateStringDelegate(RValue* value, char* str);
 
     public ScriptFindIdDelegate ScriptFindId = null!;
     public ScriptDataDelegate ScriptData = null!;
@@ -23,6 +24,7 @@ public unsafe class Functions {
     public ArrayGetEntryDelegate ArrayGetEntry = null!;
     public YYGetStringDelegate YYGetString = null!;
     public StructGetKeysDelegate StructGetKeys = null!;
+    public YYCreateStringDelegate YYCreateString = null!;
 
     private Utils utils;
     private WeakReference<IStartupScanner> scannerRef;
@@ -47,5 +49,7 @@ public unsafe class Functions {
             addr => { this.YYGetString = Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr); });
         this.utils.Scan("48 83 EC 38 48 89 74 24 ??",
             addr => { this.StructGetKeys = Marshal.GetDelegateForFunctionPointer<StructGetKeysDelegate>(addr); });
+        this.utils.Scan("E8 ?? ?? ?? ?? 2B FB",
+            addr => { this.YYCreateString = Marshal.GetDelegateForFunctionPointer<YYCreateStringDelegate>(addr); });
     }
 }

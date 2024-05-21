@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Reloaded.Hooks.Definitions;
+using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 
 namespace RNSReloaded;
@@ -7,6 +8,7 @@ namespace RNSReloaded;
 // ReSharper disable InconsistentNaming
 public unsafe class Hooks : IDisposable {
     public SLLVMVars* LLVMVars = null;
+    public bool LimitOnlinePlay = false;
 
     // Not a great place to put static variables...
     public CRoom** CurrentRoom = null;
@@ -19,6 +21,8 @@ public unsafe class Hooks : IDisposable {
 
     private delegate void RunStartDelegate();
     private IHook<RunStartDelegate>? runStartHook;
+
+    private IHook<ScriptDelegate>? protobuildHook;
 
     public event Action? OnRunStart;
 
@@ -49,6 +53,8 @@ public unsafe class Hooks : IDisposable {
 
     public void Dispose() {
         this.initLLVMHook?.Disable();
+        this.runStartHook?.Disable();
+        this.protobuildHook?.Disable();
     }
 
     private nint InitLLVMDetour(SLLVMVars* vars) {
@@ -59,6 +65,27 @@ public unsafe class Hooks : IDisposable {
 
     private void RunStartDetour() {
         this.OnRunStart?.Invoke();
+
+        // We need to set this slightly later so the version variable is set
+        if (this.hooksRef.TryGetTarget(out var hooks) && this.LimitOnlinePlay) {
+            var id = IRNSReloaded.Instance.ScriptFindId("protobuild_new");
+            var script = IRNSReloaded.Instance.GetScriptData(id - 100000);
+
+            this.protobuildHook = hooks.CreateHook<ScriptDelegate>(this.ProtobuildDetour, script->Functions->Function);
+            this.protobuildHook.Enable();
+            this.protobuildHook.Activate();
+        }
+
         this.runStartHook!.OriginalFunction();
+    }
+
+    private RValue* ProtobuildDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        RValue global = IRNSReloaded.Instance.GetGlobalInstance();
+        var current = global["onlineVersion"];
+        const int separator = 10000;
+        if (current->Real <= separator) current->Real += separator;
+
+        returnValue = this.protobuildHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
     }
 }

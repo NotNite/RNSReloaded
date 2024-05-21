@@ -7,6 +7,8 @@ public unsafe interface IRNSReloaded {
     public event Action? OnReady;
     public static IRNSReloaded Instance = null!;
 
+    public void LimitOnlinePlay();
+
     public CScript* GetScriptData(int id);
     public int ScriptFindId(string name);
     public int? CodeFunctionFind(string name);
@@ -17,4 +19,5 @@ public unsafe interface IRNSReloaded {
     public string GetString(RValue* value);
     public CRoom* GetCurrentRoom();
     public List<string> GetStructKeys(RValue* value);
+    public void CreateString(RValue* value, string str);
 }

@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded", "RNSReloaded\RNSReloaded.csproj", "{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.PlayerColorChanger", "RNSReloaded.PlayerColorChanger\RNSReloaded.PlayerColorChanger.csproj", "{96D378B4-2742-4090-88E1-87C202D273AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Interfaces", "RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj", "{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96D378B4-2742-4090-88E1-87C202D273AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96D378B4-2742-4090-88E1-87C202D273AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96D378B4-2742-4090-88E1-87C202D273AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96D378B4-2742-4090-88E1-87C202D273AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal

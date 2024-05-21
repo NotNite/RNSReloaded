@@ -1,0 +1,12 @@
+{
+  "ModId": "RNSReloaded.PlayerColorChanger",
+  "ModName": "Player Color Changer",
+  "ModAuthor": "NotNite",
+  "ModVersion": "1.0.0",
+  "ModDescription": "Changes the color around the player (notably health bar and ring).",
+  "ModDll": "RNSReloaded.PlayerColorChanger.dll",
+  "IsLibrary": false,
+  "ModDependencies": ["reloaded.sharedlib.hooks", "RNSReloaded"],
+  "SupportedAppId": ["rabbitsteel.exe"],
+  "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
+}

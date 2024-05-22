@@ -1,18 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded", "RNSReloaded\RNSReloaded.csproj", "{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34902.65
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded", "RNSReloaded\RNSReloaded.csproj", "{47F7E8DD-AC5B-434C-B754-B3B3A6A3047F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.PlayerColorChanger", "RNSReloaded.PlayerColorChanger\RNSReloaded.PlayerColorChanger.csproj", "{96D378B4-2742-4090-88E1-87C202D273AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.PlayerColorChanger", "RNSReloaded.PlayerColorChanger\RNSReloaded.PlayerColorChanger.csproj", "{96D378B4-2742-4090-88E1-87C202D273AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Interfaces", "RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj", "{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.Interfaces", "RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj", "{03E49DBF-10FE-4C5C-967F-377C3E6C8A72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Bouny", "RNSReloaded.Bouny\RNSReloaded.Bouny.csproj", "{1DB27577-B973-4861-9A18-7591EA32676F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.Bouny", "RNSReloaded.Bouny\RNSReloaded.Bouny.csproj", "{1DB27577-B973-4861-9A18-7591EA32676F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.TextureSwapper", "RNSReloaded.TextureSwapper\RNSReloaded.TextureSwapper.csproj", "{79DAB48E-7AC6-4945-9003-582C0FBB052A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.TextureSwapper", "RNSReloaded.TextureSwapper\RNSReloaded.TextureSwapper.csproj", "{79DAB48E-7AC6-4945-9003-582C0FBB052A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.SteelYourself", "RNSReloaded.SteelYourself\RNSReloaded.SteelYourself.csproj", "{3144A4C2-F4E0-4940-9E6F-E025075790ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.SteelYourself", "RNSReloaded.SteelYourself\RNSReloaded.SteelYourself.csproj", "{3144A4C2-F4E0-4940-9E6F-E025075790ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.DebugMenuEnabler", "RNSReloaded.DebugMenuEnabler\RNSReloaded.DebugMenuEnabler.csproj", "{87E93513-ED59-46E1-89FF-08C597E39373}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.DebugMenuEnabler", "RNSReloaded.DebugMenuEnabler\RNSReloaded.DebugMenuEnabler.csproj", "{87E93513-ED59-46E1-89FF-08C597E39373}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.PermanentWinds", "RNSReleaded.PermanentWinds\RNSReloaded.PermanentWinds.csproj", "{6EA7E4D3-A447-4A4D-ADE7-99FBB9047F36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,7 +53,15 @@ Global
 		{87E93513-ED59-46E1-89FF-08C597E39373}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87E93513-ED59-46E1-89FF-08C597E39373}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87E93513-ED59-46E1-89FF-08C597E39373}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EA7E4D3-A447-4A4D-ADE7-99FBB9047F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EA7E4D3-A447-4A4D-ADE7-99FBB9047F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EA7E4D3-A447-4A4D-ADE7-99FBB9047F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA7E4D3-A447-4A4D-ADE7-99FBB9047F36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA54BC12-02FF-4973-99F3-F3DA492FD840}
 	EndGlobalSection
 EndGlobal

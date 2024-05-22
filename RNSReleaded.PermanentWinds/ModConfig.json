@@ -1,0 +1,12 @@
+{
+  "ModId": "RNSReloaded.PermanentWinds",
+  "ModName": "Permanent Winds",
+  "ModAuthor": "fuzzything44",
+  "ModVersion": "1.0.0",
+  "ModDescription": "Enables turbulent winds, in all fights!",
+  "ModDll": "RNSReloaded.PermanentWinds.dll",
+  "IsLibrary": false,
+  "ModDependencies": [ "reloaded.sharedlib.hooks", "RNSReloaded" ],
+  "SupportedAppId": [ "rabbitsteel.exe" ],
+  "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
+}

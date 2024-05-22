@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded.PermanentWinds</OutputPath>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <ReloadedILLink>false</ReloadedILLink>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ReloadedLinkRoots Include="RNSReloaded.PermanentWinds"/>
+    </ItemGroup>
+
+    <Import Project="../Reloaded.Trimming.targets"/>
+    <Import Project="../Reloaded.Checks.targets"/>
+
+    <ItemGroup>
+        <None Remove="ModConfig.json"/>
+        <None Remove="Reloaded.Trimming.targets"/>
+        <None Remove="Reloaded.Checks.targets"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="ModConfig.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime"/>
+        <PackageReference Include="Reloaded.SharedLib.Hooks" Version="1.9.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj"/>
+    </ItemGroup>
+</Project>

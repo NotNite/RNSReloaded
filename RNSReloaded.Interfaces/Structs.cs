@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 // ReSharper disable InconsistentNaming
 namespace RNSReloaded.Interfaces.Structs;
@@ -82,6 +82,12 @@ public unsafe struct RValue {
     public RValue(CInstance* obj) {
         this.Type = RValueType.Object;
         this.Object = obj;
+        this.Flags = 0;
+    }
+
+    public RValue(int value) {
+        this.Type = RValueType.Int32;
+        this.Int32 = value;
         this.Flags = 0;
     }
 

@@ -16,7 +16,6 @@ If you wanted to edit, say, `Animations/spellsword_rabbit_0000.png`, your mod fo
 
 ```text
 ModConfig.json
-Preview.png
 Redirector/
   Animations/
     spellsword_rabbit_0000.png

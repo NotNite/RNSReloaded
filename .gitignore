@@ -3,5 +3,11 @@
 bin/
 obj/
 *.user
+
 /temp
 /local
+
+/scripts/__pycache__
+/scripts/*.class
+/typings
+pyrightconfig.json

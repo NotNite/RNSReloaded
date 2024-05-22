@@ -4,7 +4,7 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 
-namespace PermanentWinds;
+namespace RNSReloaded.PermanentWinds;
 
 public unsafe class Mod : IMod {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
@@ -20,7 +20,6 @@ public unsafe class Mod : IMod {
 
         this.logger = loader.GetLogger();
 
-        this.logger.PrintMessage("Permanent winds started", this.logger.ColorBlueLight);
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             rnsReloaded.OnReady += this.Ready;
         }
@@ -97,4 +96,3 @@ public unsafe class Mod : IMod {
 
     public Action Disposing => () => { };
 }
-

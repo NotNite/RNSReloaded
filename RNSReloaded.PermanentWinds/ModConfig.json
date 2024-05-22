@@ -3,7 +3,7 @@
   "ModName": "Permanent Winds",
   "ModAuthor": "fuzzything44",
   "ModVersion": "1.0.0",
-  "ModDescription": "Enables turbulent winds, in all fights!",
+  "ModDescription": "**Limits online play.**\n\nEnables turbulent winds, in all fights!",
   "ModDll": "RNSReloaded.PermanentWinds.dll",
   "ModIcon": "",
   "ModR2RManagedDll32": "",
@@ -46,8 +46,8 @@
     }
   },
   "IsUniversalMod": false,
-  "ModDependencies": ["reloaded.sharedlib.hooks", "RNSReloaded"],
+  "ModDependencies": [ "reloaded.sharedlib.hooks", "RNSReloaded" ],
   "OptionalDependencies": [],
-  "SupportedAppId": ["rabbitsteel.exe"],
+  "SupportedAppId": [ "rabbitsteel.exe" ],
   "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
 }

@@ -29,7 +29,7 @@ Now, to upload to [GameBanana](https://gamebanana.com/games/20304), follow these
 - [Adding update support](https://reloaded-project.github.io/Reloaded-II/EnablingUpdateSupport/)
 - [Publishing the update](https://reloaded-project.github.io/Reloaded-II/CreatingRelease/)
 
-Upload the resulting files to GameBanana, and you are done.
+Upload the resulting files to your mod, and you are done.
 
 ## Editing packed textures
 

@@ -5,8 +5,54 @@
   "ModVersion": "1.0.0",
   "ModDescription": "Helper library for Rabbit and Steel. Can be adapted to general GameMaker.",
   "ModDll": "RNSReloaded.dll",
+  "ModIcon": "",
+  "ModR2RManagedDll32": "",
+  "ModR2RManagedDll64": "",
+  "ModNativeDll32": "",
+  "ModNativeDll64": "",
+  "Tags": [],
+  "CanUnload": null,
+  "HasExports": null,
   "IsLibrary": true,
-  "ModDependencies": ["reloaded.sharedlib.hooks", "Reloaded.Memory.SigScan.ReloadedII"],
-  "SupportedAppId": ["rabbitsteel.exe"],
+  "ReleaseMetadataFileName": "Sewer56.Update.ReleaseMetadata.json",
+  "PluginData": {
+    "NuGet": {
+      "AllowUpdateFromAnyRepository": false,
+      "DefaultRepositoryUrls": [
+        "http://packages.sewer56.moe:5000/v3/index.json"
+      ]
+    },
+    "GitHubDependencies": {
+      "IdToConfigMap": {
+        "Reloaded.Memory.SigScan.ReloadedII": {
+          "Config": {
+            "UserName": "Reloaded-Project",
+            "RepositoryName": "Reloaded.Memory.SigScan",
+            "UseReleaseTag": false,
+            "AssetFileName": "Mod.zip"
+          },
+          "ReleaseMetadataName": "Reloaded.Memory.SigScan.ReloadedII.ReleaseMetadata.json"
+        },
+        "reloaded.sharedlib.hooks": {
+          "Config": {
+            "UserName": "Sewer56",
+            "RepositoryName": "Reloaded.SharedLib.Hooks.ReloadedII",
+            "UseReleaseTag": true,
+            "AssetFileName": "reloaded.sharedlib.hooks.zip"
+          },
+          "ReleaseMetadataName": "Sewer56.Update.ReleaseMetadata.json"
+        }
+      }
+    }
+  },
+  "IsUniversalMod": false,
+  "ModDependencies": [
+    "Reloaded.Memory.SigScan.ReloadedII",
+    "reloaded.sharedlib.hooks"
+  ],
+  "OptionalDependencies": [],
+  "SupportedAppId": [
+    "rabbitsteel.exe"
+  ],
   "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
 }

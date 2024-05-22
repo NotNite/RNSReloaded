@@ -1,0 +1,12 @@
+{
+  "ModId": "RNSReloaded.DebugMenuEnabler",
+  "ModName": "Debug Menu Enabler",
+  "ModAuthor": "NotNite",
+  "ModVersion": "1.0.0",
+  "ModDescription": "**Limits online play.**\n\nEnables the sekrit debug menus in the game. May mess with your save file - use at your own risk.",
+  "ModDll": "RNSReloaded.DebugMenuEnabler.dll",
+  "IsLibrary": false,
+  "ModDependencies": ["Reloaded.Memory.SigScan.ReloadedII", "RNSReloaded"],
+  "SupportedAppId": ["rabbitsteel.exe"],
+  "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
+}

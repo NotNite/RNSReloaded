@@ -1,10 +1,11 @@
-﻿using Reloaded.Hooks.Definitions;
-using RNSReloaded.Interfaces.Structs;
+﻿using RNSReloaded.Interfaces.Structs;
 
 namespace RNSReloaded.Interfaces;
 
 public unsafe interface IRNSReloaded {
     public event Action? OnReady;
+    public event Action<ExecuteItArguments>? OnExecuteIt;
+
     public static IRNSReloaded Instance = null!;
 
     public void LimitOnlinePlay();

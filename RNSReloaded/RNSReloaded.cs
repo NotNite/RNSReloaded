@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
@@ -12,6 +10,7 @@ namespace RNSReloaded;
 // ReSharper disable InconsistentNaming
 public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     public event Action? OnReady;
+    public event Action<ExecuteItArguments>? OnExecuteIt;
 
     private WeakReference<IReloadedHooks> hooksRef;
     private WeakReference<IStartupScanner> scannerRef;
@@ -35,6 +34,7 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         this.functions = new Functions(this.utils, scannerRef);
 
         this.hooks.OnRunStart += this.OnRunStart;
+        this.hooks.OnExecuteIt += this.OnExecuteItWrapper;
         IRNSReloaded.Instance = this;
     }
 
@@ -139,5 +139,9 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         var strPtr = Marshal.StringToHGlobalAnsi(str);
         this.functions.YYCreateString(value, (char*) strPtr);
         Marshal.FreeHGlobal(strPtr);
+    }
+
+    public void OnExecuteItWrapper(ExecuteItArguments obj) {
+        OnExecuteIt?.Invoke(obj);
     }
 }

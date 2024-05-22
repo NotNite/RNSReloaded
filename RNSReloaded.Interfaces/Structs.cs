@@ -251,7 +251,27 @@ public unsafe struct CLayerInstanceElement {
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]
-public unsafe struct CCode;
+public unsafe struct CCode {
+    public nint VTable;
+    public CCode* Next;
+    public int Kind;
+    public int Compiled;
+    public char* Str;
+    public RToken Token;
+    public RValue Value;
+    public nint VMInstance;
+    public nint VMDebugInfo;
+    public char* Code;
+    public char* Name;
+    public int CodeIndex;
+    public YYGMLFuncs* Functions;
+    public byte Watch;
+    public int Offset;
+    public int LocalsCount;
+    public int ArgsCount;
+    public int Flags;
+    public nint Prototype;
+}
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]
 public unsafe struct CBackGM;
@@ -276,3 +296,23 @@ public unsafe struct YYRoomInstances;
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]
 public unsafe struct CLayerEffectInfo;
+
+[StructLayout(LayoutKind.Sequential, Pack = 8)]
+public unsafe struct RToken {
+    public int Kind;
+    public uint Type;
+    public int Ind;
+    public int Ind2;
+    public RValue Value;
+    public int ItemNumber;
+    public RToken* Items;
+    public int Position;
+};
+
+public unsafe struct ExecuteItArguments {
+    public CInstance* Self;
+    public CInstance* Other;
+    public CCode* Code;
+    public RValue* Arguments;
+    public int Flags;
+}

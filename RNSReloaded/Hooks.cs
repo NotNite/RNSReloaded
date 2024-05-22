@@ -22,9 +22,16 @@ public unsafe class Hooks : IDisposable {
     private delegate void RunStartDelegate();
     private IHook<RunStartDelegate>? runStartHook;
 
+    private delegate byte ExecuteItDelegate(
+        CInstance* self, CInstance* other, CCode* code, RValue* arguments, int flags
+    );
+
+    private IHook<ExecuteItDelegate>? executeItHook;
+
     private IHook<ScriptDelegate>? protobuildHook;
 
     public event Action? OnRunStart;
+    public event Action<ExecuteItArguments>? OnExecuteIt;
 
     public Hooks(Utils utils, WeakReference<IReloadedHooks> hooksRef) {
         this.utils = utils;
@@ -46,7 +53,12 @@ public unsafe class Hooks : IDisposable {
             this.utils.Scan("48 8B 15 ?? ?? ?? ?? 48 85 D2 41 0F 95 C4", addr => {
                 var offset = Marshal.ReadInt32(addr + 3);
                 this.CurrentRoom = (CRoom**) (addr + 7 + offset);
-                Console.WriteLine($"CurrentRoom: {(nint) this.CurrentRoom:X}");
+            });
+
+            this.utils.Scan("E8 ?? ?? ?? ?? 0F B6 D8 3C 01", addr => {
+                this.executeItHook = hooks.CreateHook<ExecuteItDelegate>(this.ExecuteItDetour, addr);
+                this.executeItHook.Enable();
+                this.executeItHook.Activate();
             });
         }
     }
@@ -87,5 +99,17 @@ public unsafe class Hooks : IDisposable {
 
         returnValue = this.protobuildHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
+    }
+
+    private byte ExecuteItDetour(CInstance* self, CInstance* other, CCode* code, RValue* arguments, int flags) {
+        this.OnExecuteIt?.Invoke(new ExecuteItArguments {
+            Self = self,
+            Other = other,
+            Code = code,
+            Arguments = arguments,
+            Flags = flags
+        });
+
+        return this.executeItHook!.OriginalFunction(self, other, code, arguments, flags);
     }
 }

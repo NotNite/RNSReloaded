@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DearImguiSharp;
 using Reloaded.Hooks.Definitions;
@@ -8,6 +8,7 @@ using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
+using Encoding = System.Text.Encoding;
 
 namespace RNSReloaded.Bouny;
 
@@ -184,9 +185,19 @@ public unsafe class Mod : IMod {
 
     private void DrawSearch(ref string search, Dictionary<string, string> values) {
         // Damn these ImGui bindings suck
-        fixed (char* ptr = search) {
-            ImGui.InputText("Search", (sbyte*) ptr, 256, 0, null, nint.Zero);
-        }
+        var utf8InputByteCount = Encoding.UTF8.GetByteCount(search);
+        var inputBufSize = Math.Max(257, utf8InputByteCount + 1);
+        var inputStackBytes = stackalloc byte[inputBufSize];
+        var clearBytesCount = (uint) (inputBufSize - utf8InputByteCount);
+        Marshal.Copy(Encoding.UTF8.GetBytes(search), 0, (nint) inputStackBytes, utf8InputByteCount);
+        Unsafe.InitBlockUnaligned(inputStackBytes + utf8InputByteCount, 0, clearBytesCount);
+        Unsafe.CopyBlock(inputStackBytes, inputStackBytes, (uint) inputBufSize);
+
+        ImGui.InputText("Search", (sbyte*) inputStackBytes, inputBufSize, 0, null, nint.Zero);
+
+        var chars = 0;
+        while (inputStackBytes[chars] != 0) chars++;
+        search = Encoding.UTF8.GetString(inputStackBytes, chars);
 
         ImGui.Separator();
 
@@ -196,6 +207,9 @@ public unsafe class Mod : IMod {
             foreach (var (key, value) in values.OrderBy(x => x.Key)) {
                 if (key.ToLower().Contains(search.ToLower()) || value.ToLower().Contains(search.ToLower())) {
                     ImGui.TextUnformatted($"{key}: {value}", null);
+                    if (ImGui.IsItemClicked((int) ImGuiMouseButton.Right)) {
+                        ImGui.SetClipboardText(value);
+                    }
                 }
             }
         }

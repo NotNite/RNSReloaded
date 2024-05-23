@@ -18,6 +18,9 @@ public unsafe class Mod : IMod {
 
     private IHook<ScriptDelegate>? playerColorSetHook;
     private uint color;
+    private uint darkColor;
+    private uint baseColor;
+    private uint satColor;
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -35,12 +38,20 @@ public unsafe class Mod : IMod {
     }
 
     private void ApplyConfig() {
+        this.color = this.ParseColor(this.config.String);
+        this.darkColor = this.ParseColor(this.config.DarkString);
+        this.baseColor = this.ParseColor(this.config.BaseString);
+        this.satColor = this.ParseColor(this.config.SatString);
+    }
+
+    private uint ParseColor(string colorString) {
         try {
-            var newColor = uint.Parse(this.config.String, System.Globalization.NumberStyles.HexNumber);
-            this.color = (newColor & 0xFF00FF00) | ((newColor & 0x00FF0000) >> 16) | ((newColor & 0x000000FF) << 16);
-            this.logger.PrintMessage("[Player Color Changer] Color changed to " + this.config.String, Color.White);
+            if (colorString.StartsWith('#')) colorString = colorString.TrimStart('#');
+            var parsed = uint.Parse(colorString, System.Globalization.NumberStyles.HexNumber);
+            return (parsed & 0xFF00FF00) | ((parsed & 0x00FF0000) >> 16) | ((parsed & 0x000000FF) << 16);
         } catch {
-            this.logger.PrintMessage("[Player Color Changer] Invalid color!", Color.Red);
+            this.logger.PrintMessage("[Player Color Changer] Invalid color: " + colorString, Color.Red);
+            return 0xFFFFFF;
         }
     }
 
@@ -79,7 +90,13 @@ public unsafe class Mod : IMod {
             var allyId = new RValue(self)["allyId"];
             if (allyId->Int32 == playerCharId->Int32) {
                 var playerColor = global["playerColor"]->Get(0)->Get(clientOwnId);
-                playerColor->Real = this.color;
+                if (playerColor != null) playerColor->Real = this.color;
+                var playerColorDark = global["playerColorDark"]->Get(0)->Get(clientOwnId);
+                if (playerColorDark != null) playerColorDark->Real = this.darkColor;
+                var playerColorBase = global["playerColorBase"]->Get(0)->Get(clientOwnId);
+                if (playerColorBase != null) playerColorBase->Real = this.baseColor;
+                var playerColorSat = global["playerColorSat"]->Get(0)->Get(clientOwnId);
+                if (playerColorSat != null) playerColorSat->Real = this.satColor;
             }
         }
 

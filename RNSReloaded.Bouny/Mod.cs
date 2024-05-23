@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DearImguiSharp;
 using Reloaded.Hooks.Definitions;
@@ -42,6 +43,9 @@ public unsafe class Mod : IMod {
     private static List<int> OpenLayers = new();
     private static List<int> OpenElements = new();
     private static Dictionary<int, string> InstanceSearchQueries = new();
+
+    private static string ScriptHookInput = string.Empty;
+    private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
 
     private void Draw() {
         if (!this.ready) return;
@@ -166,6 +170,43 @@ public unsafe class Mod : IMod {
                     if (!elementOpen) OpenElements.Remove(element->ID);
                 }
             }
+
+            if (ImGui.Begin("Script Hooks", ref open, 0)) {
+                this.InputText("##ScriptHook", ref ScriptHookInput);
+                if (ImGui.Button("Hook", buttonSize)) {
+                    if (this.hooksRef != null && this.hooksRef.TryGetTarget(out var hooks)) {
+                        var id = rnsReloaded.ScriptFindId(ScriptHookInput);
+                        var script = rnsReloaded.GetScriptData(id - 100000);
+                        if (script != null) {
+                            var name = new string(ScriptHookInput);
+
+                            RValue* Detour(
+                                CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+                            ) {
+                                return this.PrintDetour(name, self, other, returnValue, argc, argv);
+                            }
+
+                            if (ScriptHooks.TryGetValue(ScriptHookInput, out var hook)) {
+                                hook.Enable();
+                            } else {
+                                hook = hooks.CreateHook<ScriptDelegate>(Detour, script->Functions->Function)!;
+                                hook.Activate();
+                                hook.Enable();
+                                ScriptHooks[ScriptHookInput] = hook;
+                            }
+                        } else {
+                            this.logger.PrintMessage($"Script {ScriptHookInput} not found!", Color.Red);
+                        }
+                    }
+                }
+                if (ImGui.Button("Unhook", buttonSize)) {
+                    if (ScriptHooks.TryGetValue(ScriptHookInput, out var hook)) {
+                        hook.Disable();
+                    }
+                }
+
+                ImGui.End();
+            }
         }
     }
 
@@ -183,22 +224,30 @@ public unsafe class Mod : IMod {
         return result;
     }
 
-    private void DrawSearch(ref string search, Dictionary<string, string> values) {
-        // Damn these ImGui bindings suck
-        var utf8InputByteCount = Encoding.UTF8.GetByteCount(search);
-        var inputBufSize = Math.Max(257, utf8InputByteCount + 1);
+    private bool InputText(string label, ref string input) {
+        // Damn these ImGui bindings suc
+
+        const int maxInputBufSize = 256;
+        var utf8InputByteCount = Encoding.UTF8.GetByteCount(input);
+        var inputBufSize = Math.Max(maxInputBufSize + 1, utf8InputByteCount + 1);
         var inputStackBytes = stackalloc byte[inputBufSize];
         var clearBytesCount = (uint) (inputBufSize - utf8InputByteCount);
-        Marshal.Copy(Encoding.UTF8.GetBytes(search), 0, (nint) inputStackBytes, utf8InputByteCount);
+
+        Marshal.Copy(Encoding.UTF8.GetBytes(input), 0, (nint) inputStackBytes, utf8InputByteCount);
         Unsafe.InitBlockUnaligned(inputStackBytes + utf8InputByteCount, 0, clearBytesCount);
         Unsafe.CopyBlock(inputStackBytes, inputStackBytes, (uint) inputBufSize);
 
-        ImGui.InputText("Search", (sbyte*) inputStackBytes, inputBufSize, 0, null, nint.Zero);
+        var ret = ImGui.InputText(label, (sbyte*) inputStackBytes, inputBufSize, 0, null, nint.Zero);
 
         var chars = 0;
         while (inputStackBytes[chars] != 0) chars++;
-        search = Encoding.UTF8.GetString(inputStackBytes, chars);
+        input = Encoding.UTF8.GetString(inputStackBytes, chars);
 
+        return ret;
+    }
+
+    private void DrawSearch(ref string search, Dictionary<string, string> values) {
+        this.InputText("Search", ref search);
         ImGui.Separator();
 
         ImVec2 cra = new();
@@ -214,6 +263,32 @@ public unsafe class Mod : IMod {
             }
         }
         ImGui.EndChild();
+    }
+
+    private RValue* PrintDetour(
+        string name, CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
+        var hook = ScriptHooks[name];
+        returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
+        this.logger.PrintMessage(this.PrintHook(name, returnValue, argc, argv), Color.Gray);
+        return returnValue;
+    }
+
+    private string PrintHook(string name, RValue* returnValue, int argc, RValue** argv) {
+        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+            if (argc == 0) {
+                return $"{name}() -> {rnsReloaded.GetString(returnValue)}";
+            } else {
+                var args = new List<string>();
+                for (var i = 0; i < argc; i++) {
+                    args.Add(rnsReloaded.GetString(argv[i]));
+                }
+
+                return $"{name}({string.Join(", ", args)}) -> {rnsReloaded.GetString(returnValue)}";
+            }
+        } else {
+            return string.Empty;
+        }
     }
 
     public void Suspend() { }

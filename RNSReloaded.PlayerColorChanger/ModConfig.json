@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded.PlayerColorChanger",
   "ModName": "Player Color Changer",
   "ModAuthor": "NotNite",
-  "ModVersion": "1.0.0",
+  "ModVersion": "1.0.1",
   "ModDescription": "Changes the color around the player (notably health bar and ring).",
   "ModDll": "RNSReloaded.PlayerColorChanger.dll",
   "ModIcon": "",

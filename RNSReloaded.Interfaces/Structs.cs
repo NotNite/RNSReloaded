@@ -91,6 +91,12 @@ public unsafe struct RValue {
         this.Flags = 0;
     }
 
+    public RValue(double value) {
+        this.Type = RValueType.Real;
+        this.Real = value;
+        this.Flags = 0;
+    }
+
     public static implicit operator RValue(CInstance* obj) => new(obj);
 
     // TODO: creating other primitives, new objects, and new arrays

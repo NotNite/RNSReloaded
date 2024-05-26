@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.DebugMenuEnable
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.PermanentWinds", "RNSReloaded.PermanentWinds\RNSReloaded.PermanentWinds.csproj", "{18EA2959-A78B-4525-8A50-B5374351D80D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.Steelheart", "RNSReloaded.Steelheart\RNSReloaded.Steelheart.csproj", "{05A5A454-5D1D-4190-B0C5-55872492F3A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.Steelheart", "RNSReloaded.Steelheart\RNSReloaded.Steelheart.csproj", "{05A5A454-5D1D-4190-B0C5-55872492F3A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.CustomBossTest", "RNSReloaded.CustomBossTest\RNSReloaded.CustomBossTest.csproj", "{01A1C1E8-5964-48BB-9D19-75A388744549}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{05A5A454-5D1D-4190-B0C5-55872492F3A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05A5A454-5D1D-4190-B0C5-55872492F3A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05A5A454-5D1D-4190-B0C5-55872492F3A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01A1C1E8-5964-48BB-9D19-75A388744549}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01A1C1E8-5964-48BB-9D19-75A388744549}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01A1C1E8-5964-48BB-9D19-75A388744549}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01A1C1E8-5964-48BB-9D19-75A388744549}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

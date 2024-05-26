@@ -114,7 +114,10 @@ public unsafe class Mod : IMod {
     }
     private double GetEnemyHP(double id) {
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            return rnsReloaded.FindValue(this.GetEnemy(id)->Object, "displayHp")->Real;
+            var instance = rnsReloaded.GetGlobalInstance();
+            var hpList = rnsReloaded.FindValue(instance, "playerHp");
+            var enemyHps = rnsReloaded.ArrayGetEntry(hpList, 1);
+            return rnsReloaded.ArrayGetEntry(enemyHps, (int) id)->Real;
         } else {
             throw new NullReferenceException("Hardcore mod not loaded properly - can't get RnsReloaded reference");
         }
@@ -137,15 +140,13 @@ public unsafe class Mod : IMod {
             double enemyMaxHp = this.GetEnemyMaxHP(argv[1]->Real);
             if (BossPhaseChanges.TryGetValue(this.currentEncounter, out var hpThreshold)) {
                 // Bosses phase change higher HP (depends on the boss)
-                // So to force p1 to go to enrage, we put a check there instead of at 250 HP
-                if ((enemyHp - argv[2]->Real) < (enemyMaxHp * hpThreshold + 250)) {
-                    argv[2]->Real = Math.Max((enemyHp - enemyMaxHp * hpThreshold) - 250, 0);
+                // So to force p1 to go to enrage, we put a check there instead of at 1 HP
+                if ((enemyHp - argv[2]->Real) < (enemyMaxHp * hpThreshold + 1)) {
+                    argv[2]->Real = Math.Max((enemyHp - enemyMaxHp * hpThreshold) - 1, 0);
                 }
-            } else if (enemyHp - argv[2]->Real < 250) {
-                // Non bosses (and boss phase 2s) can go to 250 HP before waiting on enrage to be killable
-                // 250 instead of 1 to hopefully make the bug where sometimes this lock could be broken
-                // by enough damage instances in the same frame.
-                argv[2]->Real = Math.Max(enemyHp - 250, 0);
+            } else if (enemyHp - argv[2]->Real < 1) {
+                // Non bosses (and boss phase 2s) can go to 1 HP before waiting on enrage to be killable
+                argv[2]->Real = Math.Max(enemyHp - 1, 0);
             }
         }
 

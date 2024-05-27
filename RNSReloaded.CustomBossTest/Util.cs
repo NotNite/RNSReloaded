@@ -7,75 +7,58 @@ using RNSReloaded.Interfaces.Structs;
 namespace RNSReloaded.CustomBossTest;
 
 public unsafe class Util {
-    private WeakReference<IRNSReloaded> rnsReloadedRef;
+    private IRNSReloaded rnsReloaded;
     private ILoggerV1 logger;
 
-    public Util(WeakReference<IRNSReloaded> rnsReloadedRef, ILoggerV1 logger) {
-        this.rnsReloadedRef = rnsReloadedRef;
+    public Util(IRNSReloaded rnsReloaded, ILoggerV1 logger) {
+        this.rnsReloaded = rnsReloaded;
         this.logger = logger;
     }
 
     public RoutineDelegate? GetCodeFunction(string name) {
-        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            var id = rnsReloaded.CodeFunctionFind(name)!.Value;
-            var funcRef = rnsReloaded.GetTheFunction(id);
-            var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
-            return func;
-        }
-        return null;
+        var id = this.rnsReloaded.CodeFunctionFind(name)!.Value;
+        var funcRef = this.rnsReloaded.GetTheFunction(id);
+        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
+        return func;
     }
 
     public ScriptDelegate? GetScriptFunction(string name) {
-        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            var id = rnsReloaded.ScriptFindId(name) - 100000;
-            if (id != 0) {
-                var script = rnsReloaded.GetScriptData(id);
-                if (script != null) {
-                    var funcRef = script->Functions->Function;
-                    var func = Marshal.GetDelegateForFunctionPointer<ScriptDelegate>(funcRef);
-                    return func;
-                }
+        var id = this.rnsReloaded.ScriptFindId(name) - 100000;
+        if (id != 0) {
+            var script = this.rnsReloaded.GetScriptData(id);
+            if (script != null) {
+                var funcRef = script->Functions->Function;
+                var func = Marshal.GetDelegateForFunctionPointer<ScriptDelegate>(funcRef);
+                return func;
             }
         }
         return null;
     }
 
     public RValue? CreateString(string str) {
-        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            RValue result;
-            rnsReloaded.CreateString(&result, str);
-            return result;
-        }
-        return null;
+        RValue result;
+        this.rnsReloaded.CreateString(&result, str);
+        return result;
     }
 
     public RValue* GetGlobalVar(string key) {
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            var instance = rnsReloaded.GetGlobalInstance();
-            return rnsReloaded.FindValue(instance, key);
-        }
-        return null;
+        var instance = this.rnsReloaded.GetGlobalInstance();
+        return this.rnsReloaded.FindValue(instance, key);
     }
 
     public RValue* GetPlayerVar(int index, string key) {
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            var instance = rnsReloaded.GetGlobalInstance();
-            var combatantList = rnsReloaded.FindValue(instance, "player");
-            var playerList = combatantList->Get(0);
-            var player = playerList->Get(index);
-            return player->Get(key);
-        }
-        return null;
+        var instance = this.rnsReloaded.GetGlobalInstance();
+        var combatantList = this.rnsReloaded.FindValue(instance, "player");
+        var playerList = combatantList->Get(0);
+        var player = playerList->Get(index);
+        return player->Get(key);
     }
 
     public RValue* GetEnemyVar(int index, string key) {
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            var instance = rnsReloaded.GetGlobalInstance();
-            var combatantList = rnsReloaded.FindValue(instance, "player");
-            var enemyList = combatantList->Get(1);
-            var enemy = enemyList->Get(index);
-            return enemy->Get(key);
-        }
-        return null;
+        var instance = this.rnsReloaded.GetGlobalInstance();
+        var combatantList = this.rnsReloaded.FindValue(instance, "player");
+        var enemyList = combatantList->Get(1);
+        var enemy = enemyList->Get(index);
+        return enemy->Get(key);
     }
 }

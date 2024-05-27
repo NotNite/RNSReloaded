@@ -3,6 +3,7 @@ using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RNSReloaded.CustomBossTest;
 
@@ -12,7 +13,8 @@ public unsafe class Mod : IMod {
     private ILoggerV1 logger = null!;
 
     private Util? utils;
-    private Patterns? patterns;
+    private BattleScripts? battleScripts;
+    private BattlePatterns? battlePatterns;
 
     private IHook<ScriptDelegate>? addEncounterHook;
 
@@ -36,8 +38,9 @@ public unsafe class Mod : IMod {
         ) {
             rnsReloaded.LimitOnlinePlay();
 
-            this.utils = new Util(this.rnsReloadedRef, this.logger);
-            this.patterns = new Patterns(this.rnsReloadedRef, this.utils, this.logger);
+            this.utils = new Util(rnsReloaded, this.logger);
+            this.battleScripts = new BattleScripts(rnsReloaded, this.utils, this.logger);
+            this.battlePatterns = new BattlePatterns(rnsReloaded, this.utils, this.logger);
 
             var encounterId = rnsReloaded.ScriptFindId("bp_dragon_granite1_s");
             var encounterScript = rnsReloaded.GetScriptData(encounterId - 100000);
@@ -53,81 +56,72 @@ public unsafe class Mod : IMod {
         return (180 / Math.PI) * Math.Atan2(target.Item2 - source.Item2, target.Item1 - source.Item1);
     }
 
-    private bool scrbp_time(CInstance* self, CInstance* other, int time) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            RValue[] args = [new RValue(time)];
-            return rnsReloaded.ExecuteScript("scrbp_time", self, other, args)!.Value.Real > 0.5;
+    private bool IsReady(
+        [MaybeNullWhen(false), NotNullWhen(true)] out IRNSReloaded rnsReloaded,
+        [MaybeNullWhen(false), NotNullWhen(true)] out Util utils,
+        [MaybeNullWhen(false), NotNullWhen(true)] out BattleScripts scrpb,
+        [MaybeNullWhen(false), NotNullWhen(true)] out BattlePatterns bp
+    ) {
+        if(this.rnsReloadedRef != null) {
+            this.rnsReloadedRef.TryGetTarget(out var rnsReloadedRef);
+            rnsReloaded = rnsReloadedRef;
+            utils = this.utils!;
+            scrpb = this.battleScripts!;
+            bp = this.battlePatterns!;
+            return rnsReloaded != null;
         }
+        rnsReloaded = null;
+        utils = null;
+        scrpb = null;
+        bp = null;
         return false;
-    }
-
-    private bool scrbp_time_repeating(CInstance* self, CInstance* other, int loopOffset, int loopLength) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            RValue[] args = [new RValue(loopOffset), new RValue(loopLength)];
-            return rnsReloaded.ExecuteScript("scrbp_time_repeating", self, other, args)!.Value.Real > 0.5;
-        }
-        return false;
-    }
-
-    private void scrbp_move_character(CInstance* self, CInstance* other, double x, double y, int moveTime) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
-            rnsReloaded.ExecuteScript("scrbp_move_character", self, other, args);
-        }
-    }
-
-    private void scrbp_move_character_absolute(CInstance* self, CInstance* other, double x, double y, int moveTime) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
-            rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, args);
-        }
     }
 
     private RValue* AddEncounterDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            var bf_center_x = this.utils!.GetGlobalVar("bfCenterX")->Real;
-            var bf_center_y = this.utils!.GetGlobalVar("bfCenterY")->Real;
+        if (this.IsReady(out var rnsReloaded, out var utils, out var scrbp, out var bp)) {
+            var bf_center_x = utils.GetGlobalVar("bfCenterX")->Real;
+            var bf_center_y = utils.GetGlobalVar("bfCenterY")->Real;
             var tornado1 = (bf_center_x - bf_center_x * 4 / 5, bf_center_y);
             var tornado2 = (bf_center_x + bf_center_x * 4 / 5, bf_center_y);
-            var player_x = this.utils!.GetPlayerVar(0, "distMovePrevX")->Real;
-            var player_y = this.utils!.GetPlayerVar(0, "distMovePrevY")->Real;
-            var boss_x = this.utils!.GetEnemyVar(0, "distMovePrevX")->Real;
-            var boss_y = this.utils!.GetEnemyVar(0, "distMovePrevY")->Real;
+            var player_x = utils.GetPlayerVar(0, "distMovePrevX")->Real;
+            var player_y = utils.GetPlayerVar(0, "distMovePrevY")->Real;
+            var boss_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;
+            var boss_y = utils.GetEnemyVar(0, "distMovePrevY")->Real;
 
-            if (this.scrbp_time(self, other, 500)) {
-                this.scrbp_move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
+            if (scrbp.time(self, other, 500)) {
+                scrbp.move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
             }
 
-            if (this.scrbp_time(self, other, 1500)) {
-                this.patterns!.bp_fire_aoe(self, other, 1500, 25000, 1.6, [tornado1, tornado2]);
+            if (scrbp.time(self, other, 1500)) {
+                bp.fire_aoe(self, other, 1500, 25000, 1.6, [tornado1, tornado2]);
             }
-            if (this.scrbp_time(self, other, 3000)) {
+            if (scrbp.time(self, other, 3000)) {
                 var angle_1 = this.getAngle(tornado1, (player_x, player_y));
-                this.patterns!.bp_cone_direction(self, other, 2000, 30, tornado1, [angle_1]);
+                bp.cone_direction(self, other, 2000, 30, tornado1, [angle_1]);
                 var angle_2 = this.getAngle(tornado2, (player_x, player_y));
-                this.patterns!.bp_cone_direction(self, other, 2000, 30, tornado2, [angle_2]);
+                bp.cone_direction(self, other, 2000, 30, tornado2, [angle_2]);
             }
-            if (this.scrbp_time(self, other, 7000)) {
-                this.patterns!.bp_cone_spreads(self, other, 0, 30, tornado1, null);
-                this.patterns!.bp_cone_spreads(self, other, 0, 30, tornado2, null);
+            if (scrbp.time(self, other, 7000)) {
+                bp.cone_spreads(self, other, 0, 30, tornado1, null);
+                bp.cone_spreads(self, other, 0, 30, tornado2, null);
 
                 var doll_1 = (bf_center_x - 180, bf_center_y - 180);
                 var doll_2 = (bf_center_x - 180, bf_center_y + 180);
                 var doll_3 = (bf_center_x + 180, bf_center_y - 180);
                 var doll_4 = (bf_center_x + 180, bf_center_y + 180);
-                this.patterns!.bp_fire_aoe(self, other, 1000, 1500, 2, [doll_1, doll_2, doll_3, doll_4]);
+                bp.fire_aoe(self, other, 1000, 1500, 2, [doll_1, doll_2, doll_3, doll_4]);
             }
-            if (this.scrbp_time(self, other, 8000)) {
+            if (scrbp.time(self, other, 8000)) {
                 var angle_1 = this.getAngle(tornado1, (player_x, player_y));
                 var angle_2 = this.getAngle(tornado2, (player_x, player_y));
 
-                this.patterns!.bp_water2_line(self, other, 1500, tornado1, angle_1, 0, 0, 2, 3);
-                this.patterns!.bp_water2_line(self, other, 1500, tornado2, angle_2, 0, 0, 2, 3);
+                bp.water2_line(self, other, 1500, tornado1, angle_1, 0, 0, 2, 3);
+                bp.water2_line(self, other, 1500, tornado2, angle_2, 0, 0, 2, 3);
             }
-            if (this.scrbp_time(self, other, 100000)) {
-                this.patterns!.bp_enrage(self, other, 1500, 3000);
+            if (scrbp.time(self, other, 10000)) {
+                bp.enrage(self, other, 0, 1500, 3000, true);
             }
         }
         return returnValue;
@@ -136,40 +130,25 @@ public unsafe class Mod : IMod {
     private RValue* PatternExamples(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            //if (this.scrbp_time_repeating(self, other, 3000, 5000)) {
-            //    var player_x = this.utils!.GetPlayerVar(0, "distMovePrevX")->Real;
-            //    var player_y = this.utils!.GetPlayerVar(0, "distMovePrevY")->Real;
-            //    this.patterns!.bp_fire_aoe(self, other, 1500, 3000, 1.5, [(player_x, player_y)]);
-            //}
+        if (this.IsReady(out var rnsReloaded, out var utils, out var scrbp, out var bp)) {
+            if (scrbp.time_repeating(self, other, 3000, 5000)) {
+                var player_x = utils.GetPlayerVar(0, "distMovePrevX")->Real;
+                var player_y = utils.GetPlayerVar(0, "distMovePrevY")->Real;
+                var enemy_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;
+                var enemy_y = utils.GetEnemyVar(0, "distMovePrevY")->Real;
+                var bf_center_x = utils.GetGlobalVar("bfCenterX")->Real;
+                var bf_center_y = utils.GetGlobalVar("bfCenterY")->Real;
 
-            //if (this.scrbp_time_repeating(self, other, 2500, 5000)) {
-            //    var player_x = this.utils!.GetEnemyVar(0, "distMovePrevX")->Real;
-            //    var player_y = this.utils!.GetEnemyVar(0, "distMovePrevY")->Real;
-            //    this.patterns!.bp_knockback_circle(self, other, 1500, 500, 250, 2, player_x, player_y);
-            //}
+                bp.fire_aoe(self, other, 1500, 3000, 1.5, [(player_x, player_y)]);
+                bp.knockback_circle(self, other, 1500, 500, 250, 2, (player_x, player_y));
+                bp.cone_direction(self, other, 1500, 30, (player_x, player_y), [0, 90, 180, 270]);
+                bp.cone_spreads(self, other, 1500, 30, (enemy_x, enemy_y), null);
+                bp.water2_line(self, other, 1500, (bf_center_x, bf_center_y), 0, 45, 100, 2, 3);
+            }
 
-            //if (this.scrbp_time_repeating(self, other, 3000, 5000)) {
-            //    var player_x = this.utils!.GetPlayerVar(0, "distMovePrevX")->Real;
-            //    var player_y = this.utils!.GetPlayerVar(0, "distMovePrevY")->Real;
-            //    this.patterns!.bp_cone_direction(self, other, 1500, 30, player_x, player_y, [0, 90, 180, 270]);
-            //}
-
-            //if (this.scrbp_time_repeating(self, other, 1500, 3000)) {
-            //    var x = this.utils!.GetEnemyVar(0, "distMovePrevX")->Real;
-            //    var y = this.utils!.GetEnemyVar(0, "distMovePrevY")->Real;
-            //    this.patterns!.bp_cone_spreads(self, other, 1500, 30, x, y);
-            //}
-
-            //if (this.scrbp_time_repeating(self, other, 1500, 3000)) {
-            //    var bf_center_x = this.utils!.GetGlobalVar("bfCenterX")->Real;
-            //    var bf_center_y = this.utils!.GetGlobalVar("bfCenterY")->Real;
-            //    this.patterns!.bp_water2_line(self, other, 1500, (bf_center_x, bf_center_y), 0, 45, 100, 2, 3);
-            //}
-
-            //if (this.scrbp_time(self, other, 3000)) {
-            //    this.patterns!.bp_enrage(self, other, 1500, 3000);
-            //}
+            if (scrbp.time(self, other, 6000)) {
+                bp.enrage(self, other, 0, 1500, 3000, true);
+            }
         }
         return returnValue;
     }

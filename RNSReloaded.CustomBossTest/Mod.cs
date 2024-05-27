@@ -56,7 +56,7 @@ public unsafe class Mod : IMod {
     private bool scrbp_time(CInstance* self, CInstance* other, int time) {
         if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             RValue[] args = [new RValue(time)];
-            return this.utils!.RunGMLScript("scrbp_time", self, other, args)!.Value.Real > 0.5;
+            return rnsReloaded.ExecuteScript("scrbp_time", self, other, args)!.Value.Real > 0.5;
         }
         return false;
     }
@@ -64,7 +64,7 @@ public unsafe class Mod : IMod {
     private bool scrbp_time_repeating(CInstance* self, CInstance* other, int loopOffset, int loopLength) {
         if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             RValue[] args = [new RValue(loopOffset), new RValue(loopLength)];
-            return this.utils!.RunGMLScript("scrbp_time_repeating", self, other, args)!.Value.Real > 0.5;
+            return rnsReloaded.ExecuteScript("scrbp_time_repeating", self, other, args)!.Value.Real > 0.5;
         }
         return false;
     }
@@ -72,14 +72,14 @@ public unsafe class Mod : IMod {
     private void scrbp_move_character(CInstance* self, CInstance* other, double x, double y, int moveTime) {
         if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
-            this.utils!.RunGMLScript("scrbp_move_character", self, other, args);
+            rnsReloaded.ExecuteScript("scrbp_move_character", self, other, args);
         }
     }
 
     private void scrbp_move_character_absolute(CInstance* self, CInstance* other, double x, double y, int moveTime) {
         if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
-            this.utils!.RunGMLScript("scrbp_move_character_absolute", self, other, args);
+            rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, args);
         }
     }
 

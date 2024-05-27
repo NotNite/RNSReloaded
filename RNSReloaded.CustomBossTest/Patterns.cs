@@ -17,10 +17,10 @@ public unsafe class Patterns {
 
     void execute_pattern(CInstance* self, CInstance* other, string pattern, RValue[] args) {
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            this.utils!.RunGMLScript("bpatt_var", self, other, args);
+            rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
             args = [new RValue(rnsReloaded.ScriptFindId(pattern))];
-            this.utils!.RunGMLScript("bpatt_add", self, other, args);
-            this.utils!.RunGMLScript("bpatt_var_reset", self, other, null);
+            rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
+            rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
         }
     }
 
@@ -46,16 +46,16 @@ public unsafe class Patterns {
                 ]).ToArray();
             }
 
-            this.utils!.RunGMLScript("bpatt_var", self, other, args);
+            rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
 
             // Set pattern layer (no idea what it does just copying existing scripts)
             args = [new RValue(1)];
-            this.utils!.RunGMLScript("bpatt_layer", self, other, args);
+            rnsReloaded.ExecuteScript("bpatt_layer", self, other, args);
 
             args = [new RValue(rnsReloaded.ScriptFindId("bp_fire_aoe"))];
-            this.utils!.RunGMLScript("bpatt_add", self, other, args);
+            rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
 
-            this.utils!.RunGMLScript("bpatt_var_reset", self, other, null);
+            rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
         }
     }
 

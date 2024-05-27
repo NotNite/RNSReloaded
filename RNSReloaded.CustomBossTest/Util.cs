@@ -78,30 +78,4 @@ public unsafe class Util {
         }
         return null;
     }
-
-    public RValue? RunGMLScript(string name, CInstance* self, CInstance* other, RValue[]? args) {
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            var script = this.GetScriptFunction(name);
-            if (script == null) {
-                this.logger.PrintMessage($"script {name} could not be found", Color.Red);
-            }
-            if (script != null) {
-                //this.logger.PrintMessage($"script = '{script}'", Color.Red);
-                fixed (RValue* argsPtr = args) {
-                    var argsArr = args == null ? null : new RValue*[args.Length];
-                    RValue returnValue;
-                    if (argsArr != null) {
-                        for (var i = 0; i < args!.Length; i++) argsArr[i] = &argsPtr[i];
-                    }
-                    fixed (RValue** argsPtrPtr = argsArr) {
-                        //this.logger.PrintMessage($"cargs = {args.Length}", Color.Red);
-                        script(self, other, &returnValue, args == null ? 0 : args.Length, argsPtrPtr);
-                        //this.logger.PrintMessage($"result = {returnValue}", Color.Red);
-                    }
-                    return returnValue;
-                }
-            }
-        }
-        return null;
-    }
 }

@@ -21,4 +21,7 @@ public unsafe interface IRNSReloaded {
     public CRoom* GetCurrentRoom();
     public List<string> GetStructKeys(RValue* value);
     public void CreateString(RValue* value, string str);
+
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, int argc, RValue** argv);
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, RValue[] arguments);
 }

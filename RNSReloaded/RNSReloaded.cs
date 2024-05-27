@@ -141,6 +141,30 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         Marshal.FreeHGlobal(strPtr);
     }
 
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, int argc, RValue** argv) {
+        var script = this.ScriptFindId(name);
+        if (script == -1) return null;
+
+        var scriptData = this.GetScriptData(script - 100000);
+        if (scriptData == null) return null;
+
+        var funcRef = scriptData->Functions->Function;
+        var func = Marshal.GetDelegateForFunctionPointer<ScriptDelegate>(funcRef);
+        var result = new RValue();
+        func(self, other, &result, argc, argv);
+        return result;
+    }
+
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, RValue[] arguments) {
+        fixed (RValue* ptr = arguments) {
+            var ptrs = new RValue*[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
+            fixed (RValue** argv = ptrs) {
+                return this.ExecuteScript(name, self, other, arguments.Length, argv);
+            }
+        }
+    }
+
     public void OnExecuteItWrapper(ExecuteItArguments obj) {
         OnExecuteIt?.Invoke(obj);
     }

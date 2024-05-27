@@ -51,13 +51,32 @@ namespace RNSReloaded.CustomBossTest {
             return null;
         }
 
-        public RValue* GetPlayerVar(string key) {
+        public RValue* GetGlobalVar(string key) {
+            if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+                var instance = rnsReloaded.GetGlobalInstance();
+                return rnsReloaded.FindValue(instance, key);
+            }
+            return null;
+        }
+
+        public RValue* GetPlayerVar(int index, string key) {
             if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
                 var instance = rnsReloaded.GetGlobalInstance();
                 var combatantList = rnsReloaded.FindValue(instance, "player");
                 var playerList = combatantList->Get(0);
-                var player_0 = playerList->Get(0);
-                return player_0->Get(key);
+                var player = playerList->Get(index);
+                return player->Get(key);
+            }
+            return null;
+        }
+
+        public RValue* GetEnemyVar(int index, string key) {
+            if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+                var instance = rnsReloaded.GetGlobalInstance();
+                var combatantList = rnsReloaded.FindValue(instance, "player");
+                var enemyList = combatantList->Get(1);
+                var enemy = enemyList->Get(index);
+                return enemy->Get(key);
             }
             return null;
         }

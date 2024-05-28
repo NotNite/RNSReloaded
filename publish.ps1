@@ -34,11 +34,18 @@ Invoke-Expression "./local/reloaded-tools/Reloaded.Publisher.exe --modfolder ./t
 
 Get-ChildItem -Path "./temp/publish" -Recurse
 
-$apiKey = (Get-Content -Path "./local/nuget.key").Trim()
+$apiKey = ""
+if ($env:CI) {
+  $apiKey = $env:NUGET_API_KEY
+} else {
+  $apiKey = (Get-Content -Path "./local/nuget.key").Trim()
+}
 $nugetFile = Get-ChildItem -Path "./temp/nuget" -Filter "$mod*.nupkg" | Select-Object -First 1
 
-Write-Host "Publishing to NuGet in 10 seconds..."
-Start-Sleep -Seconds 10
-Write-Host "aight no going back now"
+if (-not $env:CI) {
+  Write-Host "Publishing to NuGet in 10 seconds..."
+  Start-Sleep -Seconds 10
+  Write-Host "aight no going back now"
+}
 
 dotnet nuget push -s "http://packages.sewer56.moe:5000/v3/index.json" -k $apiKey $nugetFile.FullName

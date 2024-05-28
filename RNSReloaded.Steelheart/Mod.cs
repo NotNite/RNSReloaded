@@ -16,14 +16,16 @@ public unsafe class Mod : IMod {
     private IHook<ScriptDelegate>? newFightHook;
     // Need to disable enrage after phase change
     private IHook<ScriptDelegate>? phaseChangeHook;
-    // For shira phase 1
-    private IHook<ScriptDelegate>? shiraStartHook;
     // For Shira unavoidable steel yourself attacks
     private IHook<ScriptDelegate>? steelHook;
     private IHook<ScriptDelegate>? steelActivateHook;
+    // To disable general invulnerability
+    private IHook<ScriptDelegate>? invulnHook;
+    private IHook<ScriptDelegate>? playerDmgHook;
+
     // Flag to track if the enemy has started enrage
     // Set to false on combat start and phase change (scrdt_encounter, scrbp_boss_heal)
-    // Set to true on enrage (scrbp_make_warning_enrage) (actual enrage pattern not used by bosses)
+    // Set to true on enrage (scrbp_make_warning_enrage) (the actual enrage pattern is not used by bosses)
     private bool enraged = false;
     // Name of the current encounter, so we can check vs. boss encounters to see where to pause HP at.
     private string currentEncounter = "";
@@ -43,7 +45,7 @@ public unsafe class Mod : IMod {
     public void Start(IModLoaderV1 loader) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
-
+        
         this.logger = loader.GetLogger();
 
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
@@ -59,7 +61,7 @@ public unsafe class Mod : IMod {
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
             rnsReloaded.LimitOnlinePlay();
-
+            
             var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
             this.damageHook =
                 hooks.CreateHook<ScriptDelegate>(this.EnemyDamageDetour, damageScript->Functions->Function);
@@ -96,10 +98,38 @@ public unsafe class Mod : IMod {
             this.steelActivateHook.Activate();
             this.steelActivateHook.Enable();
 
-            // TODO (long term): Disable iFrames except from taking damage
-            // - Look into wolf boss time slow code for hints (maybe bp_invulncancel)
-            // - Look into scr_player_invuln
+            var invulnScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_player_invuln") - 100000);
+            this.invulnHook =
+                hooks.CreateHook<ScriptDelegate>(this.InvulnDetour, invulnScript->Functions->Function);
+            this.invulnHook.Activate();
+            this.invulnHook.Enable();
+
+            var playerDmgScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_ally") - 100000);
+            this.playerDmgHook =
+                hooks.CreateHook<ScriptDelegate>(this.PlayerDmgDetour, playerDmgScript->Functions->Function);
+            this.playerDmgHook.Activate();
+            this.playerDmgHook.Enable();
         }
+    }
+
+    // Normally I'd just call the real invuln hook here instead of setting a flag as a hidden 
+    // parameter to the invuln detour, but for whatever reason when I try to call it, despite
+    // having NO string arguments, scr_player_invuln complains about an invalid STRING argument
+    private bool isTakingDamage = false;
+    private RValue* PlayerDmgDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        this.isTakingDamage = true;
+        returnValue = this.playerDmgHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        this.isTakingDamage = false;
+        return returnValue;
+    }
+
+    private RValue* InvulnDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        // Change invuln to 1 ms to be useless but still proc invuln effects
+        if (!this.isTakingDamage) {
+            argv[0]->Real = 1;
+        }
+        returnValue = this.invulnHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
     }
 
     private RValue* GetEnemy(double id) {
@@ -134,8 +164,12 @@ public unsafe class Mod : IMod {
     private RValue* EnemyDamageDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        // If enraged or matti mice summons, then skip the HP locking
-        if (!this.enraged && !(this.currentEncounter == "enc_mouse_paladin1" && argv[1]->Real > 0)) {
+        // If enraged, pale keep mobs, or matti mice summons, then skip the HP locking
+        // (pale keep mobs never enrage, and matti mice need to be killable to get to enrage)
+        if (!this.enraged &&
+            !(this.currentEncounter == "enc_mouse_paladin1" && argv[1]->Real > 0) &&
+            !this.currentEncounter.StartsWith("enc_queens"))
+        {
             double enemyHp = this.GetEnemyHP(argv[1]->Real);
             double enemyMaxHp = this.GetEnemyMaxHP(argv[1]->Real);
             if (BossPhaseChanges.TryGetValue(this.currentEncounter, out var hpThreshold)) {

@@ -22,6 +22,8 @@ public unsafe class Mod : IMod {
     // To disable general invulnerability
     private IHook<ScriptDelegate>? invulnHook;
     private IHook<ScriptDelegate>? playerDmgHook;
+    // To disable invuln from certain buffs
+    private IHook<ScriptDelegate>? buffFlagCheckHook;
 
     // Flag to track if the enemy has started enrage
     // Set to false on combat start and phase change (scrdt_encounter, scrbp_boss_heal)
@@ -109,7 +111,21 @@ public unsafe class Mod : IMod {
                 hooks.CreateHook<ScriptDelegate>(this.PlayerDmgDetour, playerDmgScript->Functions->Function);
             this.playerDmgHook.Activate();
             this.playerDmgHook.Enable();
+
+            var buffFlagScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hbsflag_check") - 100000);
+            this.buffFlagCheckHook =
+                hooks.CreateHook<ScriptDelegate>(this.AddHbsFlagCheckDetour, buffFlagScript->Functions->Function);
+            this.buffFlagCheckHook.Activate();
+            this.buffFlagCheckHook.Enable();
         }
+    }
+
+    private RValue* AddHbsFlagCheckDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        returnValue = this.buffFlagCheckHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        if (argv[2]->Real == 1 || argv[2]->Real == 2 || argv[2]->Real == 32) { // Vanish/Ghost, Stoneskin, Super
+            returnValue->Real = 0;
+        }
+        return returnValue;
     }
 
     // Normally I'd just call the real invuln hook here instead of setting a flag as a hidden 

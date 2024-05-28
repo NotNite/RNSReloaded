@@ -23,19 +23,19 @@ public unsafe class BattlePatterns {
     }
 
     public void fire_aoe(
-        CInstance* self, CInstance* other, int spawnDelay, int eraseDelay, double scale, (double, double)[] points
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double scale, (double, double)[] positions
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
             //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
-            this.utils.CreateString("scale")!.Value, new RValue(scale), // 1.0 scale = 90 radius i think?
+            this.utils.CreateString("scale")!.Value, new RValue(scale), // 1.0 scale = ~90 radius i think?
             //this.utils.CreateString("type")!.Value, new RValue(type),
-            this.utils.CreateString("numPoints")!.Value, new RValue(points.Length),
+            this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length),
         ];
-        for (int i = 0; i < points.Length; i++) {
-            (double, double) point = points[i];
+        for (int i = 0; i < positions.Length; i++) {
+            (double, double) point = positions[i];
             args = args.Concat([
                 this.utils.CreateString($"posX_{i}")!.Value, new RValue(point.Item1),
                 this.utils.CreateString($"posY_{i}")!.Value, new RValue(point.Item2)
@@ -55,15 +55,15 @@ public unsafe class BattlePatterns {
     }
 
     public void knockback_circle(
-        CInstance* self, CInstance* other, int spawnDelay, int kbAmount, int radius, int warnMsg,
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, int kbAmount, int radius,
         (double, double) position
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
             this.utils.CreateString("radius")!.Value, new RValue(radius),
-            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
             //this.utils.CreateString("lifespan")!.Value, new RValue(lifespan),
             this.utils.CreateString("kbAmount")!.Value, new RValue(kbAmount),
             this.utils.CreateString("x")!.Value, new RValue(position.Item1),
@@ -74,16 +74,16 @@ public unsafe class BattlePatterns {
     }
 
     public void cone_direction(
-        CInstance* self, CInstance* other, int spawnDelay, int fanAngle, (double, double) source, double[] rots
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int fanAngle, (double, double) position, double[] rots
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             this.utils.CreateString("fanAngle")!.Value, new RValue(fanAngle),
             //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
             this.utils.CreateString("numCones")!.Value, new RValue(rots.Length),
-            this.utils.CreateString("x")!.Value, new RValue(source.Item1),
-            this.utils.CreateString("y")!.Value, new RValue(source.Item2),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
         ];
         for (int i = 0; i < rots.Length; i++) {
             double rot = rots[i];
@@ -96,16 +96,15 @@ public unsafe class BattlePatterns {
     }
 
     public void cone_spreads(
-        CInstance* self, CInstance* other, int spawnDelay, int fanAngle, (double, double) source, int? targetMask
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, int fanAngle, (double, double) position, int? targetMask
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             this.utils.CreateString("fanAngle")!.Value, new RValue(fanAngle),
-            //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
-            //this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
-            this.utils.CreateString("x")!.Value, new RValue(source.Item1),
-            this.utils.CreateString("y")!.Value, new RValue(source.Item2),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
             this.utils.CreateString("trgBinary")!.Value, new RValue(targetMask == null ? 63 : targetMask.Value),
         ];
 
@@ -113,18 +112,18 @@ public unsafe class BattlePatterns {
     }
 
     public void water2_line(
-        CInstance* self, CInstance* other, int spawnDelay, (double, double) position, double angle, double lineAngle,
-        int lineLength, int num, int spd
+        CInstance* self, CInstance* other, int warningDelay, int showWarning, int spawnDelay, (double, double) position, double angle, double lineAngle,
+        int lineLength, int numBullets, int spd
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            //this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("x")!.Value, new RValue(position.Item1),
             this.utils.CreateString("y")!.Value, new RValue(position.Item2),
             this.utils.CreateString("angle")!.Value, new RValue(angle),
             this.utils.CreateString("lineAngle")!.Value, new RValue(lineAngle),
-            this.utils.CreateString("num")!.Value, new RValue(num),
+            this.utils.CreateString("num")!.Value, new RValue(numBullets),
             this.utils.CreateString("lineLength")!.Value, new RValue(lineLength),
             this.utils.CreateString("spd")!.Value, new RValue(spd),
         ];
@@ -133,18 +132,18 @@ public unsafe class BattlePatterns {
     }
 
     public void fire2_line(
-        CInstance* self, CInstance* other, int spawnDelay, (double, double) position, double angle, double lineAngle,
-        int lineLength, int num, int spd
+        CInstance* self, CInstance* other, int warningDelay, int showWarning, int spawnDelay, (double, double) position, double angle, double lineAngle,
+        int lineLength, int numBullets, int spd
     ) {
         RValue[] args = [
-            //this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            //this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("x")!.Value, new RValue(position.Item1),
             this.utils.CreateString("y")!.Value, new RValue(position.Item2),
             this.utils.CreateString("angle")!.Value, new RValue(angle),
             this.utils.CreateString("lineAngle")!.Value, new RValue(lineAngle),
-            this.utils.CreateString("num")!.Value, new RValue(num),
+            this.utils.CreateString("num")!.Value, new RValue(numBullets),
             this.utils.CreateString("lineLength")!.Value, new RValue(lineLength),
             this.utils.CreateString("spd")!.Value, new RValue(spd),
         ];
@@ -180,6 +179,158 @@ public unsafe class BattlePatterns {
     //        this.utils.RunGMLScript("bpatt_var_reset", self, other, null);
     //    }
     //}
+
+    public void apply_hbs_synced(
+        CInstance* self, CInstance* other, int delay, int hbsHitDelay, string hbs, int hbsDuration, int hbsStrength, int trgBinary
+    ) {
+        var hbsInfo = this.utils.GetGlobalVar("hbsInfo");
+        for ( var i = 0; i < this.rnsReloaded.ArrayGetLength(hbsInfo)!.Value.Real; i++) {
+            if (hbsInfo->Get(i)->Get(0)->ToString() == hbs) {
+                RValue[] args = [
+                    this.utils.CreateString("delay")!.Value, new RValue(delay),
+                    this.utils.CreateString("hbsHitDelay")!.Value, new RValue(hbsHitDelay),
+                    this.utils.CreateString("hbsIndex")!.Value, new RValue(i),
+                    this.utils.CreateString("hbsDuration")!.Value, new RValue(hbsDuration),
+                    this.utils.CreateString("hbsStrength")!.Value, new RValue(hbsStrength),
+                    this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+                ];
+
+                this.execute_pattern(self, other, "bp_apply_hbs_synced", args);
+                break;
+            }
+        }
+    }
+
+    public void invulncancel(
+        CInstance* self, CInstance* other, int delay, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("delay")!.Value, new RValue(delay),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+
+        this.execute_pattern(self, other, "bp_invulncancel", args);
+    }
+
+    public void showgroups(
+        CInstance* self, CInstance* other, int spawnDelay, int eraseDelay, (int, int, int, int) groupMasks
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("orderBin_0")!.Value, new RValue(groupMasks.Item1),
+            this.utils.CreateString("orderBin_1")!.Value, new RValue(groupMasks.Item2),
+            this.utils.CreateString("orderBin_2")!.Value, new RValue(groupMasks.Item3),
+            this.utils.CreateString("orderBin_3")!.Value, new RValue(groupMasks.Item4),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+        ];
+
+        this.execute_pattern(self, other, "bp_showgroups", args);
+    }
+
+    public void showorder(
+        CInstance* self, CInstance* other, int spawnDelay, int eraseDelay, int timeBetween, (int, int, int, int) orderMasks
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("orderBin_0")!.Value, new RValue(orderMasks.Item1),
+            this.utils.CreateString("orderBin_1")!.Value, new RValue(orderMasks.Item2),
+            this.utils.CreateString("orderBin_2")!.Value, new RValue(orderMasks.Item3),
+            this.utils.CreateString("orderBin_3")!.Value, new RValue(orderMasks.Item4),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+            this.utils.CreateString("timeBetween")!.Value, new RValue(timeBetween),
+        ];
+
+        this.execute_pattern(self, other, "bp_showorder", args);
+    }
+
+    public void tether(
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double radius, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+        if(eraseDelay > 0) {
+            args.Concat([this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay)]);
+        } else {
+            args.Concat([this.utils.CreateString("permanent")!.Value, new RValue(eraseDelay < 0)]);
+        }
+
+        this.execute_pattern(self, other, "bp_tether", args);
+    }
+
+    public void tether_enemy(
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double radius, (double, double) position, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+        ];
+        if (eraseDelay > 0) {
+            args.Concat([this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay)]);
+        } else {
+            args.Concat([this.utils.CreateString("permanent")!.Value, new RValue(eraseDelay < 0)]);
+        }
+
+        this.execute_pattern(self, other, "bp_tether_enemy", args);
+    }
+
+    public void tether_fixed(
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double radius, (double, double) position, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+        ];
+        if (eraseDelay > 0) {
+            args.Concat([this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay)]);
+        } else {
+            args.Concat([this.utils.CreateString("permanent")!.Value, new RValue(eraseDelay < 0)]);
+        }
+
+        this.execute_pattern(self, other, "bp_tether_fixed", args);
+    }
+
+    public void thorns(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, double radius, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+        ];
+
+        this.execute_pattern(self, other, "bp_thorns", args);
+    }
+
+    public void thorns_fixed(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int displayNumber, int spawnDelay, double radius, (double, double) position, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+
+        this.execute_pattern(self, other, "bp_thorns_fixed", args);
+    }
 
     public void enrage(CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int timeBetween, bool resetAnim) {
         RValue[] args = [

@@ -94,59 +94,43 @@ public unsafe class Mod : IMod {
                 scrbp.move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
             }
 
+            if (scrbp.time_repeating(self, other, 500, 6000)) {
+                bp.apply_hbs_synced(self, other, 1000, 0, "hbs_stoneskin", 3000, 1, 63);
+                var doll_1 = (bf_center_x - 180, bf_center_y - 180);
+                var doll_2 = (bf_center_x - 180, bf_center_y + 180);
+                var doll_3 = (bf_center_x + 180, bf_center_y - 180);
+                var doll_4 = (bf_center_x + 180, bf_center_y + 180);
+                bp.fire_aoe(self, other, 0, 2000, 3000, 2, [doll_1, doll_2, doll_3, doll_4]);
+            }
+            return returnValue;
+
             if (scrbp.time(self, other, 1500)) {
-                bp.fire_aoe(self, other, 1500, 25000, 1.6, [tornado1, tornado2]);
+                bp.fire_aoe(self, other, 0, 1500, 25000, 1.6, [tornado1, tornado2]);
             }
             if (scrbp.time(self, other, 3000)) {
                 var angle_1 = this.getAngle(tornado1, (player_x, player_y));
-                bp.cone_direction(self, other, 2000, 30, tornado1, [angle_1]);
+                bp.cone_direction(self, other, 0, 2000, 30, tornado1, [angle_1]);
                 var angle_2 = this.getAngle(tornado2, (player_x, player_y));
-                bp.cone_direction(self, other, 2000, 30, tornado2, [angle_2]);
+                bp.cone_direction(self, other, 0, 2000, 30, tornado2, [angle_2]);
             }
             if (scrbp.time(self, other, 7000)) {
-                bp.cone_spreads(self, other, 0, 30, tornado1, null);
-                bp.cone_spreads(self, other, 0, 30, tornado2, null);
+                bp.cone_spreads(self, other, 0, 0, 0, 30, tornado1, null);
+                bp.cone_spreads(self, other, 0, 0, 0, 30, tornado2, null);
 
                 var doll_1 = (bf_center_x - 180, bf_center_y - 180);
                 var doll_2 = (bf_center_x - 180, bf_center_y + 180);
                 var doll_3 = (bf_center_x + 180, bf_center_y - 180);
                 var doll_4 = (bf_center_x + 180, bf_center_y + 180);
-                bp.fire_aoe(self, other, 1000, 1500, 2, [doll_1, doll_2, doll_3, doll_4]);
+                bp.fire_aoe(self, other, 0, 1000, 1500, 2, [doll_1, doll_2, doll_3, doll_4]);
             }
             if (scrbp.time(self, other, 8000)) {
                 var angle_1 = this.getAngle(tornado1, (player_x, player_y));
                 var angle_2 = this.getAngle(tornado2, (player_x, player_y));
 
-                bp.water2_line(self, other, 1500, tornado1, angle_1, 0, 0, 2, 3);
-                bp.water2_line(self, other, 1500, tornado2, angle_2, 0, 0, 2, 3);
+                bp.water2_line(self, other, 0, 0, 1500, tornado1, angle_1, 0, 0, 2, 3);
+                bp.water2_line(self, other, 0, 0, 1500, tornado2, angle_2, 0, 0, 2, 3);
             }
             if (scrbp.time(self, other, 10000)) {
-                bp.enrage(self, other, 0, 1500, 3000, true);
-            }
-        }
-        return returnValue;
-    }
-
-    private RValue* PatternExamples(
-        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-    ) {
-        if (this.IsReady(out var rnsReloaded, out var utils, out var scrbp, out var bp)) {
-            if (scrbp.time_repeating(self, other, 3000, 5000)) {
-                var player_x = utils.GetPlayerVar(0, "distMovePrevX")->Real;
-                var player_y = utils.GetPlayerVar(0, "distMovePrevY")->Real;
-                var enemy_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;
-                var enemy_y = utils.GetEnemyVar(0, "distMovePrevY")->Real;
-                var bf_center_x = utils.GetGlobalVar("bfCenterX")->Real;
-                var bf_center_y = utils.GetGlobalVar("bfCenterY")->Real;
-
-                bp.fire_aoe(self, other, 1500, 3000, 1.5, [(player_x, player_y)]);
-                bp.knockback_circle(self, other, 1500, 500, 250, 2, (player_x, player_y));
-                bp.cone_direction(self, other, 1500, 30, (player_x, player_y), [0, 90, 180, 270]);
-                bp.cone_spreads(self, other, 1500, 30, (enemy_x, enemy_y), null);
-                bp.water2_line(self, other, 1500, (bf_center_x, bf_center_y), 0, 45, 100, 2, 3);
-            }
-
-            if (scrbp.time(self, other, 6000)) {
                 bp.enrage(self, other, 0, 1500, 3000, true);
             }
         }

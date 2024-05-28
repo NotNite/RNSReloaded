@@ -94,15 +94,10 @@ public unsafe class Mod : IMod {
                 scrbp.move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
             }
 
-            if (scrbp.time_repeating(self, other, 500, 6000)) {
-                bp.apply_hbs_synced(self, other, 1000, 0, "hbs_stoneskin", 3000, 1, 63);
-                var doll_1 = (bf_center_x - 180, bf_center_y - 180);
-                var doll_2 = (bf_center_x - 180, bf_center_y + 180);
-                var doll_3 = (bf_center_x + 180, bf_center_y - 180);
-                var doll_4 = (bf_center_x + 180, bf_center_y + 180);
-                bp.fire_aoe(self, other, 0, 2000, 3000, 2, [doll_1, doll_2, doll_3, doll_4]);
-            }
-            return returnValue;
+            //if (scrbp.time_repeating(self, other, 500, 6000)) {
+            //    bp.cleave_fixed(self, other, 0, 2, 2000,
+            //}
+            //return returnValue;
 
             if (scrbp.time(self, other, 1500)) {
                 bp.fire_aoe(self, other, 0, 1500, 25000, 1.6, [tornado1, tornado2]);

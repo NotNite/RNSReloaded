@@ -22,55 +22,126 @@ public unsafe class BattlePatterns {
         this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
     }
 
-    public void fire_aoe(
-        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double scale, (double, double)[] positions
+
+    public void apply_hbs_synced(
+        CInstance* self, CInstance* other, int delay, int hbsHitDelay, string hbs, int hbsDuration, int hbsStrength, int trgBinary
+    ) {
+        var hbsInfo = this.utils.GetGlobalVar("hbsInfo");
+        for (var i = 0; i < this.rnsReloaded.ArrayGetLength(hbsInfo)!.Value.Real; i++) {
+            if (hbsInfo->Get(i)->Get(0)->ToString() == hbs) {
+                RValue[] args = [
+                    this.utils.CreateString("delay")!.Value, new RValue(delay),
+                    this.utils.CreateString("hbsHitDelay")!.Value, new RValue(hbsHitDelay),
+                    this.utils.CreateString("hbsIndex")!.Value, new RValue(i),
+                    this.utils.CreateString("hbsDuration")!.Value, new RValue(hbsDuration),
+                    this.utils.CreateString("hbsStrength")!.Value, new RValue(hbsStrength),
+                    this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+                ];
+
+                this.execute_pattern(self, other, "bp_apply_hbs_synced", args);
+                break;
+            }
+        }
+    }
+
+    public void cardinal_r(
+        CInstance* self, CInstance* other, int warningDelay, int warningDelay2, int displayNumber, int spawnDelay, int eraseDelay, (double, double) position, double rot, int speed, int width
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay2")!.Value, new RValue(warningDelay2),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+            this.utils.CreateString("rot")!.Value, new RValue(rot),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("width")!.Value, new RValue(width),
+        ];
+
+        this.execute_pattern(self, other, "bp_cardinal_r", args);
+    }
+
+    public void circle_position(
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int radius, (double, double)[] positions
     ) {
         RValue[] args = [
             this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
             //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
-            this.utils.CreateString("scale")!.Value, new RValue(scale), // 1.0 scale = ~90 radius i think?
-            //this.utils.CreateString("type")!.Value, new RValue(type),
             this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length),
         ];
         for (int i = 0; i < positions.Length; i++) {
-            (double, double) point = positions[i];
+            (double, double) position = positions[i];
             args = args.Concat([
-                this.utils.CreateString($"posX_{i}")!.Value, new RValue(point.Item1),
-                this.utils.CreateString($"posY_{i}")!.Value, new RValue(point.Item2)
+                this.utils.CreateString($"posX_{i}")!.Value, new RValue(position.Item1),
+                this.utils.CreateString($"posY_{i}")!.Value, new RValue(position.Item2),
             ]).ToArray();
         }
 
-        this.rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
-
-        // Set pattern layer (no idea what it does just copying existing scripts)
-        args = [new RValue(1)];
-        this.rnsReloaded.ExecuteScript("bpatt_layer", self, other, args);
-
-        args = [new RValue(this.rnsReloaded.ScriptFindId("bp_fire_aoe"))];
-        this.rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
-
-        this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
+        this.execute_pattern(self, other, "bp_circle_position", args);
     }
 
-    public void knockback_circle(
-        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, int kbAmount, int radius,
-        (double, double) position
+    public void cleave(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, (double rotation, int targetMask)[] cleaves
     ) {
         RValue[] args = [
             this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
             this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+        for (int i = 0; i < cleaves.Length; i++) {
+            (double, int) cleave = cleaves[i];
+            args = args.Concat([
+                this.utils.CreateString($"orderBin_{i}")!.Value, new RValue(cleave.Item1),
+                this.utils.CreateString($"rot_{i}")!.Value, new RValue(cleave.Item2)
+            ]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_cleave", args);
+    }
+
+    public void cleave_fixed(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, ((double, double) position, double angle)[] positions
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("exTrgId")!.Value, new RValue(0),
+            this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length),
+        ];
+        for (int i = 0; i < positions.Length; i++) {
+            ((double, double), double) position = positions[i];
+            args = args.Concat([
+                this.utils.CreateString($"posX_{i}")!.Value, new RValue(position.Item1.Item1),
+                this.utils.CreateString($"posY_{i}")!.Value, new RValue(position.Item1.Item2),
+                this.utils.CreateString($"rot_{i}")!.Value, new RValue(position.Item2),
+            ]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_cleave_fixed", args);
+    }
+
+    public void clockspot(
+        CInstance* self, CInstance* other, int warningDelay, int warningDelay2, int warnMsg, int displayNumber, int spawnDelay, int radius, int fanAngle, (double, double) position, int? targetMask
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warningDelay2")!.Value, new RValue(warningDelay2),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             this.utils.CreateString("radius")!.Value, new RValue(radius),
-            //this.utils.CreateString("lifespan")!.Value, new RValue(lifespan),
-            this.utils.CreateString("kbAmount")!.Value, new RValue(kbAmount),
+            this.utils.CreateString("fanAngle")!.Value, new RValue(fanAngle),
             this.utils.CreateString("x")!.Value, new RValue(position.Item1),
             this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(targetMask == null ? 63 : targetMask.Value),
         ];
 
-        this.execute_pattern(self, other, "bp_knockback_circle", args);
+        this.execute_pattern(self, other, "bp_cone_spreads", args);
     }
 
     public void cone_direction(
@@ -111,24 +182,47 @@ public unsafe class BattlePatterns {
         this.execute_pattern(self, other, "bp_cone_spreads", args);
     }
 
-    public void water2_line(
-        CInstance* self, CInstance* other, int warningDelay, int showWarning, int spawnDelay, (double, double) position, double angle, double lineAngle,
-        int lineLength, int numBullets, int spd
+    public void enrage(CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int timeBetween, bool resetAnim) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("timeBetween")!.Value, new RValue(timeBetween),
+            this.utils.CreateString("resetAnim")!.Value, new RValue(resetAnim ? 1.0 : 0.0), // Using a bool here doesnt work, no idea why
+        ];
+
+        this.execute_pattern(self, other, "bp_enrage", args);
+    }
+
+    public void fire_aoe(
+        CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int eraseDelay, double scale, (double, double)[] positions
     ) {
         RValue[] args = [
             this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
-            this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
-            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
-            this.utils.CreateString("angle")!.Value, new RValue(angle),
-            this.utils.CreateString("lineAngle")!.Value, new RValue(lineAngle),
-            this.utils.CreateString("num")!.Value, new RValue(numBullets),
-            this.utils.CreateString("lineLength")!.Value, new RValue(lineLength),
-            this.utils.CreateString("spd")!.Value, new RValue(spd),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+            //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("scale")!.Value, new RValue(scale), // 1.0 scale = 180 radius
+            //this.utils.CreateString("type")!.Value, new RValue(type),
+            this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length),
         ];
+        for (int i = 0; i < positions.Length; i++) {
+            (double, double) point = positions[i];
+            args = args.Concat([
+                this.utils.CreateString($"posX_{i}")!.Value, new RValue(point.Item1),
+                this.utils.CreateString($"posY_{i}")!.Value, new RValue(point.Item2)
+            ]).ToArray();
+        }
 
-        this.execute_pattern(self, other, "bp_water2_line", args);
+        this.rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
+
+        // Set pattern layer (no idea what it does just copying existing scripts)
+        args = [new RValue(1)];
+        this.rnsReloaded.ExecuteScript("bpatt_layer", self, other, args);
+
+        args = [new RValue(this.rnsReloaded.ScriptFindId("bp_fire_aoe"))];
+        this.rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
+
+        this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
     }
 
     public void fire2_line(
@@ -149,6 +243,36 @@ public unsafe class BattlePatterns {
         ];
 
         this.execute_pattern(self, other, "bp_fire2_line", args);
+    }
+
+    public void invulncancel(
+        CInstance* self, CInstance* other, int delay, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("delay")!.Value, new RValue(delay),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+
+        this.execute_pattern(self, other, "bp_invulncancel", args);
+    }
+
+    public void knockback_circle(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, int kbAmount, int radius,
+        (double, double) position
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            //this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            //this.utils.CreateString("lifespan")!.Value, new RValue(lifespan),
+            this.utils.CreateString("kbAmount")!.Value, new RValue(kbAmount),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+        ];
+
+        this.execute_pattern(self, other, "bp_knockback_circle", args);
     }
 
     // Not sure how this works yet
@@ -180,48 +304,90 @@ public unsafe class BattlePatterns {
     //    }
     //}
 
-    public void apply_hbs_synced(
-        CInstance* self, CInstance* other, int delay, int hbsHitDelay, string hbs, int hbsDuration, int hbsStrength, int trgBinary
-    ) {
-        var hbsInfo = this.utils.GetGlobalVar("hbsInfo");
-        for ( var i = 0; i < this.rnsReloaded.ArrayGetLength(hbsInfo)!.Value.Real; i++) {
-            if (hbsInfo->Get(i)->Get(0)->ToString() == hbs) {
-                RValue[] args = [
-                    this.utils.CreateString("delay")!.Value, new RValue(delay),
-                    this.utils.CreateString("hbsHitDelay")!.Value, new RValue(hbsHitDelay),
-                    this.utils.CreateString("hbsIndex")!.Value, new RValue(i),
-                    this.utils.CreateString("hbsDuration")!.Value, new RValue(hbsDuration),
-                    this.utils.CreateString("hbsStrength")!.Value, new RValue(hbsStrength),
-                    this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
-                ];
-
-                this.execute_pattern(self, other, "bp_apply_hbs_synced", args);
-                break;
-            }
-        }
-    }
-
-    public void invulncancel(
-        CInstance* self, CInstance* other, int delay, int trgBinary
+    public void movementcheck(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int spawnDelay, bool shouldMove, int radius, int targetMask
     ) {
         RValue[] args = [
-            this.utils.CreateString("delay")!.Value, new RValue(delay),
-            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("shouldMove")!.Value, new RValue(shouldMove),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            this.utils.CreateString("targetMask")!.Value, new RValue(targetMask),
         ];
 
-        this.execute_pattern(self, other, "bp_invulncancel", args);
+        this.execute_pattern(self, other, "bp_movementcheck", args);
+    }
+
+    public void prscircle(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int displayNumber, int element, bool doubled, int spawnDelay, int radius, int numBullets, int speed, (double, double) position
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("doubled")!.Value, new RValue(doubled),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            //this.utils.CreateString("angle")!.Value, new RValue(angle),
+            this.utils.CreateString("number")!.Value, new RValue(numBullets),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+        ];
+
+        this.execute_pattern(self, other, "bp_prscircle", args);
+    }
+
+    public void prscircle_follow(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int element, bool doubled, int spawnDelay, int radius, int numBullets, int speed, int targetId
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("doubled")!.Value, new RValue(doubled),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            //this.utils.CreateString("angle")!.Value, new RValue(angle),
+            this.utils.CreateString("number")!.Value, new RValue(numBullets),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("targetId")!.Value, new RValue(targetId),
+        ];
+
+        this.execute_pattern(self, other, "bp_prscircle_follow", args);
+    }
+
+    public void prscircle_follow_bin(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int element, bool doubled, int spawnDelay, int radius, int numBullets, int speed, int targetMask
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("doubled")!.Value, new RValue(doubled),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+            //this.utils.CreateString("angle")!.Value, new RValue(angle),
+            this.utils.CreateString("number")!.Value, new RValue(numBullets),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(targetMask),
+        ];
+
+        this.execute_pattern(self, other, "bp_prscircle_follow_bin", args);
     }
 
     public void showgroups(
         CInstance* self, CInstance* other, int spawnDelay, int eraseDelay, (int, int, int, int) groupMasks
     ) {
         RValue[] args = [
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
             this.utils.CreateString("orderBin_0")!.Value, new RValue(groupMasks.Item1),
             this.utils.CreateString("orderBin_1")!.Value, new RValue(groupMasks.Item2),
             this.utils.CreateString("orderBin_2")!.Value, new RValue(groupMasks.Item3),
             this.utils.CreateString("orderBin_3")!.Value, new RValue(groupMasks.Item4),
-            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
         ];
 
         this.execute_pattern(self, other, "bp_showgroups", args);
@@ -231,13 +397,13 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int spawnDelay, int eraseDelay, int timeBetween, (int, int, int, int) orderMasks
     ) {
         RValue[] args = [
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
+            this.utils.CreateString("timeBetween")!.Value, new RValue(timeBetween),
             this.utils.CreateString("orderBin_0")!.Value, new RValue(orderMasks.Item1),
             this.utils.CreateString("orderBin_1")!.Value, new RValue(orderMasks.Item2),
             this.utils.CreateString("orderBin_2")!.Value, new RValue(orderMasks.Item3),
             this.utils.CreateString("orderBin_3")!.Value, new RValue(orderMasks.Item4),
-            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay),
-            this.utils.CreateString("timeBetween")!.Value, new RValue(timeBetween),
         ];
 
         this.execute_pattern(self, other, "bp_showorder", args);
@@ -332,14 +498,23 @@ public unsafe class BattlePatterns {
         this.execute_pattern(self, other, "bp_thorns_fixed", args);
     }
 
-    public void enrage(CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int timeBetween, bool resetAnim) {
+    public void water2_line(
+        CInstance* self, CInstance* other, int warningDelay, int showWarning, int spawnDelay, (double, double) position, double angle, double lineAngle,
+        int lineLength, int numBullets, int spd
+    ) {
         RValue[] args = [
             this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("showWarning")!.Value, new RValue(showWarning),
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
-            this.utils.CreateString("timeBetween")!.Value, new RValue(timeBetween),
-            this.utils.CreateString("resetAnim")!.Value, new RValue(resetAnim ? 1.0 : 0.0), // Using a bool here doesnt work, no idea why
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+            this.utils.CreateString("angle")!.Value, new RValue(angle),
+            this.utils.CreateString("lineAngle")!.Value, new RValue(lineAngle),
+            this.utils.CreateString("num")!.Value, new RValue(numBullets),
+            this.utils.CreateString("lineLength")!.Value, new RValue(lineLength),
+            this.utils.CreateString("spd")!.Value, new RValue(spd),
         ];
 
-        this.execute_pattern(self, other, "bp_enrage", args);
+        this.execute_pattern(self, other, "bp_water2_line", args);
     }
 }

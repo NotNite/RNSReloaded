@@ -1,4 +1,4 @@
-﻿using RNSReloaded.Interfaces.Structs;
+using RNSReloaded.Interfaces.Structs;
 
 namespace RNSReloaded.Interfaces;
 
@@ -17,6 +17,7 @@ public unsafe interface IRNSReloaded {
     public CInstance* GetGlobalInstance();
     public RValue* FindValue(CInstance* instance, string name);
     public RValue* ArrayGetEntry(RValue* array, int index);
+    public RValue? ArrayGetLength(RValue* array);
     public string GetString(RValue* value);
     public CRoom* GetCurrentRoom();
     public List<string> GetStructKeys(RValue* value);
@@ -24,4 +25,6 @@ public unsafe interface IRNSReloaded {
 
     public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, int argc, RValue** argv);
     public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, RValue[] arguments);
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue** argv);
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, RValue[] arguments);
 }

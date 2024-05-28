@@ -15,26 +15,6 @@ public unsafe class Util {
         this.logger = logger;
     }
 
-    public RoutineDelegate? GetCodeFunction(string name) {
-        var id = this.rnsReloaded.CodeFunctionFind(name)!.Value;
-        var funcRef = this.rnsReloaded.GetTheFunction(id);
-        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
-        return func;
-    }
-
-    public ScriptDelegate? GetScriptFunction(string name) {
-        var id = this.rnsReloaded.ScriptFindId(name) - 100000;
-        if (id != 0) {
-            var script = this.rnsReloaded.GetScriptData(id);
-            if (script != null) {
-                var funcRef = script->Functions->Function;
-                var func = Marshal.GetDelegateForFunctionPointer<ScriptDelegate>(funcRef);
-                return func;
-            }
-        }
-        return null;
-    }
-
     public RValue? CreateString(string str) {
         RValue result;
         this.rnsReloaded.CreateString(&result, str);
@@ -61,4 +41,5 @@ public unsafe class Util {
         var enemy = enemyList->Get(index);
         return enemy->Get(key);
     }
+
 }

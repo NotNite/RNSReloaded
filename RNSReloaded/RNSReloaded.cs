@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
@@ -107,6 +107,10 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         return this.functions.ArrayGetEntry(array->Pointer, index);
     }
 
+    public RValue? ArrayGetLength(RValue* array) {
+        return this.ExecuteCodeFunction("array_length", null, null, 1, (RValue**) array);
+    }
+
     public string GetString(RValue* value) {
         if (value == null) return "nullptr";
         if (value->Type == RValueType.Unset) return "unset";
@@ -161,6 +165,28 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
             for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
             fixed (RValue** argv = ptrs) {
                 return this.ExecuteScript(name, self, other, arguments.Length, argv);
+            }
+        }
+    }
+
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue** argv) {
+        var id = this.CodeFunctionFind(name);
+        if (id == null) return null;
+
+        var funcRef = this.GetTheFunction(id.Value);
+        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
+        if (func == null) return null;
+        RValue result;
+        func(&result, self, other, argc, argv);
+        return result;
+    }
+
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, RValue[] arguments) {
+        fixed (RValue* ptr = arguments) {
+            var ptrs = new RValue*[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
+            fixed (RValue** argv = ptrs) {
+                return this.ExecuteCodeFunction(name, self, other, arguments.Length, argv);
             }
         }
     }

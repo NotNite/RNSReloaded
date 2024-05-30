@@ -152,7 +152,7 @@ def parse_const_strings():
                         rvalue_name = api.get_name(rvalue_addr)
                         str_name = api.get_name(str_addr)
                         print(f"[{addr:X}] YYConstString({rvalue_name} [{rvalue_addr:X}], {str_name} [{str_addr:X}])")
-                        api.set_name(rvalue_addr, f"static_var_str_{str_name}", None)
+                        api.set_name(rvalue_addr, f"const_str_{str_name}", None)
 
 def sig_replace(
     sig: str, name: str, args: list[tuple[str, int, str]], ret: tuple[str, int]
@@ -281,7 +281,8 @@ def static_renames():
     sig_replace("E8 ?? ?? ?? ?? 44 8D 46 59",
         "CInstance::GetYYVarRef", [("CInstance", 1, "self"),("int", 0, "index")], ("RValue", 1))
 
-    # sig_replace("", "", [("", 0, "")], ("", 0))
+    sig_replace("E8 ?? ?? ?? ?? 41 8D 56 48",
+        "CreateDsMap", [("int", 0, "nelems")], ("__int64", 0))
     # sig_replace("", "", [("", 0, "")], ("", 0))
     # sig_replace("", "", [("", 0, "")], ("", 0))
     # sig_replace("", "", [("", 0, "")], ("", 0))

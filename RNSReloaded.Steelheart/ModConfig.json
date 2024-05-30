@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded.Steelheart",
   "ModName": "Steelheart",
   "ModAuthor": "fuzzything44",
-  "ModVersion": "1.1.0",
+  "ModVersion": "1.1.1",
   "ModDescription": "**Limits online play.**\n\nAll fights now go to enrage, and you can't gain invulnerability!",
   "ModDll": "RNSReloaded.Steelheart.dll",
   "ModIcon": "",

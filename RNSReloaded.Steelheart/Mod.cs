@@ -216,9 +216,8 @@ public unsafe class Mod : IMod {
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
         this.enraged = false;
-        this.currentEncounter = argv[0]->ToString();
-
         returnValue = this.newFightHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        this.currentEncounter = argv[0]->ToString();
         return returnValue;
     }
 

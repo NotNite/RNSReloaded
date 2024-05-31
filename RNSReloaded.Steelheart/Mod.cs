@@ -140,9 +140,10 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* InvulnDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        // Change invuln to 1 ms to be useless but still proc invuln effects
+        // Change invuln to a very negative number so extra invuln effects don't work.
+        // Note that this still procs on invuln effects
         if (!this.isTakingDamage) {
-            argv[0]->Real = 1;
+            argv[0]->Real = -30000;
         }
         returnValue = this.invulnHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
@@ -235,8 +236,7 @@ public unsafe class Mod : IMod {
 
     private RValue* SteelActivateDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         this.shiraSteelCount++;
-
-        if (this.shiraSteelCount == 5 || this.shiraSteelCount == 6) {
+        if (this.shiraSteelCount == 5) {
             return returnValue;
         }
         returnValue = this.steelActivateHook!.OriginalFunction(self, other, returnValue, argc, argv);

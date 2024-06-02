@@ -151,8 +151,48 @@ def parse_const_strings():
                             insns[i+2].operands[0].address == yy_const_string:
                         rvalue_name = api.get_name(rvalue_addr)
                         str_name = api.get_name(str_addr)
-                        print(f"[{addr:X}] YYConstString({rvalue_name} [{rvalue_addr:X}], {str_name} [{str_addr:X}])")
+                        print(f"[{insns[i+2].address:X}] YYConstString({rvalue_name} [{rvalue_addr:X}], {str_name} [{str_addr:X}])")
+                        # ida_auto.show_addr(insns[i+2].address)
                         api.set_name(rvalue_addr, f"const_str_{str_name}", None)
+
+def parse_rvalue_set_type():
+    global api
+    rvalue_operator_eq = api.scan("E8 ?? ?? ?? ?? 8B 75 E4")
+    if rvalue_operator_eq is None:
+        return
+    print("RValue::RValue {:02X}".format(rvalue_operator_eq))
+
+    last_func = None
+    for xref in api.get_xrefs_to(rvalue_operator_eq):
+        addr = xref.frm
+        func = api.get_function(addr)
+        if func is None or func == last_func:
+            continue
+        last_func = func
+        insns = list(api.get_instructions(addr))
+        for (i, insn) in enumerate(insns):
+            if insn.opcode == "lea" and \
+                    insn.operands[0].op_type == OperandType.reg and \
+                    insn.operands[0].register == "dx" and \
+                    insn.operands[1].op_type == OperandType.mem:
+                src_addr = insn.operands[1].address
+                if insns[i+1].opcode == "lea" and \
+                        insns[i+1].operands[0].op_type == OperandType.reg and \
+                        insns[i+1].operands[0].register == "cx":
+                        # insns[i+1].operands[1].op_type == OperandType.mem:
+                    # print(insn)
+                    # print(insns[i+1])
+                    rvalue_addr = insns[i+1].operands[1].address
+                    if insns[i+2].opcode == "call" and \
+                            insns[i+2].operands[0].op_type == OperandType.near and \
+                            insns[i+2].operands[0].address == rvalue_operator_eq:
+                        rvalue_name = api.get_name(rvalue_addr)
+                        src_name = api.get_name(src_addr)
+                        print(f"[{insns[i+2].address:X}] RValue::RValue=({rvalue_name} [{rvalue_addr:X}], {src_name} [{src_addr:X}])")
+                        # ida_auto.show_addr(insns[i+2].address)
+                        if src_name.startswith("stru_"):
+                            api.set_name(src_addr, f"var_rvalue_{src_addr:X}", None)
+                            api.set_type(src_addr, "RValue", 0)
 
 def sig_replace(
     sig: str, name: str, args: list[tuple[str, int, str]], ret: tuple[str, int]
@@ -177,7 +217,6 @@ def static_renames():
 
     sig_replace("E8 ?? ?? ?? ?? EB 3A 48 8B 0D ?? ?? ?? ??",
         "InitGMLFunctions", [], ("void", 1))
-
     # sig_replace("", "", [("", 0, "")], ("", 0))
     sig_replace("C7 41 ?? ?? ?? ?? ?? 48 8B C1 48 C7 01 ?? ?? ?? ??",
         "RValue::RValue", [("RValue", 1, "self")], ("RValue", 1))
@@ -187,18 +226,20 @@ def static_renames():
         "RValue::RValue(int)", [("RValue", 1, "self"),("int", 0, "value")], ("RValue", 1))
     sig_replace("E8 ?? ?? ?? ?? C7 44 24 ?? ?? ?? ?? ?? 8D 4E 01",
         "RValue::RValue(double)", [("RValue", 1, "self"),("double", 0, "value")], ("RValue", 1))
+    sig_replace("E8 ?? ?? ?? ?? 8B 75 E4",
+        "RValue::operator=", [("RValue", 1, "self"),("RValue", 1, "value")], ("void", 0))
     sig_replace("E8 ?? ?? ?? ?? 89 7D 40",
-        "RValue::operator+=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("RValue", 1))
+        "RValue::operator+=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("void", 0))
     sig_replace("E8 ?? ?? ?? ?? 45 8B F5",
-        "RValue::operator-=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("RValue", 1))
+        "RValue::operator-=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("void", 0))
     sig_replace("E8 ?? ?? ?? ?? 48 89 85 ?? ?? ?? ?? 83 FE 01",
-        "RValue::operator*", [("RValue", 1, "result"),("RValue", 1, "lhs"),("RValue", 1, "rhs")], ("RValue", 1))
+        "RValue::operator*", [("RValue", 1, "result"),("RValue", 1, "lhs"),("RValue", 1, "rhs")], ("void", 0))
     # sig_replace("E8 ?? ?? ?? ?? 8B 7D 20",
     #     "RValue::operator*=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("RValue", 1))
     sig_replace("E8 ?? ?? ?? ?? 48 8D 55 2C",
-        "RValue::operator/=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("RValue", 1))
+        "RValue::operator/=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("void", 0))
     sig_replace("E8 ?? ?? ?? ?? 48 8D 55 18 48 8D 4C 24 ??",
-        "RValue::operator%=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("RValue", 1))
+        "RValue::operator%=", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("void", 0))
     sig_replace("E8 ?? ?? ?? ?? 84 C0 75 12 FF C3",
         "RValue::operator==", [("RValue", 1, "self"),("RValue", 1, "rhs")], ("bool", 0))
 
@@ -290,7 +331,8 @@ def static_renames():
     print("---")
 
 print("------------------------------")
-static_renames()
-parse_init_llvm()
+# static_renames()
+# parse_init_llvm()
+parse_rvalue_set_type()
 parse_const_strings()
 print("-------------Done-------------")

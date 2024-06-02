@@ -47,14 +47,34 @@ class Instruction:
     def __repr__(self):
         return f"{self.opcode} {', '.join([str(op) for op in self.operands if op.op_type != OperandType.void])}"
 
+class Function:
+    def __init__(self, address):
+        # type (int) -> None
+        self.address = address
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.address == other.address
+
+    def __repr__(self):
+        return f"<Function {self.address:X} >"
+
 class Xref:
     def __init__(self, frm, to):
         # type: (int, int) -> None
         self.frm = frm
         self.to = to
-    
+
     def __repr__(self):
-        return f"<Xref {self.frm:X} -> {self.to:X}"
+        return f"<Xref {self.frm:X} -> {self.to:X} >"
+
+class Segment:
+    def __init__(self, name, start, end):
+        self.name = name
+        self.start = start
+        self.end = end
+
+    def __repr__(self):
+        return f"<Segment {self.name}: {self.start} ... {self.end} >"
 
 class BaseApi(object):
 
@@ -62,8 +82,16 @@ class BaseApi(object):
         # type: (str) -> int
         pass
 
+    def get_segment(self, address):
+        # type: (int) -> Segment
+        pass
+
     def get_instructions(self, address):
         # type: (int) -> List[Instruction]
+        pass
+
+    def get_function(self, address):
+        # type (int) -> Function
         pass
 
     def get_name(self, address):
@@ -72,6 +100,10 @@ class BaseApi(object):
 
     def set_name(self, address, name, type):
         # type: (int, str, str) -> bool
+        pass
+
+    def set_type(self, address, type, ptr):
+        # type: (int, str, int) -> bool
         pass
 
     def read_u32(self, address):
@@ -94,12 +126,12 @@ class BaseApi(object):
         # type: (int, str, int) -> bool
         pass
 
-    def get_xrefs_from(self, address):
-        #type: (int) -> List[Xref]
+    def get_xrefs_from(self, address, verbose=False):
+        #type: (int, bool) -> List[Xref]
         pass
 
-    def get_xrefs_to(self, address):
-        #type: (int) -> List[Xref]
+    def get_xrefs_to(self, address, verbose=False):
+        #type: (int, bool) -> List[Xref]
         pass
 
 api = None  # type: BaseApi
@@ -115,6 +147,7 @@ try:
     import ida_name
     import ida_typeinf
     import ida_nalt
+    import idc
 
     class IDAApi(BaseApi):
         def scan(self, signature):
@@ -135,9 +168,15 @@ try:
                     offset = ~0x7FFFFFFF | offset
                 addr += 5 + offset
 
+            ida_auto.show_addr(addr)
             return addr
 
+        def get_segment(self, address):
+            ida_auto.show_addr(address)
+            return Segment(idc.get_segm_name(address), 0, 0)
+
         def get_instructions(self, address):
+            ida_auto.show_addr(address)
             reg_names = ida_idp.ph_get_regnames()
             func = ida_funcs.get_func(address)
             if func is not None:
@@ -152,22 +191,43 @@ try:
                         list(Operand(op.type, reg_names[op.reg], op.addr, op.value) for op in insn.ops)
                     )
 
+        def get_function(self, address):
+            ida_auto.show_addr(address)
+            func = ida_funcs.get_func(address)
+            if func is None:
+                return None
+            return Function(func.start_ea)
+
         def get_name(self, address):
+            ida_auto.show_addr(address)
             func_name = ida_funcs.get_func_name(address)
             if func_name is None:
                 return ida_name.get_name(address)
             return func_name
 
         def set_name(self, address, name, type):
+            ida_auto.show_addr(address)
             return ida_name.set_name(address, name, ida_name.SN_FORCE)
 
+        def set_type(self, address, type, ptr):
+            ida_auto.show_addr(address)
+            type_tinfo = self.create_type_object(type, ptr)
+            if type_tinfo is None:
+                print(f"[{address:X}]: Could not create type object")
+                return False
+
+            return ida_typeinf.apply_tinfo(address, type_tinfo, ida_typeinf.TINFO_DEFINITE)
+
         def read_u32(self, address):
+            ida_auto.show_addr(address)
             return ida_bytes.get_wide_dword(address)
 
         def read_u64(self, address):
+            ida_auto.show_addr(address)
             return ida_bytes.get_qword(address)
 
         def read_str(self, address):
+            ida_auto.show_addr(address)
             str = ida_bytes.get_strlit_contents(address, -1, ida_nalt.STRTYPE_C)
             if str is None:
                 return None
@@ -214,6 +274,7 @@ try:
             return type_tinfo
 
         def set_func_arg_type(self, address, index, type, ptr, name):
+            ida_auto.show_addr(address)
             tinfo = ida_typeinf.tinfo_t()
             if not ida_nalt.get_tinfo(tinfo, address):
                 print(f"[{address:X}]: Could not get adress type info")
@@ -252,6 +313,7 @@ try:
             return ida_typeinf.apply_tinfo(address, new_tinfo, ida_typeinf.TINFO_DEFINITE)
 
         def set_func_ret_type(self, address, type, ptr):
+            ida_auto.show_addr(address)
             func_tinfo = ida_typeinf.tinfo_t()
             if not ida_nalt.get_tinfo(func_tinfo, address):
                 print(f"[{address:X}]: Could not get adress type info")
@@ -280,11 +342,21 @@ try:
 
             return ida_typeinf.apply_tinfo(address, new_tinfo, ida_typeinf.TINFO_DEFINITE)
 
-        def get_xrefs_from(self, address):
-            return [Xref(xref.frm, xref.to) for xref in idautils.XrefsFrom(address)]
+        def get_xrefs_from(self, address, verbose=False):
+            ida_auto.show_addr(address)
+            for xref in idautils.XrefsFrom(address):
+                x = Xref(xref.frm, xref.to)
+                if verbose:
+                    print(f"get_xrefs_to: [{address}] {x}")
+                yield x
 
-        def get_xrefs_to(self, address):
-            return [Xref(xref.frm, xref.to) for xref in idautils.XrefsTo(address)]
+        def get_xrefs_to(self, address, verbose=False):
+            ida_auto.show_addr(address)
+            for xref in idautils.XrefsTo(address):
+                x = Xref(xref.frm, xref.to)
+                if verbose:
+                    print(f"get_xrefs_to: [{address}] {x}")
+                yield x
 
     api = IDAApi()
 except ImportError:

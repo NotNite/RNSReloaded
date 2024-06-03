@@ -392,10 +392,24 @@ public unsafe class BattlePatterns {
             this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
             this.utils.CreateString("shouldMove")!.Value, new RValue(shouldMove),
             this.utils.CreateString("radius")!.Value, new RValue(radius),
-            this.utils.CreateString("targetMask")!.Value, new RValue(targetMask),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(targetMask),
         ];
 
         this.execute_pattern(self, other, "bp_movementcheck", args);
+    }
+
+    public void move_position_synced(
+        CInstance* self, CInstance* other, int spawnDelay, bool resetAnim, int duration, (double, double) position
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("resetAnim")!.Value, new RValue(resetAnim),
+            this.utils.CreateString("duration")!.Value, new RValue(duration),
+            this.utils.CreateString("x")!.Value, new RValue(position.Item1),
+            this.utils.CreateString("y")!.Value, new RValue(position.Item2),
+        ];
+
+        this.execute_pattern(self, other, "bp_move_position_synced", args);
     }
 
     public void prscircle(
@@ -455,6 +469,44 @@ public unsafe class BattlePatterns {
         ];
 
         this.execute_pattern(self, other, "bp_prscircle_follow_bin", args);
+    }
+
+    public void prsline_h(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int displayNumber, int element, bool doubled, int spawnDelay, int width, int offset, int speed, double yPosition
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("doubled")!.Value, new RValue(doubled),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("width")!.Value, new RValue(width),
+            this.utils.CreateString("offset")!.Value, new RValue(offset),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("y")!.Value, new RValue(yPosition),
+        ];
+
+        this.execute_pattern(self, other, "bp_prsline_h", args);
+    }
+
+    public void prsline_v(
+        CInstance* self, CInstance* other, int warningDelay, int warnMsg, int displayNumber, int element, bool doubled, int spawnDelay, int width, int offset, int speed, double xPosition
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay),
+            this.utils.CreateString("warnMsg")!.Value, new RValue(warnMsg),
+            this.utils.CreateString("displayNumber")!.Value, new RValue(displayNumber),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("doubled")!.Value, new RValue(doubled),
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay),
+            this.utils.CreateString("width")!.Value, new RValue(width),
+            this.utils.CreateString("offset")!.Value, new RValue(offset),
+            this.utils.CreateString("spd")!.Value, new RValue(speed),
+            this.utils.CreateString("x")!.Value, new RValue(xPosition),
+        ];
+
+        this.execute_pattern(self, other, "bp_prsline_v", args);
     }
 
     public void showgroups(

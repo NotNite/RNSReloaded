@@ -35,6 +35,11 @@ public unsafe class BattleScripts {
         return this.rnsReloaded.ExecuteScript("scrbp_time_repeating", self, other, args)!.Value.Real > 0.5;
     }
 
+    public bool time_repeat_times(CInstance* self, CInstance* other, int startTime, int timeBetween, int times) {
+        RValue[] args = [new RValue(startTime), new RValue(timeBetween), new RValue(times)];
+        return this.rnsReloaded.ExecuteScript("scrbp_time_repeat_times", self, other, args)!.Value.Real > 0.5;
+    }
+
     public void pattern_deal_damage_enemy_subtract(CInstance* self, CInstance* other, int teamId, int playerId, int damageAmount) {
         RValue[] args = [new RValue(teamId), new RValue(playerId), new RValue(damageAmount)];
         this.rnsReloaded.ExecuteScript("scr_pattern_deal_damage_enemy_subtract", self, other, args);

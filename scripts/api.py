@@ -137,6 +137,7 @@ class BaseApi(object):
 api = None  # type: BaseApi
 
 try:
+    import ida_auto
     import ida_bytes
     import ida_ida
     import ida_idaapi

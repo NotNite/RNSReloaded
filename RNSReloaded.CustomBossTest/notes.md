@@ -22,6 +22,7 @@ Script parameters all appear to be listed in the global `netPattVar` (GML DS Map
 - `numLines`, `numCones`, `numPoints`: Amount of objects to be spawned, for patterns which can spawn multiple objects at once.
 - `posX_[0-19]`, `posY_[0-19]`, `rot_[0-19]`, `spd_[0-19]`: Equivalent to their singular counterparts (`x`, `y`, `rot`, `spd`), used when spawning multiple objects at once.
 - `number`: Amount of bullets[only use?] to be spawned.
+- `num`
 - `angle`: Appears to be similar to `rot`.
 - `showWarning`: Whether to show a warning telegraph.
 - `warningDelay`: Delay before warning telegraphs are shown.
@@ -32,12 +33,13 @@ Script parameters all appear to be listed in the global `netPattVar` (GML DS Map
 - `spawnDelay2`
 - `spawnDelayTotal`
 - `eraseDelay`: Delay before the object(s) are removed, for patterns that remain activated for an extended period.
-- `permanent`: Can be used instead of `eraseDelay`, makes the object remain activated indefinitely.
+- `permanent`: Sometimes used instead of `eraseDelay`, makes the object remain activated indefinitely.
 - `timeBetween`: Time between activations for patterns which perform multiple actions in sequence
 - `radius`: Radius of circular objects and patterns that measure the distance from an object.
+- `width`: Width of line objects.
 - `fanAngle`: Angular width of conal patterns.
 - `scale`: Scale factor for size of object(s).
-- `scaleInc`
+- `scaleInc`: Scale factor increment for objects which change size.
 - `scaleEnd`
 - `kbAmount`: Amount of knockback applied to targets.
 - `hbsColorInd`
@@ -96,8 +98,6 @@ Script parameters all appear to be listed in the global `netPattVar` (GML DS Map
 - `horizontal`
 - `lifespan`
 - `spawnHealth`
-- `num`
-- `width`
 - `widthInc`
 - `length`
 - `height`

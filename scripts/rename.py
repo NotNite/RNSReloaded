@@ -152,8 +152,15 @@ def parse_const_strings():
                         rvalue_name = api.get_name(rvalue_addr)
                         str_name = api.get_name(str_addr)
                         print(f"[{insns[i+2].address:X}] YYConstString({rvalue_name} [{rvalue_addr:X}], {str_name} [{str_addr:X}])")
-                        # ida_auto.show_addr(insns[i+2].address)
-                        api.set_name(rvalue_addr, f"const_str_{str_name}", None)
+                        if not api.set_name(rvalue_addr, f"const_str_{str_name}", None):
+                            print(f"[{rvalue_addr:X}] {str_name}: Error setting const string name")
+                            continue
+                        func = api.get_function(addr)
+                        if func is None:
+                            print(f"[{addr:X}] {name}: Could not find calling function")
+                            continue
+                        if not api.set_name(func.address, f"init_const_str_{str_name}", "function"):
+                            print(f"[{func.address:X}] {name}: Error setting function name")
 
 def parse_rvalue_set_type():
     global api
@@ -331,8 +338,8 @@ def static_renames():
     print("---")
 
 print("------------------------------")
-# static_renames()
-# parse_init_llvm()
+static_renames()
+parse_init_llvm()
 parse_rvalue_set_type()
 parse_const_strings()
 print("-------------Done-------------")

@@ -7,10 +7,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RNSReloaded.CustomBossTest;
 
+using Position = (double x, double y);
+using PosRot = ((double x, double y) position, double angle);
+
 public unsafe class Mod : IMod {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
     private ILoggerV1 logger = null!;
+    private Random random = new Random();
 
     private Util? utils;
     private BattleScripts? battleScripts;
@@ -56,6 +60,10 @@ public unsafe class Mod : IMod {
         return (180 / Math.PI) * Math.Atan2(target.Item2 - source.Item2, target.Item1 - source.Item1);
     }
 
+    private (double, double) rotatePoint((double, double) point, double angle) {
+        return (point.Item1 * Math.Cos(angle * (Math.PI/180)) - (point.Item2 * Math.Sin(angle * (Math.PI / 180))), (point.Item2 * Math.Cos(angle * (Math.PI / 180))) + (point.Item1 * Math.Sin(angle * (Math.PI/180))));
+    }
+
     private bool IsReady(
         [MaybeNullWhen(false), NotNullWhen(true)] out IRNSReloaded rnsReloaded,
         [MaybeNullWhen(false), NotNullWhen(true)] out Util utils,
@@ -81,10 +89,10 @@ public unsafe class Mod : IMod {
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
         if (this.IsReady(out var rnsReloaded, out var utils, out var scrbp, out var bp)) {
+            //rnsReloaded.ExecuteScript("bp_examples", self, other, argc, argv);
+            //return returnValue;
             var bf_center_x = utils.GetGlobalVar("bfCenterX")->Real;
             var bf_center_y = utils.GetGlobalVar("bfCenterY")->Real;
-            var tornado1 = (bf_center_x - bf_center_x * 4 / 5, bf_center_y);
-            var tornado2 = (bf_center_x + bf_center_x * 4 / 5, bf_center_y);
             var player_x = utils.GetPlayerVar(0, "distMovePrevX")->Real;
             var player_y = utils.GetPlayerVar(0, "distMovePrevY")->Real;
             var boss_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;

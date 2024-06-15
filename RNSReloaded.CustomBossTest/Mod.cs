@@ -98,6 +98,8 @@ public unsafe class Mod : IMod {
             var boss_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;
             var boss_y = utils.GetEnemyVar(0, "distMovePrevY")->Real;
 
+            var tornado1 = (0, 0);
+            var tornado2 = (0, 0);
             if (scrbp.time(self, other, 500)) {
                 scrbp.move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
             }

@@ -26,6 +26,19 @@ public unsafe class Util {
         return this.rnsReloaded.FindValue(instance, key);
     }
 
+    public int GetNumPlayers() {
+        var playerNum = this.GetGlobalVar("playerNum");
+        var numAllies = playerNum->Get(0);
+        // In single player this is a real. In multiplayer it's a float. Why?!
+        if (numAllies->Type == RValueType.Real) {
+            return (int) numAllies->Real;
+        }
+        if (numAllies->Type == RValueType.Int32) {
+            return numAllies->Int32;
+        }
+        return 1;
+    }
+
     public RValue* GetPlayerVar(int index, string key) {
         var instance = this.rnsReloaded.GetGlobalInstance();
         var combatantList = this.rnsReloaded.FindValue(instance, "player");

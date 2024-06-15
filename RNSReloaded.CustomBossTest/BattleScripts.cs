@@ -40,6 +40,12 @@ public unsafe class BattleScripts {
         return this.rnsReloaded.ExecuteScript("scrbp_time_repeat_times", self, other, args)!.Value.Real > 0.5;
     }
 
+    public void order_random(CInstance* self, CInstance* other, bool excludeKO, params int[] groupings) {
+        RValue[] args = [new RValue(excludeKO)];
+        args = args.Concat(groupings.Select(x => new RValue(x)).ToArray()).ToArray();
+        this.rnsReloaded.ExecuteScript("scrbp_order_random", self, other, args);
+    }
+
     public void pattern_deal_damage_enemy_subtract(CInstance* self, CInstance* other, int teamId, int playerId, int damageAmount) {
         RValue[] args = [new RValue(teamId), new RValue(playerId), new RValue(damageAmount)];
         this.rnsReloaded.ExecuteScript("scr_pattern_deal_damage_enemy_subtract", self, other, args);

@@ -249,6 +249,22 @@ public unsafe class BattlePatterns {
         this.execute_pattern(self, other, "bp_cone_spreads", args);
     }
 
+    public void colormatch(
+    CInstance* self, CInstance* other, int warnDelay, int attackDelay, int radius, int trgBinary, int color
+) {
+        RValue[] args = [
+            this.utils.CreateString("warningDelay")!.Value, new RValue(warnDelay),
+
+            this.utils.CreateString("spawnDelay")!.Value, new RValue(attackDelay),
+            this.utils.CreateString("element")!.Value, new RValue(color),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+
+            this.utils.CreateString("warnMsg")!.Value, new RValue(2),
+            this.utils.CreateString("radius")!.Value, new RValue(radius),
+        ];
+        this.execute_pattern(self, other, "bp_colormatch", args);
+    }
+
     public void cone_direction(
         CInstance* self, CInstance* other, int warningDelay, int spawnDelay, int fanAngle, Position position, double[] rots
     ) {
@@ -317,6 +333,36 @@ public unsafe class BattlePatterns {
         ];
 
         this.execute_pattern(self, other, "bp_enrage", args);
+    }
+
+    // (x, y) refers to the center of the field. Element is which color (purple, yellow, red, blue)
+    public void fieldlimit_rectangle(
+        CInstance* self, CInstance* other, int x, int y, int width, int height, int element, int trgBinary
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("x")!.Value, new RValue(x),
+            this.utils.CreateString("y")!.Value, new RValue(y),
+            this.utils.CreateString("height")!.Value, new RValue(height),
+            this.utils.CreateString("width")!.Value, new RValue(width),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+        ];
+        this.execute_pattern(self, other, "bp_fieldlimit_rectangle", args);
+    }
+
+    public void fieldlimit_rectangle_temporary(
+        CInstance* self, CInstance* other, int x, int y, int width, int height, int element, int trgBinary, int duration
+    ) {
+        RValue[] args = [
+            this.utils.CreateString("x")!.Value, new RValue(x),
+            this.utils.CreateString("y")!.Value, new RValue(y),
+            this.utils.CreateString("height")!.Value, new RValue(height),
+            this.utils.CreateString("width")!.Value, new RValue(width),
+            this.utils.CreateString("element")!.Value, new RValue(element),
+            this.utils.CreateString("trgBinary")!.Value, new RValue(trgBinary),
+            this.utils.CreateString("eraseDelay")!.Value, new RValue(duration),
+        ];
+        this.execute_pattern(self, other, "bp_fieldlimit_rectangle_temporary", args);
     }
 
     public void fire_aoe(

@@ -98,45 +98,15 @@ public unsafe class Mod : IMod {
             var boss_x = utils.GetEnemyVar(0, "distMovePrevX")->Real;
             var boss_y = utils.GetEnemyVar(0, "distMovePrevY")->Real;
 
-            var tornado1 = (0, 0);
-            var tornado2 = (0, 0);
+            var bf_center = (bf_center_x, bf_center_y);
             if (scrbp.time(self, other, 500)) {
                 scrbp.move_character_absolute(self, other, bf_center_x, bf_center_y, 1200);
             }
-
-            //if (scrbp.time_repeating(self, other, 500, 6000)) {
-            //    bp.cleave_fixed(self, other, 0, 2, 2000,
-            //}
-            //return returnValue;
-
             if (scrbp.time(self, other, 1500)) {
-                bp.fire_aoe(self, other, 0, 1500, 25000, 1.6, [tornado1, tornado2]);
-            }
-            if (scrbp.time(self, other, 3000)) {
-                var angle_1 = this.getAngle(tornado1, (player_x, player_y));
-                bp.cone_direction(self, other, 0, 2000, 30, tornado1, [angle_1]);
-                var angle_2 = this.getAngle(tornado2, (player_x, player_y));
-                bp.cone_direction(self, other, 0, 2000, 30, tornado2, [angle_2]);
-            }
-            if (scrbp.time(self, other, 7000)) {
-                bp.cone_spreads(self, other, 0, 0, 0, 30, tornado1, null);
-                bp.cone_spreads(self, other, 0, 0, 0, 30, tornado2, null);
-
-                var doll_1 = (bf_center_x - 180, bf_center_y - 180);
-                var doll_2 = (bf_center_x - 180, bf_center_y + 180);
-                var doll_3 = (bf_center_x + 180, bf_center_y - 180);
-                var doll_4 = (bf_center_x + 180, bf_center_y + 180);
-                bp.fire_aoe(self, other, 0, 1000, 1500, 2, [doll_1, doll_2, doll_3, doll_4]);
-            }
-            if (scrbp.time(self, other, 8000)) {
-                var angle_1 = this.getAngle(tornado1, (player_x, player_y));
-                var angle_2 = this.getAngle(tornado2, (player_x, player_y));
-
-                bp.water2_line(self, other, 0, 0, 1500, tornado1, angle_1, 0, 0, 2, 3);
-                bp.water2_line(self, other, 0, 0, 1500, tornado2, angle_2, 0, 0, 2, 3);
+                bp.fire_aoe(self, other, positions: [bf_center]);
             }
             if (scrbp.time(self, other, 10000)) {
-                bp.enrage(self, other, 0, 1500, 3000, true);
+                bp.enrage(self, other);
             }
         }
         return returnValue;

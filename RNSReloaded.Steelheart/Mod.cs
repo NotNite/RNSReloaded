@@ -13,8 +13,6 @@ public unsafe class Mod : IMod {
 
     private IHook<ScriptDelegate>? damageHook;
     private IHook<ScriptDelegate>? enrageHook;
-    // Avy is a very special girl who doesn't like to enrage like everyone else
-    private IHook<ScriptDelegate>? avyEnrageHook;
     private IHook<ScriptDelegate>? newFightHook;
     // Need to disable enrage after phase change
     private IHook<ScriptDelegate>? phaseChangeHook;
@@ -77,12 +75,6 @@ public unsafe class Mod : IMod {
                 hooks.CreateHook<ScriptDelegate>(this.EnrageDetour, enrageScript->Functions->Function);
             this.enrageHook.Activate();
             this.enrageHook.Enable();
-
-            var avyEnrageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_frog_idol1_enrage") - 100000);
-            this.avyEnrageHook =
-                hooks.CreateHook<ScriptDelegate>(this.AvyEnrageDetour, avyEnrageScript->Functions->Function);
-            this.avyEnrageHook.Activate();
-            this.avyEnrageHook.Enable();
 
             var newFightScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrdt_encounter") - 100000);
             this.newFightHook =
@@ -218,14 +210,6 @@ public unsafe class Mod : IMod {
     ) {
         this.enraged = true;
         returnValue = this.enrageHook!.OriginalFunction(self, other, returnValue, argc, argv);
-        return returnValue;
-    }
-
-    private RValue* AvyEnrageDetour(
-        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-    ) {
-        this.enraged = true;
-        returnValue = this.avyEnrageHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 

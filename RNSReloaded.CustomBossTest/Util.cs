@@ -39,6 +39,18 @@ public unsafe class Util {
         return 1;
     }
 
+    public int GetNumEnemies() {
+        var playerNum = this.GetGlobalVar("playerNum");
+        var numAllies = playerNum->Get(1);
+        if (numAllies->Type == RValueType.Real) {
+            return (int) numAllies->Real;
+        }
+        if (numAllies->Type == RValueType.Int32) {
+            return numAllies->Int32;
+        }
+        return 1;
+    }
+
     public RValue* GetPlayerVar(int index, string key) {
         var instance = this.rnsReloaded.GetGlobalInstance();
         var combatantList = this.rnsReloaded.FindValue(instance, "player");
@@ -55,4 +67,10 @@ public unsafe class Util {
         return enemy->Get(key);
     }
 
+    public double GetEnemyHP(double id) {
+        var instance = this.rnsReloaded.GetGlobalInstance();
+        var hpList = this.rnsReloaded.FindValue(instance, "playerHp");
+        var enemyHps = this.rnsReloaded.ArrayGetEntry(hpList, 1);
+        return this.rnsReloaded.ArrayGetEntry(enemyHps, (int) id)->Real;
+    }
 }

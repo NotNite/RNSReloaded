@@ -66,25 +66,25 @@ public unsafe class BattlePatterns {
         this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
     }
 
-    void add_if_not_null(RValue[] args, string fieldName, int? value) {
+    private RValue[] add_if_not_null(RValue[] args, string fieldName, int? value) {
         if (value != null) {
-            args.Append(this.utils.CreateString(fieldName)!.Value);
-            args.Append(new RValue(value.Value));
+            return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
         }
+        return args;
     }
 
-    void add_if_not_null(RValue[] args, string fieldName, bool? value) {
+    private RValue[] add_if_not_null(RValue[] args, string fieldName, bool? value) {
         if (value != null) {
-            args.Append(this.utils.CreateString(fieldName)!.Value);
-            args.Append(new RValue(value.Value));
+            return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
         }
+        return args;
     }
 
-    void add_if_not_null(RValue[] args, string fieldName, double? value) {
+    private RValue[] add_if_not_null(RValue[] args, string fieldName, double? value) {
         if (value != null) {
-            args.Append(this.utils.CreateString(fieldName)!.Value);
-            args.Append(new RValue(value.Value));
+            return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
         }
+        return args;
     }
 
     public RValue? bpsw_circlespr_default(CInstance* self, CInstance* other, RValue scale) {
@@ -106,12 +106,12 @@ public unsafe class BattlePatterns {
         for (var i = 0; i < this.rnsReloaded.ArrayGetLength(hbsInfo)!.Value.Real; i++) {
             if (hbsInfo->Get(i)->Get(0)->ToString() == hbs) {
                 RValue[] args = [];
-                this.add_if_not_null(args, "delay", delay);
-                this.add_if_not_null(args, "hbsHitDelay", hbsHitDelay);
+                args = this.add_if_not_null(args, "delay", delay);
+                args = this.add_if_not_null(args, "hbsHitDelay", hbsHitDelay);
                 args = args.Concat([this.utils.CreateString("hbsIndex")!.Value, new RValue(i)]).ToArray();
-                this.add_if_not_null(args, "hbsDuration", hbsDuration);
-                this.add_if_not_null(args, "hbsStrength", hbsStrength);
-                this.add_if_not_null(args, "trgBinary", targetMask);
+                args = this.add_if_not_null(args, "hbsDuration", hbsDuration);
+                args = this.add_if_not_null(args, "hbsStrength", hbsStrength);
+                args = this.add_if_not_null(args, "trgBinary", targetMask);
 
                 this.execute_pattern(self, other, "bp_apply_hbs_synced", args);
                 break;
@@ -123,10 +123,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_bind_h", args);
     }
@@ -135,22 +135,22 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_bind_v", args);
     }
 
     public void bullet_enlarge(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, double? scale = null, double? scaleInc = null, int? num = null, Position[]? positions = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "timeBetween", timeBetween);
-        this.add_if_not_null(args, "scale", scale);
-        this.add_if_not_null(args, "scaleInc", scaleInc);
-        this.add_if_not_null(args, "num", num);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "scale", scale);
+        args = this.add_if_not_null(args, "scaleInc", scaleInc);
+        args = this.add_if_not_null(args, "num", num);
 
         if (positions != null) {
             this.set_pattern_positions(self, other, positions);
@@ -163,14 +163,14 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? displayNumber = null, int? spawnDelay = null, int? eraseDelay = null, Position? position = null, double? rot = null, int? speed = null, int? width = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warningDelay2", warningDelay2);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "rot", rot);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warningDelay2", warningDelay2);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "rot", rot);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "width", width);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -184,9 +184,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? radius = null, Position[]? positions = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
 
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length)]).ToArray();
@@ -206,11 +206,11 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_circle_spreads", args);
     }
@@ -219,16 +219,16 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, (double rotation, int? targetMask)[]? cleaves = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
 
         if (cleaves != null) {
             for (int i = 0; i < cleaves.Length; i++) {
                 (double rotation, int? targetMask) cleave = cleaves[i];
                 args = args.Concat([
-                    this.utils.CreateString($"orderBin_{i}")!.Value, new RValue(cleave.rotation),
-                    this.utils.CreateString($"rot_{i}")!.Value, new RValue(cleave.targetMask == null ? 63 : cleave.targetMask.Value)
+                    this.utils.CreateString($"rot_{i}")!.Value, new RValue(cleave.rotation),
+                    this.utils.CreateString($"orderBin_{i}")!.Value, new RValue(cleave.targetMask == null ? 63 : cleave.targetMask.Value)
                 ]).ToArray();
             }
         }
@@ -240,10 +240,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? angle = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "rot", angle);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "rot", angle);
 
         this.execute_pattern(self, other, "bp_cleave_enemy", args);
     }
@@ -252,9 +252,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, PosRot[]? positions = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
 
         args = args.Concat([this.utils.CreateString("exTrgId")!.Value, new RValue(0)]).ToArray();
         if (positions != null) {
@@ -275,14 +275,14 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? warnMsg = null, int? displayNumber = null, int? spawnDelay = null, int? radius = null, int? fanAngle = null, Position? position = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warningDelay2", warningDelay2);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "fanAngle", fanAngle);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warningDelay2", warningDelay2);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "fanAngle", fanAngle);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -296,12 +296,12 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "element", color);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "element", color);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "radius", radius);
 
         this.execute_pattern(self, other, "bp_colormatch", args);
     }
@@ -310,9 +310,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? fanAngle = null, Position? position = null, double[]? rots = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "fanAngle", fanAngle);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "fanAngle", fanAngle);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -336,11 +336,11 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? fanAngle = null, Position? position = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "fanAngle", fanAngle);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "fanAngle", fanAngle);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -355,10 +355,10 @@ public unsafe class BattlePatterns {
     ) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "scale", scale);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "scale", scale);
 
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length)]).ToArray();
@@ -379,9 +379,9 @@ public unsafe class BattlePatterns {
     ) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
 
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length)]).ToArray();
@@ -398,9 +398,9 @@ public unsafe class BattlePatterns {
 
     public void enrage(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, bool? resetAnim = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
 
         if (resetAnim != null) {
             args = args.Concat([this.utils.CreateString("resetAnim")!.Value, new RValue(resetAnim == true ? 1.0 : 0.0)]).ToArray(); // Using a bool here doesnt work, no idea why
@@ -415,10 +415,10 @@ public unsafe class BattlePatterns {
     ) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "height", height);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "element", color);
+        args = this.add_if_not_null(args, "height", height);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "element", color);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -432,17 +432,17 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, Position? position = null, int? width = null, int? height = null, int? color = null, int? targetMask = null, int? eraseDelay = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "height", height);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "element", color);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "height", height);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "element", color);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_fieldlimit_rectangle_temporary", args);
     }
 
@@ -450,10 +450,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? scale = null, Position[]? positions = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "scale", scale);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "scale", scale);
 
         //this.utils.CreateString("type")!.Value, new RValue(type),
         if (positions != null) {
@@ -484,14 +484,14 @@ public unsafe class BattlePatterns {
         int? lineLength = null, int? numBullets = null, int? spd = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "showWarning", showWarning);
-        this.add_if_not_null(args, "angle", angle);
-        this.add_if_not_null(args, "lineAngle", lineAngle);
-        this.add_if_not_null(args, "num", numBullets);
-        this.add_if_not_null(args, "lineLength", lineLength);
-        this.add_if_not_null(args, "spd", spd);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "showWarning", showWarning);
+        args = this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "lineAngle", lineAngle);
+        args = this.add_if_not_null(args, "num", numBullets);
+        args = this.add_if_not_null(args, "lineLength", lineLength);
+        args = this.add_if_not_null(args, "spd", spd);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -505,7 +505,7 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, double? mult = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "mult", mult);
+        args = this.add_if_not_null(args, "mult", mult);
         
         this.execute_pattern(self, other, "bp_gravity_fall", args);
     }
@@ -514,10 +514,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "mult", mult);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "mult", mult);
 
         this.execute_pattern(self, other, "bp_gravity_fall_temporary", args);
     }
@@ -526,7 +526,7 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, double? mult = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "mult", mult);
+        args = this.add_if_not_null(args, "mult", mult);
 
         this.execute_pattern(self, other, "bp_gravity_pull", args);
     }
@@ -535,10 +535,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "mult", mult);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "mult", mult);
 
         this.execute_pattern(self, other, "bp_gravity_pull_temporary", args);
     }
@@ -547,7 +547,7 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_heavy", args);
     }
@@ -556,9 +556,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? hbsDuration = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "hbsDuration", hbsDuration);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "hbsDuration", hbsDuration);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_heavy_temporary", args);
     }
@@ -567,7 +567,7 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_heavyextra", args);
     }
@@ -576,9 +576,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? hbsDuration = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "hbsDuration", hbsDuration);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "hbsDuration", hbsDuration);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_heavyextra_temporary", args);
     }
@@ -587,8 +587,8 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? delay = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "delay", delay);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "delay", delay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_invulncancel", args);
     }
@@ -598,11 +598,11 @@ public unsafe class BattlePatterns {
         Position? position = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "kbAmount", kbAmount);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "kbAmount", kbAmount);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -652,9 +652,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? width = null, PosRot[]? positions = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
 
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numLines")!.Value, new RValue(positions.Length)]).ToArray();
@@ -676,11 +676,11 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? width = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_line_spreads_h", args);
     }
@@ -689,21 +689,21 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? width = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_line_spreads_v", args);
     }
 
     public void marching_bullet(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, double? scale = null, Position[]? positions = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "timeBetween", timeBetween);
-        this.add_if_not_null(args, "scale", scale);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "scale", scale);
         
         if (positions != null) {
             this.set_pattern_positions(self, other, positions);
@@ -715,12 +715,12 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, bool? shouldMove = null, int? radius = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "shouldMove", shouldMove);
-        this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "shouldMove", shouldMove);
+        args = this.add_if_not_null(args, "radius", radius);
 
         this.execute_pattern(self, other, "bp_movementcheck", args);
     }
@@ -729,9 +729,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, bool? resetAnim = null, int? duration = null, Position? position = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "resetAnim", resetAnim);
-        this.add_if_not_null(args, "duration", duration);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "resetAnim", resetAnim);
+        args = this.add_if_not_null(args, "duration", duration);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -747,16 +747,16 @@ public unsafe class BattlePatterns {
     ) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "number", numBullets);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "number", numBullets);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "angle", angle);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -770,15 +770,15 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? radius = null, int? numBullets = null, int? speed = null, int? targetId = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "number", numBullets);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "targetId", targetId);        
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "number", numBullets);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "targetId", targetId);        
 
         this.execute_pattern(self, other, "bp_prscircle_follow", args);
     }
@@ -788,15 +788,15 @@ public unsafe class BattlePatterns {
     ) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "number", numBullets);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "number", numBullets);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         this.execute_pattern(self, other, "bp_prscircle_follow_bin", args);
     }
@@ -805,33 +805,34 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? width = null, int? offset = null, int? speed = null, double? yPosition = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "offset", offset);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "y", yPosition);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "offset", offset);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "y", yPosition);
 
         this.execute_pattern(self, other, "bp_prsline_h", args);
     }
+
     public void prsline_h_follow(
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? width = null, int? offset = null, int? speed = null, int? targetId = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "offset", offset);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "targetId", targetId);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "offset", offset);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "targetId", targetId);
 
         this.execute_pattern(self, other, "bp_prsline_h_follow", args);
     }
@@ -840,26 +841,26 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? width = null, int? offset = null, int? speed = null, double? xPosition = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "element", bulletType);
-        this.add_if_not_null(args, "doubled", doubled);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "offset", offset);
-        this.add_if_not_null(args, "spd", speed);
-        this.add_if_not_null(args, "x", xPosition);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "element", bulletType);
+        args = this.add_if_not_null(args, "doubled", doubled);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "offset", offset);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "x", xPosition);
 
         this.execute_pattern(self, other, "bp_prsline_v", args);
     }
 
     public void ray_multi_h(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, Position[]? positions = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "width", width);
 
         if (positions != null) {
             this.set_pattern_positions(self, other, positions);
@@ -870,11 +871,11 @@ public unsafe class BattlePatterns {
 
     public void ray_multi_slice(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? timeBetween = null, int? width = null, PosRot[]? positions = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
 
         if (positions != null) {
             this.set_pattern_position_rotations(self, other, positions);
@@ -885,10 +886,10 @@ public unsafe class BattlePatterns {
 
     public void ray_multi_v(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, Position[]? positions = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "width", width);
 
         if (positions != null) {
             this.set_pattern_positions(self, other, positions);
@@ -900,37 +901,37 @@ public unsafe class BattlePatterns {
     public void ray_single(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, Position? position = null, int? angle = null) {
         RValue[] args = [];
 
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "angle", angle);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
 
-        this.execute_pattern(self, other, "bp_ray_multi_v", args);
+        this.execute_pattern(self, other, "bp_ray_single", args);
     }
 
     public void ray_spinfast(CInstance* self, CInstance* other, int? warningDelay = null, int? warningRadius = null, int? displayNumber = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, double? angle = null, Position? position = null, double? rot = null, int? numLasers = null) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "width", width);
-        this.add_if_not_null(args, "radius", warningRadius);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
-        this.add_if_not_null(args, "angle", angle);
-        this.add_if_not_null(args, "rot", rot);
-        this.add_if_not_null(args, "num", numLasers);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "width", width);
+        args = this.add_if_not_null(args, "radius", warningRadius);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "rot", rot);
+        args = this.add_if_not_null(args, "num", numLasers);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-
+        
         this.execute_pattern(self, other, "bp_ray_spinfast", args);
     }
 
@@ -938,8 +939,8 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, (int, int, int, int)? groupMasks = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
 
         if (groupMasks != null) {
             args = args.Concat([this.utils.CreateString("orderBin_0")!.Value, new RValue(groupMasks.Value.Item1)]).ToArray();
@@ -956,9 +957,9 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, int? timeBetween = null, (int, int, int, int)? orderMasks = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
-        this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
 
         if (orderMasks != null) {
             args = args.Concat([this.utils.CreateString("orderBin_0")!.Value, new RValue(orderMasks.Value.Item1)]).ToArray();
@@ -975,7 +976,7 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? eraseDelay = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
         this.execute_pattern(self, other, "bp_tailwind", args);
     }
 
@@ -990,10 +991,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? radius = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         if (eraseDelay != null) {
             if (eraseDelay > 0) {
@@ -1010,10 +1011,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? radius = null, Position? position = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -1034,10 +1035,10 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? radius = null, Position? position = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -1059,11 +1060,11 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, double? radius = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
 
         this.execute_pattern(self, other, "bp_thorns", args);
     }
@@ -1072,12 +1073,12 @@ public unsafe class BattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? spawnDelay = null, double? radius = null, Position? position = null, int? targetMask = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "radius", radius);
-        this.add_if_not_null(args, "trgBinary", targetMask);
-        this.add_if_not_null(args, "warnMsg", warnMsg);
-        this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -1092,14 +1093,14 @@ public unsafe class BattlePatterns {
         int? lineLength = null, int? numBullets = null, int? spd = null
     ) {
         RValue[] args = [];
-        this.add_if_not_null(args, "warningDelay", warningDelay);
-        this.add_if_not_null(args, "showWarning", showWarning);
-        this.add_if_not_null(args, "spawnDelay", spawnDelay);
-        this.add_if_not_null(args, "angle", angle);
-        this.add_if_not_null(args, "lineAngle", lineAngle);
-        this.add_if_not_null(args, "num", numBullets);
-        this.add_if_not_null(args, "lineLength", lineLength);
-        this.add_if_not_null(args, "spd", spd);
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "showWarning", showWarning);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "lineAngle", lineAngle);
+        args = this.add_if_not_null(args, "num", numBullets);
+        args = this.add_if_not_null(args, "lineLength", lineLength);
+        args = this.add_if_not_null(args, "spd", spd);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();

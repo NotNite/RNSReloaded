@@ -373,6 +373,29 @@ public unsafe class BattlePatterns {
         this.execute_pattern(self, other, "bp_dark_targeted", args);
     }
 
+    // Display number maxes at 6
+    public void displaynumbers(
+        CInstance* self, CInstance* other, int? displayNumber = null, int? warningDelay = null, int? spawnDelay = null, Position[]? positions = null
+    ) {
+        RValue[] args = [];
+
+        this.add_if_not_null(args, "warningDelay", warningDelay);
+        this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        this.add_if_not_null(args, "displayNumber", displayNumber);
+
+        if (positions != null) {
+            args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length)]).ToArray();
+            for (int i = 0; i < positions.Length; i++) {
+                args = args.Concat([
+                    this.utils.CreateString($"posX_{i}")!.Value, new RValue(positions[i].x),
+                    this.utils.CreateString($"posY_{i}")!.Value, new RValue(positions[i].y)
+                ]).ToArray();
+            }
+        }
+
+        this.execute_pattern(self, other, "bp_displaynumbers", args);
+    }
+
     public void enrage(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, bool? resetAnim = null) {
         RValue[] args = [];
         this.add_if_not_null(args, "warningDelay", warningDelay);
@@ -720,7 +743,7 @@ public unsafe class BattlePatterns {
     }
 
     public void prscircle(
-        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? radius = null, int? numBullets = null, int? speed = null, Position? position = null
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? radius = null, int? numBullets = null, int? speed = null, Position? position = null, int? angle = null
     ) {
         RValue[] args = [];
 
@@ -733,6 +756,7 @@ public unsafe class BattlePatterns {
         this.add_if_not_null(args, "radius", radius);
         this.add_if_not_null(args, "number", numBullets);
         this.add_if_not_null(args, "spd", speed);
+        this.add_if_not_null(args, "angle", angle);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
@@ -793,6 +817,23 @@ public unsafe class BattlePatterns {
         this.add_if_not_null(args, "y", yPosition);
 
         this.execute_pattern(self, other, "bp_prsline_h", args);
+    }
+    public void prsline_h_follow(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? width = null, int? offset = null, int? speed = null, int? targetId = null
+    ) {
+        RValue[] args = [];
+        this.add_if_not_null(args, "warningDelay", warningDelay);
+        this.add_if_not_null(args, "warnMsg", warnMsg);
+        this.add_if_not_null(args, "displayNumber", displayNumber);
+        this.add_if_not_null(args, "element", bulletType);
+        this.add_if_not_null(args, "doubled", doubled);
+        this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        this.add_if_not_null(args, "width", width);
+        this.add_if_not_null(args, "offset", offset);
+        this.add_if_not_null(args, "spd", speed);
+        this.add_if_not_null(args, "targetId", targetId);
+
+        this.execute_pattern(self, other, "bp_prsline_h_follow", args);
     }
 
     public void prsline_v(
@@ -856,7 +897,24 @@ public unsafe class BattlePatterns {
         this.execute_pattern(self, other, "bp_ray_multi_v", args);
     }
 
-    public void ray_spinfast(CInstance* self, CInstance* other, int? warningDelay = null, int? warningRadius = null, int? displayNumber = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, double? angle = null, Position? position = null, double? rot = null) {
+    public void ray_single(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, Position? position = null, int? angle = null) {
+        RValue[] args = [];
+
+        this.add_if_not_null(args, "warningDelay", warningDelay);
+        this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        this.add_if_not_null(args, "width", width);
+        this.add_if_not_null(args, "angle", angle);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_ray_multi_v", args);
+    }
+
+    public void ray_spinfast(CInstance* self, CInstance* other, int? warningDelay = null, int? warningRadius = null, int? displayNumber = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, double? angle = null, Position? position = null, double? rot = null, int? numLasers = null) {
         RValue[] args = [];
         this.add_if_not_null(args, "warningDelay", warningDelay);
         this.add_if_not_null(args, "spawnDelay", spawnDelay);
@@ -866,12 +924,13 @@ public unsafe class BattlePatterns {
         this.add_if_not_null(args, "displayNumber", displayNumber);
         this.add_if_not_null(args, "angle", angle);
         this.add_if_not_null(args, "rot", rot);
+        this.add_if_not_null(args, "num", numLasers);
 
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_ray_spinfast", args);
     }
 
@@ -910,6 +969,21 @@ public unsafe class BattlePatterns {
 
 
         this.execute_pattern(self, other, "bp_showorder", args);
+    }
+
+    public void tailwind(
+        CInstance* self, CInstance* other, int? eraseDelay = null
+    ) {
+        RValue[] args = [];
+        this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        this.execute_pattern(self, other, "bp_tailwind", args);
+    }
+
+    public void tailwind_permanent(
+        CInstance* self, CInstance* other
+    ) {
+        RValue[] args = [];
+        this.execute_pattern(self, other, "bp_tailwind_permanent", args);
     }
 
     public void tether(

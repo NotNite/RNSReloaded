@@ -2,14 +2,14 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 
-namespace RNSReloaded.CustomBossTest;
+namespace RNSReloaded;
 
 using Position = (double x, double y);
 using PosRot = ((double x, double y) position, double angle);
 
-public unsafe class BattlePatterns {
+public unsafe class BattlePatterns : IBattlePatterns {
     private IRNSReloaded rnsReloaded;
-    private Util utils;
+    private IUtil utils;
     private ILoggerV1 logger;
 
     // Passing 0 or 1 to colormatch color gives a weird vibrating blue that doesn't spin
@@ -29,7 +29,7 @@ public unsafe class BattlePatterns {
     public const int FIELDLIMIT_YELLOW = 5;
     public const int FIELDLIMIT_GREEN = 6;
 
-    public BattlePatterns(IRNSReloaded rnsReloaded, Util utils, ILoggerV1 logger) {
+    public BattlePatterns(IRNSReloaded rnsReloaded, IUtil utils, ILoggerV1 logger) {
         this.rnsReloaded = rnsReloaded;
         this.utils = utils;
         this.logger = logger;

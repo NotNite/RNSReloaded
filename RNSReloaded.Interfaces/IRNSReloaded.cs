@@ -8,6 +8,10 @@ public unsafe interface IRNSReloaded {
 
     public static IRNSReloaded Instance = null!;
 
+    public IUtil utils { get; }
+    public IBattlePatterns battlePatterns { get; }
+    public IBattleScripts battleScripts { get; }
+
     public void LimitOnlinePlay();
 
     public CScript* GetScriptData(int id);

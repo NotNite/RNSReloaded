@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
@@ -6,14 +6,14 @@ using Reloaded.Mod.Interfaces.Internal;
 
 namespace RNSReloaded;
 
-public class Utils {
+public class ScanUtils {
     public nint BaseAddr;
 
     private WeakReference<IStartupScanner> scannerRef;
     private ILoggerV1 logger;
     private int scansRemaining;
 
-    public Utils(WeakReference<IStartupScanner> scannerRef, ILoggerV1 logger) {
+    public ScanUtils(WeakReference<IStartupScanner> scannerRef, ILoggerV1 logger) {
         this.scannerRef = scannerRef;
         this.logger = logger;
         this.BaseAddr = Process.GetCurrentProcess().MainModule!.BaseAddress;

@@ -16,9 +16,13 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     private WeakReference<IStartupScanner> scannerRef;
     private ILoggerV1 logger;
 
-    private Utils utils;
+    private ScanUtils scanUtils;
     private Hooks hooks;
     private Functions functions;
+
+    public IUtil utils { get; private set; }
+    public IBattleScripts battleScripts { get; private set; }
+    public IBattlePatterns battlePatterns { get; private set; }
 
     public RNSReloaded(
         WeakReference<IReloadedHooks> hooksRef,
@@ -29,13 +33,17 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         this.scannerRef = scannerRef;
         this.logger = logger;
 
-        this.utils = new Utils(scannerRef, logger);
-        this.hooks = new Hooks(this.utils, hooksRef);
-        this.functions = new Functions(this.utils, scannerRef);
+        this.scanUtils = new ScanUtils(scannerRef, logger);
+        this.hooks = new Hooks(this.scanUtils, hooksRef);
+        this.functions = new Functions(this.scanUtils, scannerRef);
 
         this.hooks.OnRunStart += this.OnRunStart;
         this.hooks.OnExecuteIt += this.OnExecuteItWrapper;
         IRNSReloaded.Instance = this;
+
+        this.utils = new Util(this, this.logger);
+        this.battleScripts = new BattleScripts(this, this.utils, this.logger);
+        this.battlePatterns = new BattlePatterns(this, this.utils, this.logger);
     }
 
     public void Dispose() {

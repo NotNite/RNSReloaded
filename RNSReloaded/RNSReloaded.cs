@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
@@ -16,9 +16,13 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     private WeakReference<IStartupScanner> scannerRef;
     private ILoggerV1 logger;
 
-    private Utils utils;
+    private ScanUtils scanUtils;
     private Hooks hooks;
     private Functions functions;
+
+    public IUtil utils { get; private set; }
+    public IBattleScripts battleScripts { get; private set; }
+    public IBattlePatterns battlePatterns { get; private set; }
 
     public RNSReloaded(
         WeakReference<IReloadedHooks> hooksRef,
@@ -29,13 +33,17 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         this.scannerRef = scannerRef;
         this.logger = logger;
 
-        this.utils = new Utils(scannerRef, logger);
-        this.hooks = new Hooks(this.utils, hooksRef);
-        this.functions = new Functions(this.utils, scannerRef);
+        this.scanUtils = new ScanUtils(scannerRef, logger);
+        this.hooks = new Hooks(this.scanUtils, hooksRef);
+        this.functions = new Functions(this.scanUtils, scannerRef);
 
         this.hooks.OnRunStart += this.OnRunStart;
         this.hooks.OnExecuteIt += this.OnExecuteItWrapper;
         IRNSReloaded.Instance = this;
+
+        this.utils = new Util(this, this.logger);
+        this.battleScripts = new BattleScripts(this, this.utils, this.logger);
+        this.battlePatterns = new BattlePatterns(this, this.utils, this.logger);
     }
 
     public void Dispose() {
@@ -107,6 +115,10 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         return this.functions.ArrayGetEntry(array->Pointer, index);
     }
 
+    public RValue? ArrayGetLength(RValue* array) {
+        return this.ExecuteCodeFunction("array_length", null, null, 1, (RValue**) array);
+    }
+
     public string GetString(RValue* value) {
         if (value == null) return "nullptr";
         if (value->Type == RValueType.Unset) return "unset";
@@ -139,6 +151,52 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         var strPtr = Marshal.StringToHGlobalAnsi(str);
         this.functions.YYCreateString(value, (char*) strPtr);
         Marshal.FreeHGlobal(strPtr);
+    }
+
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, int argc, RValue** argv) {
+        var script = this.ScriptFindId(name);
+        if (script == -1) return null;
+
+        var scriptData = this.GetScriptData(script - 100000);
+        if (scriptData == null) return null;
+
+        var funcRef = scriptData->Functions->Function;
+        var func = Marshal.GetDelegateForFunctionPointer<ScriptDelegate>(funcRef);
+        var result = new RValue();
+        func(self, other, &result, argc, argv);
+        return result;
+    }
+
+    public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, RValue[] arguments) {
+        fixed (RValue* ptr = arguments) {
+            var ptrs = new RValue*[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
+            fixed (RValue** argv = ptrs) {
+                return this.ExecuteScript(name, self, other, arguments.Length, argv);
+            }
+        }
+    }
+
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue** argv) {
+        var id = this.CodeFunctionFind(name);
+        if (id == null) return null;
+
+        var funcRef = this.GetTheFunction(id.Value);
+        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
+        if (func == null) return null;
+        RValue result;
+        func(&result, self, other, argc, argv);
+        return result;
+    }
+
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, RValue[] arguments) {
+        fixed (RValue* ptr = arguments) {
+            var ptrs = new RValue*[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
+            fixed (RValue** argv = ptrs) {
+                return this.ExecuteCodeFunction(name, self, other, arguments.Length, argv);
+            }
+        }
     }
 
     public void OnExecuteItWrapper(ExecuteItArguments obj) {

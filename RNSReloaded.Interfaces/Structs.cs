@@ -50,6 +50,7 @@ public unsafe struct RValue {
     [FieldOffset(0x0)] public int Int32;
     [FieldOffset(0x0)] public long Int64;
     [FieldOffset(0x0)] public double Real;
+    [FieldOffset(0x0)] public bool Bool;
     [FieldOffset(0x0)] public CInstance* Object;
     [FieldOffset(0x0)] public nint Pointer;
 
@@ -88,6 +89,18 @@ public unsafe struct RValue {
     public RValue(int value) {
         this.Type = RValueType.Int32;
         this.Int32 = value;
+        this.Flags = 0;
+    }
+
+    public RValue(double value) {
+        this.Type = RValueType.Real;
+        this.Real = value;
+        this.Flags = 0;
+    }
+
+    public RValue(bool value) {
+        this.Type = RValueType.Bool;
+        this.Real = value ? 1.0 : 0;
         this.Flags = 0;
     }
 

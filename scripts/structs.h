@@ -1,10 +1,54 @@
-struct RValue;
-struct CInstance;
-struct CPhysicsObject;
-struct CSkeletonInstance;
-struct YYObjectBase;
-struct CObjectGM;
-struct CEvent;
+#ifndef __RNS_STRUCTS_H
+#define __RNS_STRUCTS_H
+
+// #include <stdbool.h>
+typedef struct RValue RValue;
+typedef struct CInstance CInstance;
+typedef struct CPhysicsObject CPhysicsObject;
+typedef struct CSkeletonInstance CSkeletonInstance;
+typedef struct YYObjectBase_vtable YYObjectBase_vtable;
+typedef struct YYObjectBase YYObjectBase;
+typedef struct CObjectGM CObjectGM;
+typedef struct CEvent CEvent;
+typedef struct RefString RefString;
+typedef struct DynamicArrayOfRValue DynamicArrayOfRValue;
+typedef struct RefDynamicArrayOfRValue RefDynamicArrayOfRValue;
+typedef struct RToken RToken;
+typedef struct CCode CCode;
+typedef struct YYGMLFuncs YYGMLFuncs;
+typedef struct CHashMapElement_int_CObjectGM_ptr_2 CHashMapElement_int_CObjectGM_ptr_2;
+typedef struct CHashMapElement_int_CEvent_ptr_3 CHashMapElement_int_CEvent_ptr_3;
+typedef struct CHashMap_int_CObjectGM_ptr_2 CHashMap_int_CObjectGM_ptr_2;
+typedef struct CHashMap_int_CEvent_ptr_3 CHashMap_int_CEvent_ptr_3;
+typedef struct CPhysicsDataGM CPhysicsDataGM;
+typedef struct LinkedList_CInstance LinkedList_CInstance;
+typedef struct YYRECT YYRECT;
+typedef struct CInstanceInternal CInstanceInternal;
+typedef struct SYYCaseEntry SYYCaseEntry;
+
+struct RefString {
+  char* m_thing;
+  int m_refCount;
+  int m_size;
+};
+
+struct DynamicArrayOfRValue
+{
+	int length;
+	RValue* arr;
+};
+
+struct RefDynamicArrayOfRValue {
+	YYObjectBase* pObjThing;
+	RValue* pArray;
+	// copy on write only
+	long owner;
+	int	refcount;
+	//
+	int flags;
+	int visited;
+	int length;
+};
 
 struct YYObjectBase_vtable {
   void (*dtor)(YYObjectBase *);
@@ -45,11 +89,12 @@ struct CHashMap_int_CEvent_ptr_3 {
   void (*m_DeleteValue)(int *Key, CEvent **Value);
 };
 
-typedef RValue &(*PFUNC_YYGMLScript)(CInstance *Self, CInstance *Other,
-                                     RValue &Result, int ArgumentCount,
+typedef RValue *(*PFUNC_YYGMLScript)(CInstance *Self, CInstance *Other,
+                                     RValue *Result, int ArgumentCount,
                                      RValue **Arguments);
 typedef void (*PFUNC_YYGML)(CInstance *Self, CInstance *Other);
 typedef void (*PFUNC_RAW)();
+typedef void (*TYYBuiltin)(RValue* Result, CInstance* selfinst, CInstance* otherinst, int argc, RValue* arg);
 
 struct YYGMLFuncs {
   const char *m_Name;
@@ -61,7 +106,7 @@ struct YYGMLFuncs {
   void *m_FunctionVariables; // YYVAR
 };
 
-enum RValueType : unsigned __int32 {
+typedef enum RValueType : unsigned __int32 {
   VALUE_REAL = 0,
   VALUE_STRING = 1,
   VALUE_ARRAY = 2,
@@ -79,15 +124,17 @@ enum RValueType : unsigned __int32 {
   VALUE_ITERATOR = 14,
   VALUE_REF = 15,
   VALUE_UNSET = 0x0ffffff
-};
+} RValueType;
 
 struct RValue {
   union {
+    double m_Real;
     __int32 m_i32;
     __int64 m_i64;
-    double m_Real;
 
     CInstance *m_Object;
+    RefString* m_RefString;
+    RefDynamicArrayOfRValue* m_RefArray;
     void *m_Pointer;
   };
 
@@ -220,7 +267,8 @@ struct CInstanceInternal {
   CInstance *m_Blink;
 };
 
-struct CInstance : YYObjectBase {
+struct CInstance {
+  YYObjectBase_vtable *vtable;
   __int64 m_CreateCounter;
   CObjectGM *m_Object;
   CPhysicsObject *m_PhysicsObject;
@@ -232,3 +280,11 @@ struct CInstance : YYObjectBase {
 struct CInstanceBase {
   RValue *m_YYVars;
 };
+
+struct SYYCaseEntry
+{
+	RValue entry;
+	int		value;
+};
+
+#endif

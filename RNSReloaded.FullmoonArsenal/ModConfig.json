@@ -1,10 +1,10 @@
 {
-  "ModId": "RNSReloaded",
-  "ModName": "RNSReloaded",
-  "ModAuthor": "NotNite",
-  "ModVersion": "1.1.0",
-  "ModDescription": "Helper library for Rabbit and Steel. Can be adapted to general GameMaker.",
-  "ModDll": "RNSReloaded.dll",
+  "ModId": "RNSReloaded.FullmoonArsenal",
+  "ModName": "Full Moon Arsenal",
+  "ModAuthor": "fuzzything44",
+  "ModVersion": "0.1.0",
+  "ModDescription": "**Limits online play.**\n\nThe Arsenal, but everyone's better at killing you'.",
+  "ModDll": "RNSReloaded.FullmoonArsenal.dll",
   "ModIcon": "",
   "ModR2RManagedDll32": "",
   "ModR2RManagedDll64": "",
@@ -13,7 +13,7 @@
   "Tags": [],
   "CanUnload": null,
   "HasExports": null,
-  "IsLibrary": true,
+  "IsLibrary": false,
   "ReleaseMetadataFileName": "Sewer56.Update.ReleaseMetadata.json",
   "PluginData": {
     "NuGet": {
@@ -24,15 +24,6 @@
     },
     "GitHubDependencies": {
       "IdToConfigMap": {
-        "Reloaded.Memory.SigScan.ReloadedII": {
-          "Config": {
-            "UserName": "Reloaded-Project",
-            "RepositoryName": "Reloaded.Memory.SigScan",
-            "UseReleaseTag": false,
-            "AssetFileName": "Mod.zip"
-          },
-          "ReleaseMetadataName": "Reloaded.Memory.SigScan.ReloadedII.ReleaseMetadata.json"
-        },
         "reloaded.sharedlib.hooks": {
           "Config": {
             "UserName": "Sewer56",
@@ -41,18 +32,22 @@
             "AssetFileName": "reloaded.sharedlib.hooks.zip"
           },
           "ReleaseMetadataName": "Sewer56.Update.ReleaseMetadata.json"
+        },
+        "Reloaded.Memory.SigScan.ReloadedII": {
+          "Config": {
+            "UserName": "Reloaded-Project",
+            "RepositoryName": "Reloaded.Memory.SigScan",
+            "UseReleaseTag": false,
+            "AssetFileName": "Mod.zip"
+          },
+          "ReleaseMetadataName": "Reloaded.Memory.SigScan.ReloadedII.ReleaseMetadata.json"
         }
       }
     }
   },
   "IsUniversalMod": false,
-  "ModDependencies": [
-    "Reloaded.Memory.SigScan.ReloadedII",
-    "reloaded.sharedlib.hooks"
-  ],
+  "ModDependencies": [ "reloaded.sharedlib.hooks", "RNSReloaded" ],
   "OptionalDependencies": [],
-  "SupportedAppId": [
-    "rabbitsteel.exe"
-  ],
+  "SupportedAppId": [ "rabbitsteel.exe" ],
   "ProjectUrl": "https://github.com/NotNite/RNSReloaded"
 }

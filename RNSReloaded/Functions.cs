@@ -26,10 +26,10 @@ public unsafe class Functions {
     public StructGetKeysDelegate StructGetKeys = null!;
     public YYCreateStringDelegate YYCreateString = null!;
 
-    private Utils utils;
+    private ScanUtils utils;
     private WeakReference<IStartupScanner> scannerRef;
 
-    public Functions(Utils utils, WeakReference<IStartupScanner> scannerRef) {
+    public Functions(ScanUtils utils, WeakReference<IStartupScanner> scannerRef) {
         this.utils = utils;
         this.scannerRef = scannerRef;
 

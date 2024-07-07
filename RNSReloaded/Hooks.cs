@@ -13,7 +13,7 @@ public unsafe class Hooks : IDisposable {
     // Not a great place to put static variables...
     public CRoom** CurrentRoom = null;
 
-    private Utils utils;
+    private ScanUtils utils;
     private WeakReference<IReloadedHooks> hooksRef;
 
     private delegate nint InitLLVMDelegate(SLLVMVars* vars);
@@ -33,7 +33,7 @@ public unsafe class Hooks : IDisposable {
     public event Action? OnRunStart;
     public event Action<ExecuteItArguments>? OnExecuteIt;
 
-    public Hooks(Utils utils, WeakReference<IReloadedHooks> hooksRef) {
+    public Hooks(ScanUtils utils, WeakReference<IReloadedHooks> hooksRef) {
         this.utils = utils;
         this.hooksRef = hooksRef;
 

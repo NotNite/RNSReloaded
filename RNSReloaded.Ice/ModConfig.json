@@ -3,7 +3,7 @@
   "ModName": "Ice",
   "ModAuthor": "glass",
   "ModVersion": "0.1.0",
-  "ModDescription": "**Limits online play.**\n\nIce",
+  "ModDescription": "**Limits online play.**\n\nIce Physics",
   "ModDll": "RNSReloaded.Ice.dll",
   "ModIcon": "",
   "ModR2RManagedDll32": "",

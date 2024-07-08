@@ -1,5 +1,5 @@
-# Permanent Winds
+# Double Time
 
 **Limits online play.**
 
-Enables turbulent winds, in all fights!
+Set a speed multiplier for all fights

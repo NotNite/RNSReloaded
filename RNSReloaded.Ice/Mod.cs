@@ -5,8 +5,6 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
-using RNSReloaded.Ice.Config;
-using System;
 using System.Diagnostics;
 
 namespace RNSReloaded.Ice;
@@ -19,35 +17,27 @@ public unsafe class Mod : IMod {
 
     private ILoggerV1 logger = null!;
 
-    private Configurator configurator = null!;
-    private Config.Config config = null!;
-
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
     private static IHook<RoutineDelegate>? MvHook;
 
-    private nint mvFunction = 0;
-    //lastStill
-    //lastMoved
+    private nint mvFunctionPtr = 0;
 
+    private static double FrameMult = 0.95;
     private static int[] DoOnce = [0, 0, 0, 0];
-    private static bool[] XChanged = [false,false,false,false];
+    private static bool[] XChanged = new bool[4];
+    private static bool[] ClientLocal = new bool[4];
     private static double[] SpeedX = [0, 0, 0, 0];
     private static double[] SpeedY = [0, 0, 0, 0];
     private static double[] OldSpeedX = [0, 0, 0, 0];
     private static double[] OldSpeedY = [0, 0, 0, 0];
-    private static double FrameMult = 0.95;
-
-
     private static double[] OldMoveX = [0, 0, 0, 0];
     private static double[] OldMoveY = [0, 0, 0, 0];
     private static double[] OldMoveStickMult = [0, 0, 0, 0];
     private static double[] OldmoveSpeedMult = [0, 0, 0, 0];
-
     private static RValue*[] MoveX = new RValue*[4];
     private static RValue*[] MoveY = new RValue*[4];
     private static RValue*[] MoveStickMult = new RValue*[4];
     private static RValue*[] MoveSpeedMult = new RValue*[4];
-    private static bool[] ClientLocal = new bool[4];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
@@ -56,12 +46,10 @@ public unsafe class Mod : IMod {
 
         this.scannerRef = loader.GetController<IStartupScanner>()!;
         string sig = "40 53 48 83 EC ?? 48 8B D9 48";
-
         if (this.scannerRef!.TryGetTarget(out var scanner)) {
-            Console.WriteLine("Enter Scanner");
             scanner.AddMainModuleScan(sig, status => {
                 if (status.Found) {
-                    this.mvFunction = Process.GetCurrentProcess().MainModule!.BaseAddress + status.Offset;
+                    this.mvFunctionPtr = Process.GetCurrentProcess().MainModule!.BaseAddress + status.Offset;
                     Console.WriteLine(status.Offset);
                 } else {
                     Console.WriteLine("Error, cannot find function D:");
@@ -74,13 +62,8 @@ public unsafe class Mod : IMod {
             rnsReloaded.OnReady += this.Ready;
         }
 
-        this.configurator = new Configurator(((IModLoader) loader).GetModConfigDirectory(modConfig.ModId));
-        this.config = this.configurator.GetConfiguration<Config.Config>(0);
-        this.config.ConfigurationUpdated += this.ConfigurationUpdated;
     }
-    private void ConfigurationUpdated(IUpdatableConfigurable newConfig) {
-        this.config = (Config.Config) newConfig;
-    }
+
     public void Ready() {
         if (
             this.rnsReloadedRef != null
@@ -104,7 +87,6 @@ public unsafe class Mod : IMod {
                 }
 
                 var script = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(hookStr) - 100000);
-
                 var hook = hooks.CreateHook<ScriptDelegate>(Detour, script->Functions->Function)!;
 
                 hook.Activate();
@@ -115,24 +97,20 @@ public unsafe class Mod : IMod {
             }
 
 
-
-            //btr names...
-            RValue* Detour3(
+            RValue* Update_control_Detour(
                 CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
             ) {
                 return this.ControlDetour(self, other, returnValue, argc, argv);
             }
-            var script3 = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_player_update_control") - 100000);
-            var hook3 = hooks.CreateHook<ScriptDelegate>(Detour3, script3->Functions->Function)!;
+            var playerUpdateControlScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_player_update_control") - 100000);
+            var playerUpdateControlHook = hooks.CreateHook<ScriptDelegate>(Update_control_Detour, playerUpdateControlScript->Functions->Function)!;
 
-            hook3.Activate();
-            hook3.Enable();
+            playerUpdateControlHook.Activate();
+            playerUpdateControlHook.Enable();
 
-            ScriptHooks["scr_player_update_control"] = hook3;
+            ScriptHooks["scr_player_update_control"] = playerUpdateControlHook;
 
-
-
-            MvHook = hooks.CreateHook<RoutineDelegate>(this.MvDetour, mvFunction);
+            MvHook = hooks.CreateHook<RoutineDelegate>(this.MvDetour, this.mvFunctionPtr);
             MvHook.Activate();
             MvHook.Disable();
         }
@@ -144,6 +122,10 @@ public unsafe class Mod : IMod {
 
     private void MvDetour(RValue* returnValue, CInstance* self, CInstance* other, int argc, RValue** argv
     ) {
+        // Unsure what this function(MvFunctionPtr) is for. seems quite generic as it is called often by many scripts
+        // But it is called by scr_player_update_control and it writes new values to the player obj such as moveX and moveY
+        // So this will catch if there are changes made to those values when this is called and changing them
+
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
             var globalInstant = rnsReloaded.GetGlobalInstance();
             RValue* playersArray = rnsReloaded.FindValue(globalInstant, "player")->Get(0);

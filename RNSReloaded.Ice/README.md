@@ -1,5 +1,5 @@
-# Permanent Winds
+# Ice
 
 **Limits online play.**
 
-Enables turbulent winds, in all fights!
+Turns on ice physics.

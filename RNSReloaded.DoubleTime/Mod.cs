@@ -45,26 +45,18 @@ public unsafe class Mod : IMod {
             rnsReloaded.LimitOnlinePlay();
 
             string[] toHook = {
-                //"scr_enemy_add_pattern", //this desync cause only host gets this when a treasuresphere breaks?!
                 "scrdt_encounter",
+                // To set speed back to multiplier after merran sets speed to 1x
                 "bp_wolf_steeltooth1",
                 "bp_wolf_steeltooth1_enrage",
                 "bp_wolf_steeltooth1_pt2",
                 "bp_wolf_steeltooth1_pt2_s",
-                //"bp_wolf_steeltooth1_pt3",
-                //"bp_wolf_steeltooth1_pt3_s",
                 "bp_wolf_steeltooth1_pt4",
                 "bp_wolf_steeltooth1_pt4_s",
-                //"bp_wolf_steeltooth1_pt5",
-                //"bp_wolf_steeltooth1_pt5_s",
                 "bp_wolf_steeltooth1_pt6",
                 "bp_wolf_steeltooth1_pt6_s",
-                //"bp_wolf_steeltooth1_pt7",
-                //"bp_wolf_steeltooth1_pt7_s",
                 "bp_wolf_steeltooth1_pt8",
                 "bp_wolf_steeltooth1_pt8_s",
-                //"bp_wolf_steeltooth1_pt9",
-                //"bp_wolf_steeltooth1_pt9_s",
                 "bp_wolf_steeltooth1_s"
             };
 
@@ -77,7 +69,6 @@ public unsafe class Mod : IMod {
                 }
 
                 var script = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(hookStr) - 100000);
-
                 var hook = hooks.CreateHook<ScriptDelegate>(Detour, script->Functions->Function)!;
 
                 hook.Activate();
@@ -88,21 +79,19 @@ public unsafe class Mod : IMod {
             }
 
 
-            // refactor soonTM
-            RValue* Detour2(
+            RValue* ZoomDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
             ) {
-                return this.AddPatternDetour2(self, other, returnValue, argc, argv);
+                return this.ZoomDetour(self, other, returnValue, argc, argv);
             }
 
-            var script2 = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrbp_zoom") - 100000);
+            var zoomScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrbp_zoom") - 100000);
+            var zoomHook = hooks.CreateHook<ScriptDelegate>(ZoomDetour, zoomScript->Functions->Function)!;
 
-            var hook2 = hooks.CreateHook<ScriptDelegate>(Detour2, script2->Functions->Function)!;
+            zoomHook.Activate();
+            zoomHook.Enable();
 
-            hook2.Activate();
-            hook2.Enable();
-
-            ScriptHooks["scrbp_zoom"] = hook2;
+            ScriptHooks["scrbp_zoom"] = zoomHook;
 
         }
     }
@@ -117,7 +106,8 @@ public unsafe class Mod : IMod {
         returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
-    private RValue* AddPatternDetour2(
+
+    private RValue* ZoomDetour(
      CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
 ) {
         var hook = ScriptHooks["scrbp_zoom"];

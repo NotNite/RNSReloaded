@@ -1,5 +1,3 @@
-# Permanent Winds
+# Nightcore
 
-**Limits online play.**
-
-Enables turbulent winds, in all fights!
+To be used with DoubleTime. Changes music speed along with the battle. Can work independently of Doubletime.

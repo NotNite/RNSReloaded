@@ -5,7 +5,6 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using RNSReloaded.Nightcore.Config;
-using System;
 
 namespace RNSReloaded.Nightcore;
 
@@ -43,8 +42,6 @@ public unsafe class Mod : IMod {
             && this.hooksRef != null
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
-            rnsReloaded.LimitOnlinePlay();
-
 
             string[] toHook = {
                 "scr_stage_play_music",
@@ -82,13 +79,12 @@ public unsafe class Mod : IMod {
     ) {
         var hook = ScriptHooks[name];
         returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
-        this.doTheThing();
+        this.changeMusicPitch();
 
-        var a = argv[1];
         return returnValue;
     }
 
-    private void doTheThing() {
+    private void changeMusicPitch() {
 
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
             RValue action = new RValue();

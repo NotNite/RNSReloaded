@@ -3,7 +3,7 @@
   "ModName": "Nightcore",
   "ModAuthor": "glass",
   "ModVersion": "1.0.0",
-  "ModDescription": "**Limits online play.**\n\n To be used with DoubleTime. Changes music speed along with the battle.",
+  "ModDescription": "To be used with DoubleTime. Changes music speed along with the battle.",
   "ModDll": "RNSReloaded.Nightcore.dll",
   "ModIcon": "",
   "ModR2RManagedDll32": "",

@@ -16,7 +16,7 @@ public class Config : Configurable<Config> {
 
 
     [DisplayName("Shift the music speed")]
-    [Description("So it can be slower outside battle and normal during. Example/Sane value: -0.20")]
+    [Description("So it can be slower outside battle and normal during. Example/Sane value: -0.2 to -0.5")]
     [DefaultValue(0)]
 
     public double SpeedShift { get; set; } = 0;

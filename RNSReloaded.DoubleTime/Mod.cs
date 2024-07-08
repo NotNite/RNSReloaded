@@ -60,7 +60,20 @@ public unsafe class Mod : IMod {
     private RValue* gameSpeedDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        (*argv)->Real = (*argv)->Real*this.config.SpeedMultiplier;
+        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+            string gameSpeedRValueType = rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) argv).ToString() ?? "none";
+            switch (gameSpeedRValueType) {
+                case "number":
+                    (*argv)->Real = (*argv)->Real * this.config.SpeedMultiplier;
+                    break;
+                case "int32":
+                    (*argv)->Real = (*argv)->Int32 * this.config.SpeedMultiplier;
+                    break;
+                case "int64":
+                    (*argv)->Real = (*argv)->Int64 * this.config.SpeedMultiplier;
+                    break;
+            }
+        }
         returnValue = this.gameSpeedHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }

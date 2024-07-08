@@ -118,7 +118,22 @@ public unsafe class Mod : IMod {
                 layer = layer->Next;
             }
 
-            double p = Math.Max(0.1,(rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "gameTimeSpeed")->Real - 1) * this.config.SpeedMultiplier + 1 + this.config.SpeedShift);
+            RValue* gameSpeedRValue = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "gameTimeSpeed");
+            string gameSpeedRValueType = rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) gameSpeedRValue).ToString() ?? "none";
+            double gameSpeed = 0;
+            switch (gameSpeedRValueType) {
+                case "number":
+                    gameSpeed = gameSpeedRValue->Real;
+                    break;
+                case "int32":
+                    gameSpeed = gameSpeedRValue->Int32;
+                    break;
+                case "int64":
+                    gameSpeed = gameSpeedRValue->Int64;
+                    break;
+            }
+
+            double p = Math.Max(0.1,(gameSpeed - 1) * this.config.SpeedMultiplier + 1 + this.config.SpeedShift);
             RValue pitch = new RValue(p);
             RValue[] actionArgv = [action, pitch];
             RValue[] calmArgv = [calm, pitch];

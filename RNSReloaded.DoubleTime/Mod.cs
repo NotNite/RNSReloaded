@@ -5,7 +5,6 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using RNSReloaded.DoubleTime.Config;
-using System;
 
 namespace RNSReloaded.DoubleTime;
 
@@ -17,7 +16,8 @@ public unsafe class Mod : IMod {
     private Configurator configurator = null!;
     private Config.Config config = null!;
 
-    private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
+    private IHook<ScriptDelegate>? gameSpeedHook;
+    private IHook<ScriptDelegate>? encounterStartHook;
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
@@ -44,81 +44,36 @@ public unsafe class Mod : IMod {
         ) {
             rnsReloaded.LimitOnlinePlay();
 
-            string[] toHook = {
-                "scrdt_encounter",
-                // To set speed back to multiplier after merran sets speed to 1x
-                "bp_wolf_steeltooth1",
-                "bp_wolf_steeltooth1_enrage",
-                "bp_wolf_steeltooth1_pt2",
-                "bp_wolf_steeltooth1_pt2_s",
-                "bp_wolf_steeltooth1_pt4",
-                "bp_wolf_steeltooth1_pt4_s",
-                "bp_wolf_steeltooth1_pt6",
-                "bp_wolf_steeltooth1_pt6_s",
-                "bp_wolf_steeltooth1_pt8",
-                "bp_wolf_steeltooth1_pt8_s",
-                "bp_wolf_steeltooth1_s"
-            };
+            var gameSpeedScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrbp_gamespeed") - 100000);
+            this.gameSpeedHook = hooks.CreateHook<ScriptDelegate>(this.gameSpeedDetour, gameSpeedScript->Functions->Function)!;
+            this.gameSpeedHook.Activate();
+            this.gameSpeedHook.Enable();
 
 
-            foreach (var hookStr in toHook) {
-                RValue* Detour(
-                    CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-                ) {
-                    return this.AddPatternDetour(hookStr, self, other, returnValue, argc, argv);
-                }
-
-                var script = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(hookStr) - 100000);
-                var hook = hooks.CreateHook<ScriptDelegate>(Detour, script->Functions->Function)!;
-
-                hook.Activate();
-                hook.Enable();
-
-                ScriptHooks[hookStr] = hook;
-
-            }
-
-
-            RValue* ZoomDetour(
-            CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-            ) {
-                return this.ZoomDetour(self, other, returnValue, argc, argv);
-            }
-
-            var zoomScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrbp_zoom") - 100000);
-            var zoomHook = hooks.CreateHook<ScriptDelegate>(ZoomDetour, zoomScript->Functions->Function)!;
-
-            zoomHook.Activate();
-            zoomHook.Enable();
-
-            ScriptHooks["scrbp_zoom"] = zoomHook;
-
+            var encounterStartScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrdt_encounter") - 100000);
+            this.encounterStartHook = hooks.CreateHook<ScriptDelegate>(this.encounterStartDetour, encounterStartScript->Functions->Function)!;
+            this.encounterStartHook.Activate();
+            this.encounterStartHook.Enable();
         }
     }
 
-    private RValue* AddPatternDetour(
-        string name, CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    private RValue* gameSpeedDetour(
+        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        var hook = ScriptHooks[name];
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            rnsReloaded.ExecuteScript("scrbp_gamespeed", self, other, [new RValue(this.config.SpeedMultiplier)]);
-        }
-        returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
+        (*argv)->Real = (*argv)->Real*this.config.SpeedMultiplier;
+        returnValue = this.gameSpeedHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 
-    private RValue* ZoomDetour(
+    private RValue* encounterStartDetour(
      CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-) {
-        var hook = ScriptHooks["scrbp_zoom"];
+    ) {
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            if ((*argv)->Real == 1.6) // merran timeslow is 1.6 zoom, 0.3 speed by default
-                rnsReloaded.ExecuteScript("scrbp_gamespeed", self, other, [new RValue(0.3 * this.config.SpeedMultiplier)]);
+            rnsReloaded.ExecuteScript("scrbp_gamespeed", self, other, [new RValue(1)]);
         }
-        returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
+        returnValue = this.encounterStartHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
-   
 
     public void Resume() { }
     public void Suspend() { }

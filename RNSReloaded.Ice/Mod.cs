@@ -50,7 +50,6 @@ public unsafe class Mod : IMod {
             scanner.AddMainModuleScan(sig, status => {
                 if (status.Found) {
                     this.mvFunctionPtr = Process.GetCurrentProcess().MainModule!.BaseAddress + status.Offset;
-                    Console.WriteLine(status.Offset);
                 } else {
                     Console.WriteLine("Error, cannot find function D:");
                 }

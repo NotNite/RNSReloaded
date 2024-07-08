@@ -60,20 +60,7 @@ public unsafe class Mod : IMod {
     private RValue* gameSpeedDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            string gameSpeedRValueType = rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) argv).ToString() ?? "none";
-            switch (gameSpeedRValueType) {
-                case "number":
-                    (*argv)->Real = (*argv)->Real * this.config.SpeedMultiplier;
-                    break;
-                case "int32":
-                    (*argv)->Real = (*argv)->Int32 * this.config.SpeedMultiplier;
-                    break;
-                case "int64":
-                    (*argv)->Real = (*argv)->Int64 * this.config.SpeedMultiplier;
-                    break;
-            }
-        }
+        (*argv)->Real *= this.config.SpeedMultiplier;
         returnValue = this.gameSpeedHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
@@ -82,7 +69,7 @@ public unsafe class Mod : IMod {
      CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            rnsReloaded.ExecuteScript("scrbp_gamespeed", self, other, [new RValue(1)]);
+            rnsReloaded.ExecuteScript("scrbp_gamespeed", self, other, [new RValue(1.0)]);
         }
         returnValue = this.encounterStartHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;

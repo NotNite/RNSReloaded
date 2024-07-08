@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded.DoubleTime",
   "ModName": "Double Time",
   "ModAuthor": "glass",
-  "ModVersion": "1.0.0",
+  "ModVersion": "1.1.0",
   "ModDescription": "**Limits online play.**\n\nDouble Time",
   "ModDll": "RNSReloaded.DoubleTime.dll",
   "ModIcon": "",

@@ -119,16 +119,15 @@ public unsafe class Mod : IMod {
             }
 
             RValue* gameSpeedRValue = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "gameTimeSpeed");
-            string gameSpeedRValueType = rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) gameSpeedRValue).ToString() ?? "none";
             double gameSpeed = 0;
-            switch (gameSpeedRValueType) {
-                case "number":
+            switch (gameSpeedRValue->Type) {
+                case RValueType.Real:
                     gameSpeed = gameSpeedRValue->Real;
                     break;
-                case "int32":
+                case RValueType.Int32:
                     gameSpeed = gameSpeedRValue->Int32;
                     break;
-                case "int64":
+                case RValueType.Int64:
                     gameSpeed = gameSpeedRValue->Int64;
                     break;
             }

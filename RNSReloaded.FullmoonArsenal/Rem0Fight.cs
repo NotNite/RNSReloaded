@@ -111,6 +111,7 @@ namespace RNSReloaded.FullmoonArsenal {
 
                 this.bp.colormatch(self, other,
                     warningDelay: 1000,
+                    warnMsg: 2,
                     spawnDelay: 9500,
                     radius: 200,
                     targetMask: (int) group0->Real,
@@ -118,6 +119,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 );
                 this.bp.colormatch(self, other,
                     warningDelay: 1000,
+                    warnMsg: 2,
                     spawnDelay: 9500,
                     radius: 200,
                     targetMask: (int) group1->Real,

@@ -57,19 +57,18 @@ namespace RNSReloaded.FullmoonArsenal {
                 );
 
             }
-
+            
             // 3x is probably about as fast as things can get without being too crazy
             int time = 0;
             double gameSpeed = 1;
-            while (gameSpeed < 2.39) {
+            while (gameSpeed < 2.9) {
                 time += (int) (6000 * gameSpeed);
-                gameSpeed += 0.25;
+                gameSpeed += 1f/3;
 
                 if (this.scrbp.time(self, other, time)) {
                     this.utils.GetGlobalVar("gameTimeSpeed")->Real = gameSpeed;
                 }
             }
-
             // This actually happens ~80s into the run, and ~40s real time
             time += (int) (6000 * gameSpeed);
             if (this.scrbp.time(self, other, time)) {

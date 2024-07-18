@@ -82,6 +82,10 @@ public unsafe interface IBattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? fanAngle = null, Position? position = null, int? targetMask = null
     );
 
+    public void dark2_cr_circle(
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? speed = null, int? angle = null, Position? position = null
+    );
+
     public void dark_targeted(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? scale = null, Position[]? positions = null
     );
@@ -152,6 +156,15 @@ public unsafe interface IBattlePatterns {
     public void knockback_circle(
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, int? radius = null,
         Position? position = null
+    );
+
+    public void light_crosswave(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? rotation = null,
+        Position? position = null
+    );
+
+    public void light_line(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, Position? position = null, int? lineAngle = 0, int? angle = null, int? spd = null, int? lineLength = null, int? numBullets = null, int? type = null, bool? showWarning = null
     );
 
     public void line_direction(

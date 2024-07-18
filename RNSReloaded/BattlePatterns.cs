@@ -350,6 +350,22 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_cone_spreads", args);
     }
 
+    public void dark2_cr_circle(
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? speed = null, int? angle = null, Position? position = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "angle", angle);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_dark2_cr_circle", args);
+    }
+
     public void dark_targeted(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? scale = null, Position[]? positions = null
     ) {
@@ -620,41 +636,44 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_knockback_circle", args);
     }
 
-    //public void light_targeted(
-    //    CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? scale = null, int? type = null, Position[] positions = null
-    //) {
-    //    RValue[] args = [];
+    public void light_crosswave(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? rotation = null,
+        Position? position = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "angle", rotation); // number
 
-    //    if (warningDelay != null) {
-    //        args = args.Concat([this.utils.CreateString("warningDelay")!.Value, new RValue(warningDelay.Value)]).ToArray();
-    //    }
-    //    if (spawnDelay != null) {
-    //        args = args.Concat([this.utils.CreateString("spawnDelay")!.Value, new RValue(spawnDelay.Value)]).ToArray();
-    //    }
-    //    if (eraseDelay != null) {
-    //        args = args.Concat([this.utils.CreateString("eraseDelay")!.Value, new RValue(eraseDelay.Value)]).ToArray();
-    //    }
-    //    if (scale != null) {
-    //        args = args.Concat([this.utils.CreateString("scale")!.Value, new RValue(scale.Value)]).ToArray();
-    //    }
-    //    if (type != null) {
-    //        args = args.Concat([this.utils.CreateString("type")!.Value, new RValue(type.Value)]).ToArray();
-    //    }
-    //    
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
 
-    //    this.rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
+        this.execute_pattern(self, other, "bp_light_crosswave", args);
+    }
 
-    //    args = [];
-    //    for ( int i = 0; i < positions.Length; i++ ) {
-    //        args = args.Concat([new RValue(positions[i].x), new RValue(positions[i].y)]).ToArray();
-    //    }
-    //    this.rnsReloaded.ExecuteScript("bpatt_positions", self, other, args);
+    public void light_line(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, Position? position = null, int? lineAngle = 0, int? angle = null, int? spd = null, int? lineLength = null, int? numBullets = null, int? type = null, bool? showWarning = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "angle", angle);
+        args = this.add_if_not_null(args, "spd", spd);
+        args = this.add_if_not_null(args, "lineAngle", lineAngle);
+        args = this.add_if_not_null(args, "lineLength", lineLength);
+        args = this.add_if_not_null(args, "num", numBullets);
+        args = this.add_if_not_null(args, "type", type);
+        args = this.add_if_not_null(args, "showWarning", showWarning);
 
-    //    args = [new RValue(this.rnsReloaded.ScriptFindId("bp_light_targeted"))];
-    //    this.rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
 
-    //    this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
-    //}
+        this.execute_pattern(self, other, "bp_light_line", args);
+    }
 
     public void line_direction(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? width = null, PosRot[]? positions = null

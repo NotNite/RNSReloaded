@@ -16,8 +16,8 @@ namespace RNSReloaded.FullmoonArsenal {
             if (this.scrbp.time(self, other, startDelay)) {
                 this.bp.fieldlimit_rectangle_temporary(self, other,
                     position: (1920 / 2, 1080 / 2),
-                    width: 1860,
-                    height: 1020,
+                    width: 1740,
+                    height: 900,
                     color: color,
                     eraseDelay: duration + 1000
                 );
@@ -27,6 +27,11 @@ namespace RNSReloaded.FullmoonArsenal {
             return duration;
         }
         private void ResetFieldsRepeating(CInstance* self, CInstance* other, int startDelay, int duration, int color) {
+            if (this.scrbp.time_repeating(self, other, startDelay - duration, duration)) {
+                // Nonfunctional spread for just the warning message, so players know when fieldlimit decrease
+                // snapshot happens
+                this.bp.circle_spreads(self, other, warnMsg: 2, spawnDelay: duration, radius: 0);
+            }
             if (this.scrbp.time_repeating(self, other, startDelay, duration)) {
                 int minX = int.MaxValue;
                 int maxX = int.MinValue;
@@ -58,7 +63,7 @@ namespace RNSReloaded.FullmoonArsenal {
         private void VerticalProjectileRepeating(CInstance* self, CInstance* other, int startDelay, int interval) {
             if (this.scrbp.time_repeating(self, other, startDelay - interval, interval * 2)) {
                 this.bp.light_line(self, other, spawnDelay: interval, position: (0, -20), lineAngle: 0, angle: 90, lineLength: 2020, numBullets: 15, type: 0, showWarning: true, spd: 1);
-                this.bp.light_line(self, other, warningDelay: interval, spawnDelay: interval * 2, position: (67, -20), lineAngle: 0, angle: 90, lineLength: 2020, numBullets: 15, type: 0, showWarning: true, spd: 1);
+                this.bp.light_line(self, other, warningDelay: interval, spawnDelay: interval * 2, position: (67, 1100), lineAngle: 0, angle: -90, lineLength: 2020, numBullets: 15, type: 0, showWarning: true, spd: 1);
             }
         }
 
@@ -71,33 +76,26 @@ namespace RNSReloaded.FullmoonArsenal {
 
         private void MoveAndAttack(CInstance* self, CInstance* other, int startDelay, int interval) {
             if (this.scrbp.time_repeating(self, other, startDelay, interval)) {
-                this.bp.move_position_synced(self, other, duration: interval / 2, position: (this.rng.Next(100, 1820), this.rng.Next(100, 980)));
-                this.bp.dark2_cr_circle(self, other, speed: 4, angle: this.rng.Next(0, 365));
+                int x = this.rng.Next(100, 1820);
+                int y = this.rng.Next(100, 980);
+                int midTime = interval / 2;
+                this.bp.move_position_synced(self, other, duration: midTime, position: (x, y));
+                this.bp.dark_targeted(self, other, warningDelay: midTime, spawnDelay: 2500 + midTime, eraseDelay: 3000 + midTime, scale: 0.7, positions: [(x, y)]);
+                this.bp.dark2_cr_circle(self, other, spawnDelay: 3000 + midTime, speed: 4, angle: this.rng.Next(0, 365), position: (x, y));
             }
         }
 
         public override RValue* FightDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             int time = 0;
-            time += this.SetupFields(self, other, time, 5000, IBattlePatterns.FIELDLIMIT_WHITE);
-            this.ResetFieldsRepeating(self, other, time, 4000, IBattlePatterns.FIELDLIMIT_WHITE);
+            time += this.SetupFields(self, other, time, 7000, IBattlePatterns.FIELDLIMIT_WHITE);
+            this.ResetFieldsRepeating(self, other, time, 6000, IBattlePatterns.FIELDLIMIT_WHITE);
             this.VerticalProjectileRepeating(self, other, time, 2800);
             this.DiagonalProjectileRepeating(self, other, time, 800);
-            this.MoveAndAttack(self, other, time, 2500);
+            this.MoveAndAttack(self, other, time, 3500);
 
-            // Potential projectile summons:
-            // bp_dark_<whatever>
-            // bp_fire_<whatever>
-            // bp_light_<whatever>
-            // bp_water_<whatever>
-
-            // Arrow projectiles, lined up horitonally, all moving horizontally
-            // angle changes the motion direction, but keeps the line
-            //this.bp.fire2_line(self, other, position: (600, 900), numBullets: 10, spd: 2);
-            
-            //if (this.scrbp.time(self, other, time)) {
-            //    this.bp.light_crosswave(self, other, rotation: 45, position: (400, 800));
-            //}
-            //time += 5000;
+            if (this.scrbp.time(self, other, 50000)) {
+                this.bp.enrage(self, other);
+            }
             return returnValue;
         }
     }

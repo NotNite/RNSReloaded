@@ -636,6 +636,25 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_knockback_circle", args);
     }
 
+    public void knockback_line(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, Position? position = null, bool? horizontal = null, int? targetMask = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+        args = this.add_if_not_null(args, "kbAmount", kbAmount);
+        args = this.add_if_not_null(args, "horizontal", horizontal);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_knockback_line", args);
+    }
+
     public void light_crosswave(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? rotation = null,
         Position? position = null

@@ -158,6 +158,10 @@ public unsafe interface IBattlePatterns {
         Position? position = null
     );
 
+    public void knockback_line(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, Position? position = null, bool? horizontal = null, int? targetMask = null
+    );
+
     public void light_crosswave(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? rotation = null,
         Position? position = null

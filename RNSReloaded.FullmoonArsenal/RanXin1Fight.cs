@@ -12,8 +12,8 @@ namespace RNSReloaded.FullmoonArsenal {
         private int CleaveTopBot(CInstance* self, CInstance* other, int startTime, int width = 300, int warnTime = 4000) {
             if (this.scrbp.time(self, other, startTime)) {
                 this.bp.cleave_fixed(self, other, spawnDelay: warnTime, positions: [
-                    ((0, 1080/2 + width / 2), 90),
-                    ((0, 1080/2 - width / 2), -90),
+                    ((1920/2, 1080/2 + width / 2), 90),
+                    ((1920/2, 1080/2 - width / 2), -90),
                 ]);
             }
             return warnTime;
@@ -21,8 +21,8 @@ namespace RNSReloaded.FullmoonArsenal {
         private int CleaveSides(CInstance* self, CInstance* other, int startTime, int width = 300, int warnTime = 4000) {
             if (this.scrbp.time(self, other, startTime)) {
                 this.bp.cleave_fixed(self, other, spawnDelay: warnTime, positions: [
-                    ((1920/2 + width / 2, 0), 0),
-                    ((1920/2 - width / 2, 0), 180),
+                    ((1920/2 + width / 2, 1080/2), 0),
+                    ((1920/2 - width / 2, 1080/2), 180),
                 ]);
             }
             return warnTime;
@@ -41,20 +41,21 @@ namespace RNSReloaded.FullmoonArsenal {
 
         private List<int> playerTargetMasks = new List<int>();
 
-        // Blue wolf (patterns)
-        public override RValue* FightDetour(
-            CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-        ) {
-            int time = 2000;
-            
-            this.CleaveTopBot(self, other, time, warnTime: 5000);
-            time += this.CleaveSides(self, other, time, warnTime: 5000);
-            time -= 500; // Overlap a bit
+        private int IntroCleave(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            this.CleaveTopBot(self, other, time, warnTime: 5500);
+            time += this.CleaveSides(self, other, time, warnTime: 5500);
+            time -= 1000; // Overlap a bit
             if (this.scrbp.time(self, other, time)) {
                 this.bp.knockback_circle(self, other, spawnDelay: 1200, kbAmount: 300, position: (1920 / 2, 1080 / 2));
             }
             time += this.XLasers(self, other, time);
+            return time - startTime;
+        }
 
+        private int FieldLimitCorners(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            // Fieldlimits 
             if (this.scrbp.time(self, other, time)) {
                 List<(int player, double topLeftDist)> playerPos = [(0, double.PositiveInfinity), (0, double.PositiveInfinity), (0, double.PositiveInfinity), (0, double.PositiveInfinity)];
 
@@ -63,13 +64,13 @@ namespace RNSReloaded.FullmoonArsenal {
                     double playerY = this.utils.GetPlayerVar(i, "distMovePrevY")->Real / 1080;
                     playerPos[i] = (1 << i, playerX + playerY);
                 }
-                playerPos = playerPos.OrderBy(e=>e.topLeftDist).ToList();
+                playerPos = playerPos.OrderBy(e => e.topLeftDist).ToList();
                 this.playerTargetMasks = playerPos.ConvertAll(val => val.player);
 
                 // x = 30 to x = 960
                 // y = 30 to y = 540
                 this.bp.fieldlimit_rectangle_temporary(self, other,
-                    position: ((30+960)/2, (30+540)/2),
+                    position: ((30 + 960) / 2, (30 + 540) / 2),
                     width: 960 - 30,
                     height: 540 - 30,
                     color: IBattlePatterns.FIELDLIMIT_RED,
@@ -79,30 +80,32 @@ namespace RNSReloaded.FullmoonArsenal {
                 // x = 960 to 1890
                 // y = 540 to 1050
                 this.bp.fieldlimit_rectangle_temporary(self, other,
-                    position: ((1890+960)/2, (1050+540)/2),
-                    width: 1890-960,
-                    height: 1050-540,
+                    position: ((1890 + 960) / 2, (1050 + 540) / 2),
+                    width: 1890 - 960,
+                    height: 1050 - 540,
                     color: IBattlePatterns.FIELDLIMIT_RED,
                     targetMask: playerPos[2].player | playerPos[3].player,
                     eraseDelay: 15000
                 );
             }
             time += 500;
+            // Daggers
             if (this.scrbp.time_repeat_times(self, other, time, 500, 4)) {
                 this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: 2000, position: (0, 0), angle: 90, lineLength: 1920 / 2, numBullets: 12, spd: 18);
                 this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: 2000, position: (1920 / 2, 1080), angle: -90, lineLength: 1920 / 2, numBullets: 12, spd: 18);
             }
             time += 2000;
-
+            // Spreads + cleave 1
             if (this.scrbp.time(self, other, time)) {
                 this.bp.circle_spreads(self, other, spawnDelay: 4000, radius: 150);
             }
             time += this.CleaveSides(self, other, time);
+            // Spreads + cleave 2
             if (this.scrbp.time(self, other, time)) {
                 this.bp.circle_spreads(self, other, spawnDelay: 2500, radius: 150);
             }
             time += this.CleaveTopBot(self, other, time, warnTime: 2500);
-
+            // Wind cleaves
             if (this.scrbp.time(self, other, time)) {
                 this.bp.tailwind(self, other, eraseDelay: 4000);
                 this.bp.cleave(self, other, warnMsg: 2, spawnDelay: 4000, cleaves: [
@@ -114,7 +117,15 @@ namespace RNSReloaded.FullmoonArsenal {
             }
             time += 5000;
             time += this.XLasers(self, other, time, duration: 2000);
-            
+            return time - startTime;
+        }
+
+        // TODO: add section in between with fieldlimit + winds, but on the correct side
+        //       (so difficulty ramps up slower)
+        private int FieldLimitTopBot(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+
+            // Field limits
             if (this.scrbp.time(self, other, time)) {
                 this.scrbp.order_random(self, other, false, 1, 1, 1, 1);
                 var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
@@ -128,7 +139,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.fieldlimit_rectangle_temporary(self, other,
                     position: (1920 / 2, (30 + 540) / 2),
                     width: 1920 - 60,
-                    height: 540 - 30,
+                    height: 540 - 40,
                     color: IBattlePatterns.FIELDLIMIT_RED,
                     targetMask: this.playerTargetMasks[0] | this.playerTargetMasks[1],
                     eraseDelay: 21100
@@ -145,14 +156,16 @@ namespace RNSReloaded.FullmoonArsenal {
                 );
             }
             time += 2500;
+            // Dagger walls regular
             if (this.scrbp.time_repeat_times(self, other, time, 1600, 4)) {
-                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
-                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 1080/2 + 10), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
+                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 13);
+                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 1080 / 2 + 10), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 13);
 
-                this.bp.fire2_line(self, other, spawnDelay: 800, position: (1920, 1080/4 + 20), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
-                this.bp.fire2_line(self, other, spawnDelay: 800, position: (1920, 3*1080/4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
+                this.bp.fire2_line(self, other, spawnDelay: 800, position: (1920, 1080 / 4 + 20), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 13);
+                this.bp.fire2_line(self, other, spawnDelay: 800, position: (1920, 3 * 1080 / 4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 13);
             }
             time += 1600 * 4;
+            // Wind setup
             if (this.scrbp.time(self, other, time)) {
                 this.bp.tailwind(self, other, 11000);
                 this.bp.cleave(self, other, spawnDelay: 3000, cleaves: [
@@ -161,30 +174,243 @@ namespace RNSReloaded.FullmoonArsenal {
                     ( -45, this.playerTargetMasks[2]), // Top Right cleave
                     (-135, this.playerTargetMasks[3]), // Top Left cleave
                 ]);
-                this.bp.ray_single(self, other, warningDelay: 2000, spawnDelay: 3000, eraseDelay: 20000, width: 100, position: (-20, 1080 / 2));
+                this.bp.ray_single(self, other, warningDelay: 2000, spawnDelay: 3000, eraseDelay: 11000, width: 100, position: (-20, 1080 / 2));
             }
             time += 3000;
-            if (this.scrbp.time_repeat_times(self, other, time, 2000, 4)) {
-                this.bp.cleave(self, other, spawnDelay: 2000, cleaves: [
+            // Dagger walls winds
+            if (this.scrbp.time_repeat_times(self, other, time - 1500, 2000, 4)) {
+                this.bp.cleave(self, other, warningDelay: 1500, spawnDelay: 3500, cleaves: [
                     (  45, this.playerTargetMasks[0]), // Bottom Right cleave
                     ( 135, this.playerTargetMasks[1]), // Bottom Left cleave
                     ( -45, this.playerTargetMasks[2]), // Top Right cleave
                     (-135, this.playerTargetMasks[3]), // Top Left cleave
                 ]);
 
-                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
-                this.bp.fire2_line(self, other, spawnDelay: 0, position: (1920, 1080 / 2 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: 1500, position: (1920, 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 10);
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: 1500, position: (1920, 1080 / 2 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 10);
 
-                this.bp.fire2_line(self, other, spawnDelay: 1000, position: (1920, 1080 / 4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
-                this.bp.fire2_line(self, other, spawnDelay: 1000, position: (1920, 3 * 1080 / 4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 12);
+                this.bp.fire2_line(self, other, showWarning: 1, warningDelay: 1000, spawnDelay: 2500, position: (1920, 1080 / 4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 10);
+                this.bp.fire2_line(self, other, showWarning: 1, warningDelay: 1000, spawnDelay: 2500, position: (1920, 3 * 1080 / 4 + 15), angle: 180, lineAngle: 90, lineLength: 1080 / 4, numBullets: 8, spd: 10);
             }
             time += 2000 * 4;
+            return time - startTime;
+        }
 
-            // TODO: knockback into cleave, randomized direction per player so you gotta stand (pretty much a TP mechanic)
-            //   (intermediary to re-randomize positions before next field limit)
+        private int KnockbackCleaves(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            if (this.scrbp.time(self, other, time)) {
+                this.scrbp.order_random(self, other, false, 1, 1, 1, 1);
+                var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
+                var group0 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 0)->Real;
+                var group1 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 1)->Real;
+                var group2 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 2)->Real;
+                var group3 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 3)->Real;
 
-            // XLasers, but rotating? Maybe with bullets or something to dodge at the same time? Or use as downtime to help bullet clear setups
+                this.bp.knockback_line(self, other, spawnDelay: 3700, kbAmount: 400, position: (-600, 0), horizontal: false, targetMask: group0);
+                this.bp.knockback_line(self, other, spawnDelay: 3700, kbAmount: 400, position: (2520, 0), horizontal: false, targetMask: group1);
+                this.bp.knockback_line(self, other, spawnDelay: 3700, kbAmount: 400, position: (0, -600), horizontal: true, targetMask: group2);
+                this.bp.knockback_line(self, other, spawnDelay: 3700, kbAmount: 400, position: (0, 1780), horizontal: true, targetMask: group3);
+            }
+            this.CleaveTopBot(self, other, time);
+            time += this.CleaveSides(self, other, time);
+            return time - startTime;
+        }
 
+        private int Windmill(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            const int iterations = 4;
+            const int iterationTime = 3000;
+            // Windmill + winds
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.ray_spinfast(self, other,
+                    spawnDelay: iterationTime,
+                    eraseDelay: iterationTime * iterations + 1500,
+                    numLasers: 4,
+                    position: (1920 / 2, 1080 / 2),
+                    width: 100,
+                    rot: 45,
+                    angle: 90 * (iterations - 1)
+                );
+                this.bp.tailwind(self, other, eraseDelay: 13500);
+            }
+            // Daggers + spreads
+            if (this.scrbp.time_repeat_times(self, other, time, iterationTime, iterations)) {
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: iterationTime, position: (0, 0), angle: 90, lineAngle: 0, lineLength: 1920, numBullets: 8, spd: 10);
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: iterationTime, position: (0, 1080), angle: -90, lineAngle: 0, lineLength: 1920, numBullets: 8, spd: 10);
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: iterationTime, position: (0, 0), angle: 0, lineAngle: 90, lineLength: 1080, numBullets: 6, spd: 10);
+                this.bp.fire2_line(self, other, showWarning: 1, spawnDelay: iterationTime, position: (1920, 0), angle: 180, lineAngle: 90, lineLength: 1080, numBullets: 6, spd: 10);
+
+                this.bp.line_spreads_h(self, other, spawnDelay: iterationTime, width: 120);
+                this.bp.line_spreads_v(self, other, spawnDelay: iterationTime, width: 120);
+            }
+            time += iterationTime * iterations + 1500;
+            return time - startTime;
+        }
+
+        private int spreadTarget1 = 0;
+        private int spreadTarget2 = 2;
+        private int RotatingCleaves(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            const int iterationTime = 3000;
+            const int numIterations = 5;
+            // Group generation
+            if (this.scrbp.time(self, other, time)) {
+                this.scrbp.order_random(self, other, false, 1, 1, 1, 1);
+                var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
+                var group0 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 0)->Real;
+                var group1 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 1)->Real;
+                var group2 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 2)->Real;
+                var group3 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 3)->Real;
+                this.playerTargetMasks = [group0, group1, group2, group3];
+            }
+            // Cleaves + spread/ray generation + projectiles
+            if (this.scrbp.time_repeat_times(self, other, time, iterationTime, numIterations)) {
+                int thisBattleTime = (int) this.rnsReloaded.FindValue(self, "patternExTime")->Real;
+                int iteration = (thisBattleTime - startTime) / iterationTime;
+                this.bp.cleave(self, other, spawnDelay: iterationTime, cleaves: [
+                    ( -45, this.playerTargetMasks[(0 + iteration) % 4]),
+                    (-135, this.playerTargetMasks[(1 + iteration) % 4]),
+                    ( 135, this.playerTargetMasks[(2 + iteration) % 4]),
+                    (  45, this.playerTargetMasks[(3 + iteration) % 4]),
+                ]);
+
+                // Ray creation
+                // First iteration shouldn't create ray because no warning
+                if (iteration > 0) {
+                    if (iteration % 2 == 0) {
+                        int player0x = (int) this.utils.GetPlayerVar(this.spreadTarget1, "distMovePrevX")->Real;
+                        int player1x = (int) this.utils.GetPlayerVar(this.spreadTarget2, "distMovePrevX")->Real;
+                        this.bp.ray_single(self, other,
+                            spawnDelay: iterationTime / 2,
+                            eraseDelay: iterationTime * numIterations,
+                            width: 120,
+                            angle: 90,
+                            position: (player0x, -50)
+                        );
+                        this.bp.ray_single(self, other,
+                            spawnDelay: iterationTime / 2,
+                            eraseDelay: iterationTime * numIterations,
+                            width: 120,
+                            angle: 90,
+                            position: (player1x, -50)
+                        );
+                    } else {
+                        int player0y = (int) this.utils.GetPlayerVar(this.spreadTarget1, "distMovePrevY")->Real;
+                        int player1y = (int) this.utils.GetPlayerVar(this.spreadTarget2, "distMovePrevY")->Real;
+                        this.bp.ray_single(self, other,
+                            spawnDelay: iterationTime / 2,
+                            eraseDelay: iterationTime * numIterations,
+                            width: 120,
+                            angle: 0,
+                            position: (-50, player0y)
+                        );
+                        this.bp.ray_single(self, other,
+                            spawnDelay: iterationTime / 2,
+                            eraseDelay: iterationTime * numIterations,
+                            width: 120,
+                            angle: 0,
+                            position: (-50, player1y)
+                        );
+                    }
+
+                }
+                // Alternate which players have to bait
+                if (iteration % 2 == 0) {
+                    this.spreadTarget1 = 0;
+                    this.spreadTarget2 = 2;
+                } else {
+                    this.spreadTarget1 = 1;
+                    this.spreadTarget2 = 3;
+                }
+                // Make sure to not target players that don't exist (ray creation will then crash the game)
+                if (this.spreadTarget1 >= this.utils.GetNumPlayers()) {
+                    this.spreadTarget1 = 0;
+                }
+                if (this.spreadTarget2 >= this.utils.GetNumPlayers()) {
+                    this.spreadTarget2 = 0;
+                }
+                // Create spread warnings
+                if (iteration != numIterations - 1) {
+                    if (iteration % 2 == 0) {
+                        this.bp.line_spreads_h(self, other, spawnDelay: iterationTime, width: 120, targetMask: 1 << this.spreadTarget1 | 1 << this.spreadTarget2);
+                    } else {
+                        this.bp.line_spreads_v(self, other, spawnDelay: iterationTime, width: 120, targetMask: 1 << this.spreadTarget1 | 1 << this.spreadTarget2);
+                    }
+                }
+
+                // Top projectiles
+                this.bp.fire2_line(self, other,
+                    warningDelay: 0,
+                    showWarning: 1,
+                    spawnDelay: iterationTime / 2,
+                    position: (0, 0),
+                    angle: 45,
+                    lineAngle: 0,
+                    lineLength: 1920,
+                    numBullets: 9,
+                    spd: 8 + iteration
+                );
+                // Bottom
+                this.bp.fire2_line(self, other,
+                    warningDelay: 0,
+                    showWarning: 1,
+                    spawnDelay: iterationTime / 2,
+                    position: (0, 1080),
+                    angle: -135,
+                    lineAngle: 0,
+                    lineLength: 1920,
+                    numBullets: 9,
+                    spd: 8 + iteration
+                );
+                // Right
+                this.bp.fire2_line(self, other,
+                    warningDelay: 0,
+                    showWarning: 1,
+                    spawnDelay: iterationTime / 2,
+                    position: (1920, 0),
+                    angle: 135,
+                    lineAngle: 90,
+                    lineLength: 1920,
+                    numBullets: 6,
+                    spd: 8 + iteration
+                );
+                // Left
+                this.bp.fire2_line(self, other,
+                    warningDelay: 0,
+                    showWarning: 1,
+                    spawnDelay: iterationTime / 2,
+                    position: (0, 0),
+                    angle: -45,
+                    lineAngle: 90,
+                    lineLength: 1920,
+                    numBullets: 6,
+                    spd: 8 + iteration
+                );
+            }
+
+            time += iterationTime * numIterations;
+            return time - startTime;
+        }
+
+        // Blue wolf (patterns)
+        public override RValue* FightDetour(
+            CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+        ) {
+            int time = 1000;
+
+            time += this.IntroCleave(self, other, time);
+            time += this.FieldLimitCorners(self, other, time);
+            time += this.FieldLimitTopBot(self, other, time);
+            time += this.KnockbackCleaves(self, other, time);
+            time += this.Windmill(self, other, time);
+            time += this.RotatingCleaves(self, other, time);
+            time += this.KnockbackCleaves(self, other, time);
+            time += this.FieldLimitTopBot(self, other, time);
+
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.enrage(self, other);
+            }
+            this.logger.PrintMessage("Time " + time, this.logger.ColorRedLight);
             return returnValue;
         }
 
@@ -192,12 +418,12 @@ namespace RNSReloaded.FullmoonArsenal {
         public override RValue* FightAltDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
-            const int iterations = 12;
-            const int cycleTime = 1700;
+            const int iterations = 10;
+            const int cycleTime = 2300;
             for (int i = iterations; i > 0; i--) {
                 if (this.scrbp.time_repeating(self, other, 1000 + (iterations - i) * cycleTime, iterations * cycleTime)) {
-                    double scale = i * 0.4;
-                    this.bp.prscircle(self, other, warningDelay: 0, angle: this.rng.Next(0, 360), spawnDelay: cycleTime, radius: (int) (180 * scale), numBullets: i * 4, speed: 0, position: (1920 / 2, 1080 / 2));
+                    double scale = i * 0.5;
+                    this.bp.prscircle(self, other, warningDelay: 0, angle: this.rng.Next(0, 360), spawnDelay: cycleTime, radius: (int) (180 * scale), numBullets: i * 3 + 1, speed: 0, position: (1920 / 2, 1080 / 2));
                 }
             }
 

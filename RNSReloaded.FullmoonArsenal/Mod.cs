@@ -163,11 +163,7 @@ public unsafe class Mod : IMod {
                     new Notch(NotchType.Encounter, "enc_wolf_bluepaw1", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
-                new Notch(NotchType.Chest, "", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),
-                new Notch(NotchType.Chest, "", 0, 0), 
-                new Notch(NotchType.Encounter, "enc_wolf_greyeye0", 0, 0),
-                new Notch(NotchType.Chest, "", 0, 0),
                 new Notch(NotchType.Boss, "enc_wolf_bluepaw0", 0, Notch.BOSS_FLAG)
             }, self, rnsReloaded);
         }
@@ -182,9 +178,8 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.Shop, "", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear2", 0, 0),
-                new Notch(NotchType.Shop, "", 0, 0),
+                new Notch(NotchType.Encounter, "enc_wolf_greyeye0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
-                new Notch(NotchType.Chest, "", 0, 0),
                 new Notch(NotchType.Boss, "enc_wolf_bluepaw1", 0, Notch.BOSS_FLAG)
             }, self, rnsReloaded);
         }

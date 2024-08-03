@@ -164,7 +164,17 @@ public unsafe class Mod : IMod {
             var instance = rnsReloaded.GetGlobalInstance();
             var hpList = rnsReloaded.FindValue(instance, "playerHp");
             var enemyHps = rnsReloaded.ArrayGetEntry(hpList, 1);
-            return rnsReloaded.ArrayGetEntry(enemyHps, (int) id)->Real;
+            var hpValue = rnsReloaded.ArrayGetEntry(enemyHps, (int) id);
+            switch (hpValue->Type) {
+                case RValueType.Real:
+                    return hpValue->Real;
+                case RValueType.Int32:
+                    return hpValue->Int32;
+                case RValueType.Int64:
+                    return hpValue->Int64;
+                default:
+                    return 0;
+            }
         } else {
             throw new NullReferenceException("Hardcore mod not loaded properly - can't get RnsReloaded reference");
         }

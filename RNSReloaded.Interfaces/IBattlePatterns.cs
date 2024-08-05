@@ -193,6 +193,10 @@ public unsafe interface IBattlePatterns {
         CInstance* self, CInstance* other, int? spawnDelay = null, bool? resetAnim = null, int? duration = null, Position? position = null
     );
 
+    public void painsplit(
+        CInstance* self, CInstance* other, bool isPrimary
+    );
+
     public void prscircle(
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? radius = null, int? numBullets = null, int? speed = null, Position? position = null, int? angle = null
     );

@@ -20,6 +20,8 @@ public unsafe class Mod : IMod {
 
     private IHook<ScriptDelegate>? damageHook;
 
+    private IHook<ScriptDelegate>? rewardHook;
+
     private Random rng = new Random();
     private List<CustomFight> fights = [];
 
@@ -94,20 +96,6 @@ public unsafe class Mod : IMod {
             this.chooseHallsHook.Activate();
             this.chooseHallsHook.Enable();
 
-            // Fight ideas: This can be a miniboss so not just a regular repeating fight!
-            // - Will-style healing? (Mutually exclusive with above) (do this one later, for the other duo fight)
-            //   - One top left, one bottom right. Every 10s knock the player farthest away from their mob to the other one
-            //   - (so ONE player gets KB, not one per side)
-            //   - OR just every 10s swap EVERYONE at far left or right
-            // - "box" style fieldlimits keeping center unavailable? Then flip top/bottom with damage in center?
-
-            // For on defensive cast effects:
-            //   scr_hotbarsys_ability_use is promising:
-            //     self contains playerId and slotId, but it's not synced properly
-            //   ipat_<class>_<slotID>[_<gem or pt2>] (e.g ipat_bruiser_0) seems to work and is synced
-            //     but is called multiple times and would need to hook ALL versions
-            //     or figure out what's calling it (yay reverse engineering/looking at stack traces)
-
             var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
             this.damageHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
                 argv[2]->Real *= this.damageMult;
@@ -116,6 +104,14 @@ public unsafe class Mod : IMod {
             this.damageHook.Activate();
             this.damageHook.Enable();
 
+            var rewardScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_rankbar_give_rewards") - 100000);
+            this.rewardHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
+                //rnsReloaded.ExecuteScript("ipat_heal_light", self, other, []);
+                return this.rewardHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            }, rewardScript->Functions->Function);
+            this.rewardHook.Activate();
+            this.rewardHook.Enable();
+            
         }
     }
 

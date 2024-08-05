@@ -788,6 +788,16 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_move_position_synced", args);
     }
 
+    public void painsplit(
+        CInstance* self, CInstance* other, bool isPrimary
+    ) {
+        if (isPrimary) {
+            this.execute_pattern(self, other, "bp_mouse_commander0_painsplit", []);
+        } else {
+            this.execute_pattern(self, other, "bp_mouse_rosemage0_painsplit", []);
+        }
+    }
+
     public void prscircle(
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? displayNumber = null, int? bulletType = null, bool? doubled = null, int? spawnDelay = null, int? radius = null, int? numBullets = null, int? speed = null, Position? position = null, int? angle = null
     ) {

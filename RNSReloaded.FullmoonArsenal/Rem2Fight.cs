@@ -43,7 +43,7 @@ namespace RNSReloaded.FullmoonArsenal {
 
             if (this.scrbp.time(self, other, time)) {
                 this.bp.prscircle(self, other, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (400, 1080 / 2), numBullets: 0);
-                this.bp.prscircle(self, other, warningDelay: 800, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (1920 - 400, 1080 / 2), numBullets: 0);
+                this.bp.prscircle(self, other, warningDelay: 1000, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (1920 - 400, 1080 / 2), numBullets: 0);
 
                 this.bp.fire_aoe(self, other, warningDelay: 3500, spawnDelay: 3500, eraseDelay: 4000, scale: 2.2, positions: [(300, 1080 / 2), (1920 - 300, 1080 / 2)]);
             }
@@ -53,7 +53,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b0001, color: 7);
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b0010, color: 12);
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b0100, color: 17);
-                this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b1000, color: 17);
+                this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b1000, color: 22);
             }
             time += 5000;
 
@@ -94,7 +94,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     numLasers: 4,
                     warningDelay: 3000,
                     spawnDelay: 3000,
-                    eraseDelay: 4900,
+                    eraseDelay: 5250,
                     width: 150
                 );
             }

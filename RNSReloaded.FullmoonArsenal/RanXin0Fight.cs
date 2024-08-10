@@ -11,7 +11,7 @@ namespace RNSReloaded.FullmoonArsenal {
         private bool delaySpread = false;
 
         public RanXin0Fight(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) :
-            base(rnsReloaded, logger, hooks, "bp_wolf_bluepaw0_s", "bp_wolf_redclaw0_s") { }
+            base(rnsReloaded, logger, hooks, "bp_wolf_bluepaw0", "bp_wolf_redclaw0") { }
 
         private int Setup(CInstance* self, CInstance* other) {
             if (this.scrbp.time(self, other, 0)) {

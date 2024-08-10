@@ -1,0 +1,8 @@
+spriteNumber,6,,,,
+,,,,,
+it_fullmoon_heal,5,,,,
+,,,,,
+trigger,battleEnd2,,,,
+condition,tcond_missing_health,1,,,
+addPattern,ipat_heal_light,amount,1,,
+quickPattern,tpat_hb_flash_item,,,,

@@ -20,19 +20,83 @@ public unsafe class Mod : IMod {
 
     private IHook<ScriptDelegate>? damageHook;
 
-    private IHook<ScriptDelegate>? rewardHook;
+    private IHook<ScriptDelegate>? globalHook;
 
     private Random rng = new Random();
     private List<CustomFight> fights = [];
 
     private double damageMult = 0.6;
 
+    static void CopyDirectory(string sourceDir, string destinationDir, bool recursive) {
+        // Get information about the source directory
+        var dir = new DirectoryInfo(sourceDir);
+
+        // Check if the source directory exists
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+        // Cache directories before we start copying
+        DirectoryInfo[] dirs = dir.GetDirectories();
+
+        // Create the destination directory
+        Directory.CreateDirectory(destinationDir);
+
+        // Get the files in the source directory and copy to the destination directory
+        foreach (FileInfo file in dir.GetFiles()) {
+            string targetFilePath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(targetFilePath, true);
+        }
+
+        // If recursive and copying subdirectories, recursively call this method
+        if (recursive) {
+            foreach (DirectoryInfo subDir in dirs) {
+                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true);
+            }
+        }
+    }
+
+    private void CopyItemMod() {
+        // Copy over item mod to game folder
+        // Awkward way of finding source path but it works for now I guess, as long as they installed Reloaded to desktop
+        DirectoryInfo sourceDir = new DirectoryInfo(Environment.ExpandEnvironmentVariables("%RELOADEDIIMODS%"));
+        string path = Path.Combine(sourceDir.FullName, @"RNSReloaded.FullmoonArsenal\ItemMod");
+        CopyDirectory(path, @".\Mods\ArsenalHealItem", true);
+        // Enable the item mod in save file
+        string modSavePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"RabbitSteel\SaveFileNonSynced\modconfig.ini");
+        try {
+            string[] enabledMods = File.ReadLines(modSavePath).ToArray();
+            bool modInFile = false;
+            for(int i = 0; i < enabledMods.Count(); i++) {
+                string line = enabledMods[i];
+                // If there's already an entry in save for this mod, replace it with the enabled version
+                if (line.StartsWith("ArsenalHealItem=")) {
+                    enabledMods[i] = "ArsenalHealItem=\"1.000000\"";
+                    modInFile = true;
+                }
+            }
+            // If no entry, add it
+            if (!modInFile) {
+                enabledMods = enabledMods.Concat(["ArsenalHealItem=\"1.000000\""]).ToArray();
+            }
+            File.WriteAllLines(modSavePath, enabledMods);
+
+        } catch {
+            File.WriteAllLines(modSavePath, [
+                "[Enable]",
+                "ArsenalHealItem=\"1.000000\""
+            ]);
+        }
+
+    }
+
     public void Start(IModLoaderV1 loader) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
         
         this.logger = loader.GetLogger();
-
+        
+        this.CopyItemMod();
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             rnsReloaded.OnReady += this.Ready;
         }
@@ -46,7 +110,6 @@ public unsafe class Mod : IMod {
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
             rnsReloaded.LimitOnlinePlay();
-            
             this.fights = [
                 // TODO: Should be 0.6x damage
                 new Rem0Fight  (rnsReloaded, this.logger, hooks),
@@ -65,7 +128,7 @@ public unsafe class Mod : IMod {
                 // Not made yet
                 new TasshaFight(rnsReloaded, this.logger, hooks)
             ];
-            
+
             var outskirtsScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwaygen_outskirts") - 100000);
             this.outskirtsHook =
                 hooks.CreateHook<ScriptDelegate>(this.OutskirtsDetour, outskirtsScript->Functions->Function);
@@ -98,20 +161,12 @@ public unsafe class Mod : IMod {
 
             var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
             this.damageHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
-                argv[2]->Real *= this.damageMult;
+                argv[2]->Real *= 10; // this.damageMult;
                 return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
             }, damageScript->Functions->Function);
             this.damageHook.Activate();
             this.damageHook.Enable();
 
-            var rewardScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_rankbar_give_rewards") - 100000);
-            this.rewardHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
-                //rnsReloaded.ExecuteScript("ipat_heal_light", self, other, []);
-                return this.rewardHook!.OriginalFunction(self, other, returnValue, argc, argv);
-            }, rewardScript->Functions->Function);
-            this.rewardHook.Activate();
-            this.rewardHook.Enable();
-            
         }
     }
 
@@ -144,6 +199,14 @@ public unsafe class Mod : IMod {
                     enemyData->Get(i)->Get(8)->Real = 300;
                 }
             }
+
+            // Code to give players a modded item that guarantees 1 HP heal after each combat
+            // It's here to make sure that the variables exist, as they won't during regular setup
+            rnsReloaded.utils.GetGlobalVar("testItemNum")->Real = 1;
+            rnsReloaded.utils.GetGlobalVar("testItemNum")->Type = RValueType.Real;
+            var testItemArr = rnsReloaded.utils.GetGlobalVar("testItem");
+            var arrName = testItemArr->Get(0);
+            rnsReloaded.CreateString(arrName, "it_fullmoon_heal");
         }
         return returnValue;
     }
@@ -172,7 +235,6 @@ public unsafe class Mod : IMod {
         returnValue = this.arsenalHook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded)) {
             rnsReloaded.utils.setHallway(new List<Notch> {
-                new Notch(NotchType.Shop, "", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear2", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_greyeye0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
@@ -190,7 +252,6 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 // Cutscene needed for music to play, sadly. Kind of awkward just adding it though
                 new Notch(NotchType.PinnacleCutscene, "", 0, 0),
-                new Notch(NotchType.Shop, "", 1, 0),
                 new Notch(NotchType.FinalBoss, "enc_wolf_snowfur0", 0, Notch.FINAL_BOSS_FLAG),
                 new Notch(NotchType.EndRun, "", 0, 0)
             }, self, rnsReloaded);

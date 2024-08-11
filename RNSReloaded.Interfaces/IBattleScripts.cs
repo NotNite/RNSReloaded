@@ -12,7 +12,7 @@ public unsafe interface IBattleScripts {
 
     public bool time_repeat_times(CInstance* self, CInstance* other, int startTime, int timeBetween, int times);
 
-    public void order_random(CInstance* self, CInstance* other, bool excludeKO, params int[] groupings);
+    public int[] order_random(CInstance* self, CInstance* other, bool excludeKO, params int[] groupings);
 
     public void pattern_deal_damage_enemy_subtract(CInstance* self, CInstance* other, int teamId, int playerId, int damageAmount);
 

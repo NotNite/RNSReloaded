@@ -58,7 +58,7 @@ public unsafe class Mod : IMod {
 
     private void CopyItemMod() {
         // Copy over item mod to game folder
-        // Awkward way of finding source path but it works for now I guess, as long as they installed Reloaded to desktop
+        // We assume that this environment variable is actually correct
         DirectoryInfo sourceDir = new DirectoryInfo(Environment.ExpandEnvironmentVariables("%RELOADEDIIMODS%"));
         string path = Path.Combine(sourceDir.FullName, @"RNSReloaded.FullmoonArsenal\ItemMod");
         CopyDirectory(path, @".\Mods\ArsenalHealItem", true);
@@ -161,7 +161,7 @@ public unsafe class Mod : IMod {
 
             var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
             this.damageHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
-                argv[2]->Real *= 10; // this.damageMult;
+                argv[2]->Real *= this.damageMult;
                 return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
             }, damageScript->Functions->Function);
             this.damageHook.Activate();

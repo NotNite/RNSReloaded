@@ -190,6 +190,7 @@ namespace RNSReloaded.FullmoonArsenal {
             this.BubbleLine(self, other, time - 10000, 10000);
             this.DashCleaveWarn(self, other, time - 5000, this.playerRng.Next(0, this.utils.GetNumPlayers()));
 
+            // fieldlimit 1 player in place, force other 3 to not cleave/spread them
 
             return returnValue;
         }

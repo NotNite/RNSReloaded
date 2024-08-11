@@ -319,13 +319,7 @@ namespace RNSReloaded.FullmoonArsenal {
             const int numIterations = 5;
             // Group generation
             if (this.scrbp.time(self, other, time)) {
-                this.scrbp.order_random(self, other, false, 1, 1, 1, 1);
-                var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
-                var group0 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 0)->Real;
-                var group1 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 1)->Real;
-                var group2 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 2)->Real;
-                var group3 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 3)->Real;
-                this.playerTargetMasks = [group0, group1, group2, group3];
+                this.playerTargetMasks = new List<int>(this.scrbp.order_random(self, other, false, 1, 1, 1, 1));
 
                 this.bp.cleave(self, other, spawnDelay: iterationTime + 1500, cleaves: [
                     ( -45, this.playerTargetMasks[0]),

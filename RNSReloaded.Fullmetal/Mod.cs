@@ -129,32 +129,6 @@ public unsafe class Mod : IMod {
         this.CreateAndEnableHook("scr_itemsys_erase_potions", this.ErasePotionsDetour, out this.erasePotionsHook);
     }
 
-    private double RValueToDouble(RValue* arg) {
-        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            string type = arg->Type.ToString();
-            return type switch {
-                "Real" => (double) (*arg).Real,
-                "Int32" => (double) (*arg).Int32,
-                "Int64" => (double) (*arg).Int64,
-                _ => 0,
-            };
-        }
-        return 0;
-    }
-
-    private long RValueToLong(RValue* arg) {
-        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            string type = arg->Type.ToString();
-            return type switch {
-                "Real" => (long) (*arg).Real,
-                "Int32" => (long) (*arg).Int32,
-                "Int64" => (long) (*arg).Int64,
-                _ => 0,
-            };
-        }
-        return 0;
-    }
-
     private int getRandInt() => this.hallRand.Next(0, maxValue: int.MaxValue);
 
     private void RandomizeList<T>(List<T> list) {
@@ -322,7 +296,7 @@ public unsafe class Mod : IMod {
 
             // randomizes hallkeys based on seed from host
             RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-            long mapSeed = this.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
+            long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
             this.hallRand = new Random((int) mapSeed);
             this.RandomizeList(this.hallkeys);
 
@@ -332,7 +306,7 @@ public unsafe class Mod : IMod {
             // sets hallkeys in game
             RValue* hallkey = rnsReloaded.FindValue(self, "hallkey");
             RValue hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new RValue(0);
-            if (RValueToLong(&hallkeyLength) != 1) {
+            if (utils.RValueToLong(&hallkeyLength) != 1) {
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[0]);
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);
@@ -478,13 +452,15 @@ public unsafe class Mod : IMod {
         newArgv[0] = argv[0]; // gold value
         newArgv[1] = argv[1]; // exp value
 
-        // scales and stores values
-        double val1 = this.RValueToDouble(argv[1]);
-        double val2 = this.RValueToDouble(argv[2]);
-        RValue rval1 = new RValue(Math.Ceiling(val1 * enemyScale));
-        RValue rval2 = new RValue(Math.Ceiling(val2 * enemyScale));
-        newArgv[1] = &rval1;
-        newArgv[2] = &rval2;
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            // scales and stores values
+            double val1 = utils.RValueToDouble(argv[1]);
+            double val2 = utils.RValueToDouble(argv[2]);
+            RValue rval1 = new RValue(Math.Ceiling(val1 * enemyScale));
+            RValue rval2 = new RValue(Math.Ceiling(val2 * enemyScale));
+            newArgv[1] = &rval1;
+            newArgv[2] = &rval2;
+        }
 
         // updates reward values
         fixed (RValue** newArgv2 = newArgv) {

@@ -15,6 +15,26 @@ public unsafe class Util : IUtil {
         this.logger = logger;
     }
 
+    public long RValueToLong(RValue* arg) {
+        string type = arg->Type.ToString();
+        return type switch {
+            "Real" => (long) (*arg).Real,
+            "Int32" => (long) (*arg).Int32,
+            "Int64" => (long) (*arg).Int64,
+            _ => 0,
+        };
+    }
+
+    public double RValueToDouble(RValue* arg) {
+        string type = arg->Type.ToString();
+        return type switch {
+            "Real" => (double) (*arg).Real,
+            "Int32" => (double) (*arg).Int32,
+            "Int64" => (double) (*arg).Int64,
+            _ => 0,
+        };
+    }
+
     public RValue? CreateString(string str) {
         RValue result;
         this.rnsReloaded.CreateString(&result, str);

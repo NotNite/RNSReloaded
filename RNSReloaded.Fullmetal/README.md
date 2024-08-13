@@ -36,7 +36,7 @@ Fullmetal will transition the background and music, but the name of the hallway 
 
 ## Shops and Treasurespheres
 The amount of Treasurespheres is the same as a regular run. There are an increased amount of Shops, one at the beginning of each area, including Pale Keep.
-In order to ensure that Fullmetal's DPS checks are steeply more difficult than a regular game, the treasurespheres are placed in relatively similar locations in terms of enemy levels.
+In order to ensure that Fullmetal's DPS checks are not steeply more difficult than a regular game, the treasurespheres are placed in relatively similar locations in terms of enemy levels.
 To see the exact placement of Treasurespheres, see the Enemy Levels section.
 
 ## Rewards

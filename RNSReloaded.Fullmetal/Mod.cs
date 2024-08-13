@@ -131,11 +131,11 @@ public unsafe class Mod : IMod {
 
     private double RValueToDouble(RValue* arg) {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            string type = (rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) arg) ?? new RValue { }).ToString();
+            string type = arg->Type.ToString();
             return type switch {
-                "number" => (double) (*arg).Real,
-                "int32" => (double) (*arg).Int32,
-                "int64" => (double) (*arg).Int64,
+                "Real" => (double) (*arg).Real,
+                "Int32" => (double) (*arg).Int32,
+                "Int64" => (double) (*arg).Int64,
                 _ => 0,
             };
         }
@@ -144,11 +144,11 @@ public unsafe class Mod : IMod {
 
     private long RValueToLong(RValue* arg) {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            string type = (rnsReloaded.ExecuteCodeFunction("typeof", null, null, 1, (RValue**) arg) ?? new RValue { }).ToString();
+            string type = arg->Type.ToString();
             return type switch {
-                "number" => (long) (*arg).Real,
-                "int32" => (long) (*arg).Int32,
-                "int64" => (long) (*arg).Int64,
+                "Real" => (long) (*arg).Real,
+                "Int32" => (long) (*arg).Int32,
+                "Int64" => (long) (*arg).Int64,
                 _ => 0,
             };
         }
@@ -174,7 +174,7 @@ public unsafe class Mod : IMod {
         List<string> enc2 = [];
         switch (key) {
             case "hw_nest":
-                enc0 = new List<string> { "enc_bird_student0", "enc_bird_student1" };
+                enc0 = [ "enc_bird_student0", "enc_bird_student1" ];
                 enc1 = ["enc_bird_whispering0", "enc_bird_whispering1"];
                 enc2 = ["enc_bird_archon0", "enc_bird_valedictorian0"];
                 break;
@@ -331,12 +331,15 @@ public unsafe class Mod : IMod {
 
             // sets hallkeys in game
             RValue* hallkey = rnsReloaded.FindValue(self, "hallkey");
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[0]);
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 3), this.hallkeys[4]);
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 4), "hw_keep");
-            rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 5), "hw_pinnacle");
+            RValue hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new RValue(0);
+            if (RValueToLong(&hallkeyLength) != 1) {
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[0]);
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 3), this.hallkeys[4]);
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 4), "hw_keep");
+                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 5), "hw_pinnacle");
+            }
         }
         return returnValue;
     }

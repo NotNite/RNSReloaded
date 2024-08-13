@@ -30,8 +30,8 @@ public unsafe class Mod : IMod {
     private Random random = new();
     private Random hallRand = new();
 
-    private List<string> hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
-    private List<List<Notch>> hallNotches = [];
+    private string[] hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
+    private List<Notch>[] hallNotches = [];
     private int hallCount = 0;
     private int notchesCount = 0;
 
@@ -131,21 +131,11 @@ public unsafe class Mod : IMod {
 
     private int getRandInt() => this.hallRand.Next(0, maxValue: int.MaxValue);
 
-    private void RandomizeList<T>(List<T> list) {
-        int n = list.Count;
-        for (int i = n - 1; i > 0; i--) {
-            int j = this.hallRand.Next(i + 1);
-            T temp = list[i];
-            list[i] = list[j];
-            list[j] = temp;
-        }
-    }
-
-    private List<string> EncFromKey(string key) {
+    private string[] EncFromKey(string key) {
         // returns list of encounters based on area
-        List<string> enc0 = [];
-        List<string> enc1 = [];
-        List<string> enc2 = [];
+        string[] enc0 = [];
+        string[] enc1 = [];
+        string[] enc2 = [];
         switch (key) {
             case "hw_nest":
                 enc0 = [ "enc_bird_student0", "enc_bird_student1" ];
@@ -173,13 +163,14 @@ public unsafe class Mod : IMod {
                 enc2 = ["enc_frog_painter0", "enc_frog_idol0"];
                 break;
         }
-        this.RandomizeList(enc0);
-        this.RandomizeList(enc1);
-        return enc0.Concat(enc1).Concat(enc2).ToList();
+        this.hallRand.Shuffle(enc0);
+        this.hallRand.Shuffle(enc1);
+
+        return enc0.Concat(enc1).Concat(enc2).ToArray();
     }
 
-    private List<List<Notch>> CreateNotches(List<string> hallkeys) {
-        List<List<string>> hallEnc = hallkeys.Select(key => this.EncFromKey(key)).ToList();
+    private List<Notch>[] CreateNotches(string[] hallkeys) {
+        string[][] hallEnc = hallkeys.Select(key => this.EncFromKey(key)).ToArray();
         List<Notch> notches0 = [ // first and second area (first hall)
             new(NotchType.Shop, "", this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[0][0], this.getRandInt(), 0),
@@ -230,20 +221,20 @@ public unsafe class Mod : IMod {
 
     private List<Notch> CreateOutskirtsNotches() {
         // randomizes encounter pairs
-        List<string> encOutskirts0 = ["enc_bird_sophomore1", "enc_bird_sophomore2"];
-        List<string> encOutskirts1 = ["enc_wolf_blackear1", "enc_wolf_blackear2"];
-        List<string> encOutskirts2 = ["enc_dragon_granite1", "enc_dragon_granite2"];
-        List<string> encOutskirts3 = ["enc_mouse_cadet1", "enc_mouse_cadet2"];
-        List<string> encOutskirts4 = ["enc_frog_tinkerer1", "enc_frog_tinkerer2"];
-        this.RandomizeList(encOutskirts0);
-        this.RandomizeList(encOutskirts1);
-        this.RandomizeList(encOutskirts2);
-        this.RandomizeList(encOutskirts3);
-        this.RandomizeList(encOutskirts4);
+        string[] encOutskirts0 = ["enc_bird_sophomore1", "enc_bird_sophomore2"];
+        string[] encOutskirts1 = ["enc_wolf_blackear1", "enc_wolf_blackear2"];
+        string[] encOutskirts2 = ["enc_dragon_granite1", "enc_dragon_granite2"];
+        string[] encOutskirts3 = ["enc_mouse_cadet1", "enc_mouse_cadet2"];
+        string[] encOutskirts4 = ["enc_frog_tinkerer1", "enc_frog_tinkerer2"];
+        this.hallRand.Shuffle(encOutskirts0);
+        this.hallRand.Shuffle(encOutskirts1);
+        this.hallRand.Shuffle(encOutskirts2);
+        this.hallRand.Shuffle(encOutskirts3);
+        this.hallRand.Shuffle(encOutskirts4);
 
         // randomizes order of pairs
-        List<List<string>> encOutskirts = [encOutskirts0, encOutskirts1, encOutskirts2, encOutskirts3, encOutskirts4];
-        this.RandomizeList(encOutskirts);
+        string[][] encOutskirts = [encOutskirts0, encOutskirts1, encOutskirts2, encOutskirts3, encOutskirts4];
+        this.hallRand.Shuffle(encOutskirts);
 
         // creates notches for encounters
         return [
@@ -265,14 +256,14 @@ public unsafe class Mod : IMod {
 
     private List<Notch> CreateKeepNotches() {
         // randomizes keep encounters
-        List<string> encKeep = [
+        string[] encKeep = [
             "enc_queens_axe0",
             "enc_queens_harp0",
             "enc_queens_knife0",
             "enc_queens_spear0",
             "enc_queens_staff0"
         ];
-        this.RandomizeList(encKeep);
+        this.hallRand.Shuffle(encKeep);
 
         // creates notches for encounters
         return [
@@ -298,7 +289,7 @@ public unsafe class Mod : IMod {
             RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
             long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
             this.hallRand = new Random((int) mapSeed);
-            this.RandomizeList(this.hallkeys);
+            this.hallRand.Shuffle(this.hallkeys);
 
             // determines notches for every area
             this.hallNotches = this.CreateNotches(this.hallkeys);

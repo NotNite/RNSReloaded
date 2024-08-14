@@ -16,21 +16,21 @@ public unsafe class Util : IUtil {
     }
 
     public long RValueToLong(RValue* arg) {
-        string type = arg->Type.ToString();
+        RValueType type = arg->Type;
         return type switch {
-            "Real" => (long) (*arg).Real,
-            "Int32" => (long) (*arg).Int32,
-            "Int64" => (long) (*arg).Int64,
+            RValueType.Real => (long) (*arg).Real,
+            RValueType.Int32 => (long) (*arg).Int32,
+            RValueType.Int64 => (long) (*arg).Int64,
             _ => 0,
         };
     }
 
     public double RValueToDouble(RValue* arg) {
-        string type = arg->Type.ToString();
+        RValueType type = arg->Type;
         return type switch {
-            "Real" => (double) (*arg).Real,
-            "Int32" => (double) (*arg).Int32,
-            "Int64" => (double) (*arg).Int64,
+            RValueType.Real => (double) (*arg).Real,
+            RValueType.Int32 => (double) (*arg).Int32,
+            RValueType.Int64 => (double) (*arg).Int64,
             _ => 0,
         };
     }

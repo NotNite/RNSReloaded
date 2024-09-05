@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.DoubleTime", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.Fullmetal", "RNSReloaded.Fullmetal\RNSReloaded.Fullmetal.csproj", "{04BF9DA0-9F3E-4E69-8D45-34C124F74F1A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.SoloTogether", "RNSReloaded.SoloTogether\RNSReloaded.SoloTogether.csproj", "{E1ECE300-6404-428D-92CE-D7EFDD4F1112}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{04BF9DA0-9F3E-4E69-8D45-34C124F74F1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04BF9DA0-9F3E-4E69-8D45-34C124F74F1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04BF9DA0-9F3E-4E69-8D45-34C124F74F1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1ECE300-6404-428D-92CE-D7EFDD4F1112}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1ECE300-6404-428D-92CE-D7EFDD4F1112}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1ECE300-6404-428D-92CE-D7EFDD4F1112}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1ECE300-6404-428D-92CE-D7EFDD4F1112}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

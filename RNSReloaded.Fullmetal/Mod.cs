@@ -27,7 +27,6 @@ public unsafe class Mod : IMod {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
     private ILoggerV1 logger = null!;
-    private Random random = new();
     private Random hallRand = new();
 
     private string[] hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
@@ -283,21 +282,33 @@ public unsafe class Mod : IMod {
             // resets tracking variables
             this.potionStored = false;
             this.hallCount = -1;
-            this.hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
-
-            // randomizes hallkeys based on seed from host
-            RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-            long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
-            this.hallRand = new Random((int) mapSeed);
-            this.hallRand.Shuffle(this.hallkeys);
-
-            // determines notches for every area
-            this.hallNotches = this.CreateNotches(this.hallkeys);
-
-            // sets hallkeys in game
+            
+            // check if Toybox is on
             RValue* hallkey = rnsReloaded.FindValue(self, "hallkey");
             RValue hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new RValue(0);
             if (utils.RValueToLong(&hallkeyLength) != 1) {
+                // randomizes hallkeys based on seed from host
+                RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
+                long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
+
+                string firstArea = hallkey->Get(1)->ToString();
+                this.hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
+
+                this.hallRand = new Random((int) mapSeed);
+                this.hallRand.Shuffle(this.hallkeys);
+
+                int index = Array.IndexOf(this.hallkeys, firstArea);
+                if (index > 0) {
+                    // Swap the first element with the element at the found index
+                    string temp = this.hallkeys[0];
+                    this.hallkeys[0] = this.hallkeys[index];
+                    this.hallkeys[index] = temp;
+                }
+
+                // determines notches for every area
+                this.hallNotches = this.CreateNotches(this.hallkeys);
+
+                // sets hallkeys in game
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[0]);
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);

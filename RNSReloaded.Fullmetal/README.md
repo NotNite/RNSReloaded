@@ -2,13 +2,12 @@
 
 **Limits online play.**
 
-For the truly dedicated.
+*For the truly dedicated.*
 Every encounter and area will now be visited. Gold and EXP are rebalanced.
 
 ## Important Notes
 - This is meant to be an accompaniment to Steelheart
 - Do not use toybox with this mod. If the game crashes on start, try starting a regular game in vanilla, then relaunching Fullmetal
-- Does not support choosing starting area. Just use Pale Keep
 - Overall gold and EXP will be more than a normal run. This is inevitable due to rounding
 - Topaz Charm, Gold Potions, and Tanzakus are more useful
 - Health bars in encounters with multiple enemies are known to desync. This is mainly a visual thing and shouldn't affect gameplay too much

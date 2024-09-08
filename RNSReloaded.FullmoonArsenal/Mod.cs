@@ -219,7 +219,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 // Temp for testing because I'm too lazy to steel yourself lol
-                    new Notch(NotchType.Encounter, "enc_wolf_bluepaw1", 0, 0),
+                    new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),

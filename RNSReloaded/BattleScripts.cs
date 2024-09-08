@@ -15,6 +15,17 @@ public unsafe class BattleScripts : IBattleScripts {
         this.logger = logger;
     }
 
+    public void end(CInstance* self, CInstance* other) {
+        this.rnsReloaded.ExecuteScript("scrbp_end", self, other, []);
+    }
+    public void heal(CInstance* self, CInstance* other, double amount) {
+        this.rnsReloaded.ExecuteScript("scrbp_boss_heal", self, other, [new RValue(amount)]);
+    }
+
+    public bool health_threshold(CInstance* self, CInstance* other, double threshold) {
+        return this.rnsReloaded.ExecuteScript("scrbp_health_threshold", self, other, [new RValue(threshold)])!.Value.Real > 0.5;
+    }
+
     public void move_character(CInstance* self, CInstance* other, double x, double y, int moveTime) {
         RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
         this.rnsReloaded.ExecuteScript("scrbp_move_character", self, other, args);
@@ -23,6 +34,14 @@ public unsafe class BattleScripts : IBattleScripts {
     public void move_character_absolute(CInstance* self, CInstance* other, double x, double y, int moveTime) {
         RValue[] args = [new RValue(x), new RValue(y), new RValue(moveTime), new RValue(0)];
         this.rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, args);
+    }
+
+    public void set_special_flags(CInstance* self, CInstance* other, int flags) {
+        this.rnsReloaded.ExecuteScript("scrbp_set_special_flags", self, other, [new RValue(flags)]);
+    }
+
+    public void phase_pattern_remove(CInstance* self, CInstance* other) {
+        this.rnsReloaded.ExecuteScript("scrbp_phase_pattern_remove", self, other, []);
     }
 
     public bool time(CInstance* self, CInstance* other, int time) {

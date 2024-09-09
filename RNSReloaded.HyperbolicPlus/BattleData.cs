@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RNSReloaded.HyperbolicPlus;
 
@@ -144,6 +145,51 @@ public class BattleData {
 
         { "bp_bird_sophomore1_s", 20000}
     };
+
+    private static readonly string[] BasicEnemies = [
+        // outskirts
+        "bird_sophomore1",
+        "bird_sophomore2",
+        "wolf_blackear1",
+        "wolf_blackear2",
+        "dragon_granite1",
+        "dragon_granite2",
+        "mouse_cadet1",
+        "mouse_cadet2",
+        "frog_tinkerer1",
+        "frog_tinkerer2",
+        // nest
+        "bird_student0",
+        "bird_student1",
+        "bird_whispering0",
+        "bird_whispering1",
+        // arsenal
+        "wolf_greyeye0",
+        "wolf_greyeye1",
+        "wolf_bluepaw0",
+        "wolf_bluepaw1",
+        // lighthouse
+        "dragon_gold0",
+        "dragon_gold1",
+        "dragon_emerald0",
+        "dragon_emerald1",
+        // streets
+        "mouse_archer0",
+        "mouse_archer1",
+        "mouse_oakspear0",
+        "mouse_oakspear1",
+        // lakeside
+        "frog_seamstress0",
+        "frog_seamstress1",
+        "frog_songstress0",
+        "frog_songstress1",
+        // keep
+        "queens_axe0",
+        "queens_harp0",
+        "queens_knife0",
+        "queens_spear0",
+        "queens_staff0",
+    ];
 
     private static Dictionary<string, BattleData> DataDict = new Dictionary<string, BattleData> {
         { "Twili1_6S", new BattleData("bird_valedictorian", "bp_bird_valedictorian0_pt6_s") },
@@ -335,5 +381,9 @@ public class BattleData {
 
     public static int GetTotalLength(List<string> patterns) {
         return patterns.Sum(pattern => BattleData.GetLengthByPattern(pattern));
+    }
+
+    public static bool GetBasic(string name) {
+        return BattleData.BasicEnemies.Contains(BattleData.GetEnemy(name));
     }
 }

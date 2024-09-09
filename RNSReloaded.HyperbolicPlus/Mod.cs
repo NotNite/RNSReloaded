@@ -60,6 +60,7 @@ public unsafe class Mod : IMod {
     private int atkNo = 0;
     private double damageMult = 0.0;
     private double gameSpeed = 1.0;
+    private bool enFlag = false; // prevent infinite loops
     private bool isTakingDamage = false; // for invuln control
 
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = [];
@@ -155,6 +156,8 @@ public unsafe class Mod : IMod {
             },
             // encounters
             { "scrdt_encounter", this.EncounterDetour},
+            // enrage control
+            { "bpsw_enrage_time", this.EnrageTimeDetour},
             // invuln control
             { "bp_rabbit_queen1_steel_activate", this.SteelActivateDetour}, // always active
             { "scr_pattern_deal_damage_ally", this.PlayerDmgDetour},
@@ -356,29 +359,50 @@ public unsafe class Mod : IMod {
             this.enemyHookS.Enable();
 
             CScript* enemyScriptM = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_" + enemy) - SCRIPTCONST);
-            this.enemyHookM = hooks.CreateHook<ScriptDelegate>(this.EnemyDetour, enemyScriptM->Functions->Function);
+            this.enemyHookM = hooks.CreateHook<ScriptDelegate>(this.EnemyMDetour, enemyScriptM->Functions->Function);
             this.enemyHookM.Activate();
             this.enemyHookM.Enable();
+
+            Console.WriteLine("bp_" + enemy + "_s");
 
             // set level
             var enemyLevel = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyLevel");
             *enemyLevel = new RValue(999);
         }
 
+        this.enFlag = false;
         returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 
-
+    private RValue* EnemyMDetour(
+        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
+        bool basic = BattleData.GetBasic(this.battleName);
+        if (this.enFlag && basic) {
+            if (this.enemyHookM != null) return this.enemyHookM.OriginalFunction(self, other, returnValue, argc, argv);
+            else return returnValue;
+        }
+        return this.EnemyDetour(self, other, returnValue, argc, argv);
+    }
     private RValue* EnemyDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
+        // initial setup, fetch battledata
+        int length = BattleData.GetLength(this.battleName);
+        string pattern = BattleData.GetPattern(this.battleName);
+        double zoom = BattleData.GetZoom(this.battleName);
+        int stage = BattleData.GetStage(this.battleName);
+        Anims anim = BattleData.GetAnim(this.battleName);
+        bool basic = BattleData.GetBasic(this.battleName);
+
+        if (this.enFlag && basic) {
+            if (this.enemyHookS != null) return this.enemyHookS.OriginalFunction(self, other, returnValue, argc, argv);
+            else return returnValue;
+        }
+        this.enFlag = true;
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             if (scrbp.time(self, other, 0)) {
-                // initial setup, fetch environment data
-                double zoom = BattleData.GetZoom(this.battleName);
-                int stage = BattleData.GetStage(this.battleName);
-                Anims anim = BattleData.GetAnim(this.battleName);
                 // change environment
                 this.RunAnimation(anim, self, other);
                 rnsReloaded.ExecuteScript("scrbp_zoom", self, other, [new RValue(zoom)]);
@@ -395,15 +419,20 @@ public unsafe class Mod : IMod {
                 return returnValue;
             }
 
-            // fetch battledata
-            int length = BattleData.GetLength(this.battleName);
-            string pattern = BattleData.GetPattern(this.battleName);
+            Console.WriteLine($"Executing pattern: {pattern}");
 
-            // call pattern on set loop
-            if (scrbp.time_repeating(self, other, ANIM_TIME, length)) {
-                Console.WriteLine($"Executing pattern: {pattern}");
+            if (basic) {
+                Console.Write("basic");
+                // this.execute_pattern(self, other, pattern, []);
+                rnsReloaded.ExecuteScript(pattern, self, other, argc, argv);
+            }
 
-                this.execute_pattern(self, other, pattern, []);
+            else if (scrbp.time_repeating(self, other, ANIM_TIME, length)) {
+                // call pattern on set loop
+                if (!BattleData.GetBasic(this.battleName)) {
+                    this.execute_pattern(self, other, pattern, []);
+                }
+
                 // accelerate speed
                 utils.GetGlobalVar("gameTimeSpeed")->Real = this.gameSpeed;
                 if (this.config.AccelerateSpeed) {
@@ -413,6 +442,11 @@ public unsafe class Mod : IMod {
         }
 
         return returnValue;
+    }
+
+    private RValue* EnrageTimeDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var a = new RValue(-1);
+        return &a;
     }
 
     // INVULN CONTROL

@@ -2,6 +2,7 @@ using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
+using System.Drawing;
 
 namespace RNSReloaded.FullmoonArsenal {
     
@@ -12,7 +13,7 @@ namespace RNSReloaded.FullmoonArsenal {
         private IHook<ScriptDelegate>? bubbleLineHook;
 
         public TasshaFight(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) :
-            base(rnsReloaded, logger, hooks, "bp_wolf_snowfur0", "bp_wolf_snowfur0_pt2") {
+            base(rnsReloaded, logger, hooks, "bp_wolf_snowfur0_s", "bp_wolf_snowfur0_pt2") {
             this.playerRng = new Random();
             // Regualar fight = setup
             // pt2 = final phase
@@ -185,43 +186,130 @@ namespace RNSReloaded.FullmoonArsenal {
 
             return time - startTime;
         }
-        private int BubbleLine(CInstance* self, CInstance* other, int startTime, int bubbleDuration) {
-            int time = 0;
+        private int BubbleLine(CInstance* self, CInstance* other, int startTime, int bubbleDuration, int skipPercent = 0) {
+            int time = startTime;
+            bool startLeft = this.rng.Next(0, 2) == 1;
+            if (this.scrbp.time(self, other, time)) {
+                var x0 = startLeft ? 50 : 1920 - 50;
+                var x1 = startLeft ? 1920 - 50 : 50;
+                this.bp.move_position_synced(self, other, duration: 1000, position: (x0, 1080/2));
+                this.bp.move_position_synced(self, other, spawnDelay: 2000, duration: 667, position: (x1, 1080/2));
+                this.bp.move_position_synced(self, other, spawnDelay: 3000, duration: 333, position: (1920 / 2, 1080 / 2));
+                this.myX = 1920 / 2;
+                this.myY = 1080 / 2;
+                this.bp.ray_single(self, other, warningDelay: 500, spawnDelay: 3000, eraseDelay: 3000, width: 5, position: (-50, 1080/2));
+            }
+            time += 2500;
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration);
+            }
+            time += 500;
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.ray_single(self, other, spawnDelay: 0, eraseDelay: bubbleDuration, width: 150, position: (-50, 1080 / 2));
+            }
+            if (this.scrbp.time_repeat_times(self, other, time, 500, bubbleDuration / 500)) {
+                if (this.rng.Next(0, 100) >= skipPercent) {
+                    switch (this.rng.Next(0, 3)) {
+                        case 0:
+                            int x = this.rng.Next(-150, -10);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 1, lineLength: 2100, numBullets: this.rng.Next(5, 8), type: 0);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 1, lineLength: 2100, numBullets: this.rng.Next(5, 8), type: 0);
+                            break;
+                        case 1:
+                            x = this.rng.Next(-150, -10);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 4, lineLength: 2100, numBullets: this.rng.Next(6, 11), type: 1);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 4, lineLength: 2100, numBullets: this.rng.Next(6, 11), type: 1);
+                            break;
+                        case 2:
+                            x = this.rng.Next(-150, -10);
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 2, lineLength: 2100, numBullets: this.rng.Next(4, 12));
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 2, lineLength: 2100, numBullets: this.rng.Next(4, 12));
+                            break;
+                    }
+                }
+            }
+            return time + bubbleDuration - startTime;
+        }
+
+        private int BubbleLineRotating(CInstance* self, CInstance* other, int startTime, int bubbleDuration, int rot, int skipPercent = 0) {
+            int time = startTime;
+
             bool startLeft = this.rng.Next(0, 2) == 1;
             if (this.scrbp.time(self, other, startTime)) {
                 var x0 = startLeft ? 50 : 1920 - 50;
                 var x1 = startLeft ? 1920 - 50 : 50;
-                this.bp.move_position_synced(self, other, duration: 1000, position: (x0, 1080/2));
-                this.bp.move_position_synced(self, other, spawnDelay: 2000, duration: 1000, position: (x1, 1080/2));
-                this.myX = x1;
+                this.bp.move_position_synced(self, other, duration: 1000, position: (x0, 1080 / 2));
+                this.bp.move_position_synced(self, other, spawnDelay: 2000, duration: 1000, position: (x1, 1080 / 2));
+                this.bp.move_position_synced(self, other, spawnDelay: 3000, duration: 333, position: (1920 / 2, 1080 / 2));
+                this.myX = 1920 / 2;
                 this.myY = 1080 / 2;
-                this.bp.ray_single(self, other, warningDelay: 500, spawnDelay: 3000, eraseDelay: 3000, width: 5, position: (-50, 1080/2));
+                this.bp.ray_single(self, other, warningDelay: 500, spawnDelay: 3000, eraseDelay: 3000, width: 5, position: (-50, 1080 / 2));
+                this.bp.ray_spinfast(self, other,
+                    warningDelay: 0,
+                    spawnDelay: 3000,
+                    numLasers: 0,
+                    angle: rot > 0 ? 1 : -1,
+                    rot: 0,
+                    width: 100,
+                    eraseDelay: 3000,
+                    warningRadius: 100,
+                    position: (1920 / 2, 1080 / 2)
+                );
             }
-            time += 3000;
-            if (this.scrbp.time(self, other, startTime + time)) {
-                this.bp.ray_single(self, other, spawnDelay: 0, eraseDelay: bubbleDuration, width: 150, position: (-50, 1080 / 2));
+            time += 2500;
+            if (this.scrbp.time(self, other, time)) {
                 this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration);
             }
-            if (this.scrbp.time_repeat_times(self, other, startTime + time, 500, bubbleDuration / 500)) {
-                switch(this.rng.Next(0, 3)) {
-                    case 0:
-                        int x = this.rng.Next(-150, -10);
-                        this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 1, lineLength: 2100, numBullets: this.rng.Next(5, 8), type: 0);
-                        this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 1, lineLength: 2100, numBullets: this.rng.Next(5, 8), type: 0);
-                        break;
-                    case 1:
-                        x = this.rng.Next(-150, -10);
-                        this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 4, lineLength: 2100, numBullets: this.rng.Next(6, 11), type: 1);
-                        this.bp.light_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 4, lineLength: 2100, numBullets: this.rng.Next(6, 11), type: 1);
-                        break;
-                    case 2:
-                        x = this.rng.Next(-150, -10);
-                        this.bp.fire2_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: 90, spd: 2, lineLength: 2100, numBullets: this.rng.Next(4, 12));
-                        this.bp.fire2_line(self, other, spawnDelay: 0, position: (x, 1080 / 2), angle: -90, spd: 2, lineLength: 2100, numBullets: this.rng.Next(4, 12));
-                        break;
+            time += 500;
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.ray_spinfast(self, other,
+                    warningDelay: 0,
+                    spawnDelay: 0,
+                    numLasers: 2,
+                    angle: rot,
+                    rot: 0,
+                    width: 100,
+                    eraseDelay: bubbleDuration,
+                    warningRadius: 100,
+                    position: (1920 / 2, 1080 / 2)
+                );
+            }
+            if (this.scrbp.time_repeat_times(self, other, time, 500, bubbleDuration / 500)) {
+                int thisBattleTime = (int) this.rnsReloaded.FindValue(self, "patternExTime")->Real;
+                int thisMechTime = thisBattleTime - time;
+                double percentThroughMech = ((float) thisMechTime) / bubbleDuration;
+                int rotEdit = (int) (percentThroughMech * rot);
+
+                int lengthAdd = this.rng.Next(0, 200);
+                var pos = (1920 / 2 + this.rng.Next(0, 20), 1080 / 2 + this.rng.Next(0, 20));
+                if (this.rng.Next(0, 100) >= skipPercent) {
+                    switch (this.rng.Next(0, 3)) {
+                        case 0:
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit, spd: 1, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(3, 8), type: 0);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit, spd: 1, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(3, 8), type: 0);
+
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit + 180, spd: 1, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(3, 8), type: 0);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit + 180, spd: 1, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(3, 8), type: 0);
+                            break;
+                        case 1:
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit, spd: 4, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(5, 9), type: 1);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit, spd: 4, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(5, 9), type: 1);
+
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit + 180, spd: 4, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(5, 9), type: 1);
+                            this.bp.light_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit + 180, spd: 4, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(5, 9), type: 1);
+                            break;
+                        case 2:
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit, spd: 2, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(4, 11));
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit, spd: 2, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(4, 11));
+
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: pos, angle: 90 + rotEdit, lineAngle: rotEdit + 180, spd: 2, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(4, 11));
+                            this.bp.fire2_line(self, other, spawnDelay: 0, position: pos, angle: -90 + rotEdit, lineAngle: rotEdit + 180, spd: 2, lineLength: 1100 + lengthAdd, numBullets: this.rng.Next(4, 11));
+                            break;
+                    }
                 }
             }
-            return time + bubbleDuration;
+
+            return time + bubbleDuration - startTime;
         }
 
         private int VerticalLasers(CInstance* self, CInstance* other, int startTime, int warnDelay = 4000, int eraseDelay = 3000) {
@@ -329,7 +417,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.phasesRemaining = new Stack<string>(phases);
 
                 // Testing
-                this.phasesRemaining.Push("bp_wolf_snowfur0_pt3");
+                this.phasesRemaining.Push("bp_wolf_snowfur0_pt5");
                 this.scrbp.set_special_flags(self, other, IBattleScripts.FLAG_HOLMGANG);
             }
             if (this.scrbp.time_repeating(self, other, 0, 500)) {
@@ -392,7 +480,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.fieldlimit_rectangle_temporary(self, other, position: (1410, 540), width: 5, height: 5, color: IBattlePatterns.FIELDLIMIT_PURPLE, targetMask: 1 << this.playerTargets[3], eraseDelay: 2000);
                 this.bp.apply_hbs_synced(self, other, delay: 0, hbs: "hbs_group_1", hbsDuration: 66000, targetMask: 1 << this.playerTargets[3]);
             }
-            time += 6000;
+            time += 3000;
 
             // Setup the long fieldlimits
             if (this.scrbp.time(self, other, time)) {
@@ -403,7 +491,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     height: 470,
                     color: IBattlePatterns.FIELDLIMIT_RED,
                     targetMask: 1 << this.playerTargets[0],
-                    eraseDelay: 60000
+                    eraseDelay: 66000
                 );
                 // Bottom half
                 this.bp.fieldlimit_rectangle_temporary(self, other,
@@ -412,7 +500,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     height: 470,
                     color: IBattlePatterns.FIELDLIMIT_BLUE,
                     targetMask: 1 << this.playerTargets[1],
-                    eraseDelay: 60000
+                    eraseDelay: 66000
                 );
                 // Left half
                 this.bp.fieldlimit_rectangle_temporary(self, other,
@@ -421,7 +509,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     height: 1020,
                     color: IBattlePatterns.FIELDLIMIT_YELLOW,
                     targetMask: 1 << this.playerTargets[2],
-                    eraseDelay: 60000
+                    eraseDelay: 66000
                 );
                 // Right half
                 this.bp.fieldlimit_rectangle_temporary(self, other,
@@ -430,12 +518,13 @@ namespace RNSReloaded.FullmoonArsenal {
                     height: 1020,
                     color: IBattlePatterns.FIELDLIMIT_PURPLE,
                     targetMask: 1 << this.playerTargets[3],
-                    eraseDelay: 60000
+                    eraseDelay: 66000
                 );
             }
+            time += 6000;
 
             // Color match
-            if (this.scrbp.time_repeat_times(self, other, time, 30000, 2)) {
+            if (this.scrbp.time_repeat_times(self, other, time, 20000, 3)) {
                 this.scrbp.order_random(self, other, false, 2, 2);
                 var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
                 var group0 = this.rnsReloaded.ArrayGetEntry(orderBin, 0);
@@ -444,7 +533,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.colormatch(self, other,
                     warningDelay: 3000,
                     warnMsg: 2,
-                    spawnDelay: 29000,
+                    spawnDelay: 19000,
                     radius: 200,
                     targetMask: (int) group0->Real,
                     color: IBattlePatterns.COLORMATCH_BLUE
@@ -452,22 +541,19 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.colormatch(self, other,
                     warningDelay: 3000,
                     warnMsg: 2,
-                    spawnDelay: 29000,
+                    spawnDelay: 19000,
                     radius: 200,
                     targetMask: (int) group1->Real,
                     color: IBattlePatterns.COLORMATCH_RED
                 );
             }
 
-            for (int i = 0; i < 20; i++) {
-                // Skip right before the color matches resolve
-                if (i != 9 && i != 10 && i != 19) {
-                    time += this.StarburstLaser(self, other, time, this.playerTargets[i % 4], spawnDelay: 1500, eraseDelay: 3000);
-                }
+            for (int i = 0; i < 12; i++) {
+                time += this.StarburstLaser(self, other, time, this.playerTargets[i % 4], spawnDelay: 3000, eraseDelay: 5000);
             }
             return time - startTime;
         }
-        // "pt3"
+        // "pt3", actual time is ~90-100s
         public RValue* StarburstPhase(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
@@ -489,7 +575,7 @@ namespace RNSReloaded.FullmoonArsenal {
             time += this.StarburstLaser(self, other, time, target: this.playerTargets[3], numLasers: 3, spawnDelay: 2000, eraseDelay: 3000);
 
             // Rotation stuff
-            this.StarburstRotate(self, other, time, 0, rot: 90, posOverride: (1920 / 2, 1080 / 2), numLasers: 3);
+            this.StarburstRotate(self, other, time, 0, rot: 100, posOverride: (1920 / 2, 1080 / 2), numLasers: 3);
             if (this.scrbp.time(self, other, time)) {
                 this.rng.Shuffle(this.playerTargets);
                 this.bp.prscircle(self, other, spawnDelay: 5000, radius: 550, position: this.posSnapshot);
@@ -502,7 +588,7 @@ namespace RNSReloaded.FullmoonArsenal {
             this.StarburstLaser(self, other, time, this.playerTargets[0], numLasers: 3, spawnDelay: 3500, eraseDelay: 4000);
             time += this.StarburstLaser(self, other, time, this.playerTargets[1], numLasers: 3, spawnDelay: 3500, eraseDelay: 4000);
 
-            this.StarburstRotate(self, other, time, 0, spawnDelay: 2000, eraseDelay: 6000, rot: -90, posOverride: (1920 / 2, 1080 / 2), numLasers: 3);
+            this.StarburstRotate(self, other, time, 0, spawnDelay: 2000, eraseDelay: 6000, rot: -100, posOverride: (1920 / 2, 1080 / 2), numLasers: 3);
             if (this.scrbp.time(self, other, time)) {
                 this.bp.prscircle(self, other, spawnDelay: 1250, radius: 550, position: this.posSnapshot);
                 this.bp.prscircle(self, other, spawnDelay: 2500, radius: 550, position: this.posSnapshot);
@@ -531,6 +617,7 @@ namespace RNSReloaded.FullmoonArsenal {
 
             // Speed cooldown
             if (this.scrbp.time(self, other, time)) {
+                this.logger.PrintMessage("Finished with rem0 callback", this.logger.ColorRedLight);
                 this.rng.Shuffle(this.playerTargets);
             }
             while (gameSpeed > 1) {
@@ -541,13 +628,15 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.StarburstLaser(self, other, time, target: this.playerTargets[1], numLasers: 3, spawnDelay: spawnDelay, eraseDelay: eraseDelay);
                 this.StarburstLaser(self, other, time, target: this.playerTargets[2], numLasers: 3, spawnDelay: spawnDelay, eraseDelay: eraseDelay);
                 time += this.StarburstLaser(self, other, time, target: this.playerTargets[3], numLasers: 3, spawnDelay: spawnDelay, eraseDelay: eraseDelay);
-                gameSpeed -= 0.5;
+                gameSpeed -= 0.4;
                 if (this.scrbp.time(self, other, time)) {
+                    this.logger.PrintMessage("Slowing game speed, now at " + gameSpeed, this.logger.ColorRedLight);
                     this.utils.GetGlobalVar("gameTimeSpeed")->Real = gameSpeed;
                 }
             }
 
             if (this.scrbp.time(self, other, time)) {
+                this.utils.GetGlobalVar("gameTimeSpeed")->Real = 1; // Just to absolutely make sure we're back to normal
                 if (!this.PhaseChange(self, other, 0.3)) {
                     this.bp.enrage_deco(self, other);
                 }
@@ -567,7 +656,7 @@ namespace RNSReloaded.FullmoonArsenal {
             this.StarburstLaser(self, other, time, 0, 8, spawnDelay: 2000, eraseDelay: 12000, posOverride: (1920/2, 1080/2));
             time += 2000;
             if (this.scrbp.time(self, other, time)) {
-                this.bp.enrage(self, other);
+                this.bp.enrage(self, other, spawnDelay: 0, timeBetween: 667);
             }
             this.logger.PrintMessage("Time " + time, this.logger.ColorRedLight);
             return returnValue;
@@ -593,25 +682,117 @@ namespace RNSReloaded.FullmoonArsenal {
             return returnValue;
         }
 
+        private int MinkRainstormCallback(CInstance* self, CInstance* other, int startTime) {
+            int time = startTime;
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.fieldlimit_rectangle_temporary(self, other,
+                    position: (1920 / 2, 1080 / 2),
+                    width: 1740,
+                    height: 900,
+                    color: IBattlePatterns.FIELDLIMIT_WHITE,
+                    eraseDelay: 6000
+                );
+            }
+            if (this.scrbp.time_repeat_times(self, other, time, 5000, 4)) {
+                // Nonfunctional spread for just the warning message, so players know when fieldlimit decrease
+                // snapshot happens
+                this.bp.circle_spreads(self, other, warnMsg: 2, spawnDelay: 5000, radius: 0);
+            }
+            time += 2000;
+            this.BubbleLine(self, other, time, 5000 * 3);
+            time += 3000;
+            if (this.scrbp.time_repeat_times(self, other, time, 5000, 4)) {
+                int minX = int.MaxValue;
+                int maxX = int.MinValue;
+
+                int minY = int.MaxValue;
+                int maxY = int.MinValue;
+
+                for (int i = 0; i < this.utils.GetNumPlayers(); i++) {
+                    var playerX = this.utils.GetPlayerVar(i, "distMovePrevX");
+                    var playerY = this.utils.GetPlayerVar(i, "distMovePrevY");
+                    minX = Math.Min(minX, (int) playerX->Real);
+                    maxX = Math.Max(maxX, (int) playerX->Real);
+                    minY = Math.Min(minY, (int) playerY->Real);
+                    maxY = Math.Max(maxY, (int) playerY->Real);
+                }
+                minX = 500;
+                minY = 500;
+
+                int width = maxX - minX;
+                int height = maxY - minY;
+                this.bp.fieldlimit_rectangle_temporary(self, other,
+                    position: (minX + width / 2, minY + height / 2),
+                    width: width,
+                    height: height,
+                    color: IBattlePatterns.FIELDLIMIT_WHITE,
+                    eraseDelay: 6000
+                );
+            }
+            time += 5000 * 2;
+
+            time += this.BubbleLineRotating(self, other, time, 5000 * 2, 180);
+
+            return time - startTime;
+        }
+
         // "pt5"
         public RValue* BubbleLinePhase(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
             this.logger.PrintMessage("Bubble Line phase", this.logger.ColorRed);
+            this.playerRng = new Random(this.seed);
 
             int time = 0;
+            time += this.StartRegularPhase(self, other, time);
+
+            time += this.BubbleLine(self, other, time, 8000);
+            time += this.BubbleLineRotating(self, other, time, 8000, this.playerRng.Next(0, 2) == 1 ? 180 : -180);
+
             if (this.scrbp.time(self, other, time)) {
-                this.scrbp.phase_pattern_remove(self, other);
-                this.scrbp.heal(self, other, 1);
+                this.bp.clockspot(self, other, warningDelay2: 1000, fanAngle: 30, spawnDelay: 4000, warnMsg: 2);
             }
+            time += 1000;
+            this.BubbleLine(self, other, time, 8000, skipPercent: 60);
+            time += this.BubbleLineRotating(self, other, time, 8000, this.playerRng.Next(0, 2) == 1 ? 90 : -90, skipPercent: 40);
 
-            // Can I make the line *rotate*?
-            // Mink rainstorm callback - add the shrinking field limit for a line iteration
+            time += this.MinkRainstormCallback(self, other, time);
 
-            if (this.scrbp.time_repeating(self, other, 0, 10000)) {
-                this.bp.fieldlimit_rectangle_temporary(self, other, position: (1000, 1000), width: 100, height: 100, targetMask: 0, eraseDelay: 1000);
-                this.PhaseChange(self, other, 0.9);
+            // Stacking them gives double the projectile spam. Is it possible? Maybe not
+            this.BubbleLine(self, other, time, 8000);
+            time += this.BubbleLine(self, other, time, 8000, skipPercent: 50);
+
+            // Something with cleaves?
+
+
+            // Soft enrage
+            /*
+            if (this.scrbp.time(self, other, time)) {
+                if (!this.PhaseChange(self, other, 0.3)) {
+                    this.bp.enrage_deco(self, other);
+                }
             }
+            time += 2000;
+
+            if (this.scrbp.time_repeating(self, other, time, 5000)) {
+                this.PhaseChange(self, other, 0.3);
+            }
+            this.BubbleLine(self, other, time, 20000);
+            time += 5000;
+            this.BubbleLine(self, other, time, 20000);
+            time += 5000;
+            this.BubbleLine(self, other, time, 20000);
+            time += 5000;
+            this.BubbleLine(self, other, time, 20000);
+            time += 5000;
+            // Hard enrage
+            if (this.scrbp.time(self, other, time)) {
+                if (!this.PhaseChange(self, other, 0.3)) {
+                    this.bp.enrage(self, other, spawnDelay: 0, timeBetween: 667);
+                }
+            }
+            */
+            this.logger.PrintMessage("Time " + time, this.logger.ColorRedLight);
             return returnValue;
         }
 

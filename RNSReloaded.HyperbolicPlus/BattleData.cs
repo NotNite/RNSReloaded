@@ -93,7 +93,7 @@ public class BattleData {
         { "bp_dragon_mythril0_pt6_s", 13000 },
         { "bp_dragon_mythril0_pt7_s", 16000 },
         { "bp_dragon_mythril0_pt8_s", 14000 },
-        { "bp_dragon_mythril1_pt4_s", 12000},
+        { "bp_dragon_mythril1_pt4_s", 12000 },
         // multi
         { "bp_dragon_mythril0_pt6", 15000 },
         { "bp_dragon_mythril0_pt7", 15000},

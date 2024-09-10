@@ -26,24 +26,6 @@ namespace RNSReloaded.HyperbolicPlus;
       🐀
 */
 
-public enum Anims {
-    None,
-    Twili,
-    Merran,
-    Ranalie,
-    Matti,
-    Avy,
-    Shira,
-    Tassha
-}
-
-public enum Mixes {
-    None,
-    Ranalie1_S,
-    Avy2_S,
-    Shira2_S
-}
-
 public unsafe class Mod : IMod {
     private const int SCRIPTCONST = 100000;
     public const int ANIM_TIME = 2000;
@@ -210,7 +192,7 @@ public unsafe class Mod : IMod {
     }
 
     private void RunAnimation(Anims id, CInstance* self, CInstance* other) {
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             RValue animName;
             RValue[] argv;
             switch (id) {

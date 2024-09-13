@@ -679,14 +679,15 @@ public class BDLookup {
         { "bp_wolf_steeltooth0_pt8", new PatternData("wolf_steeltooth0", true) },
 
         { "bp_wolf_steeltooth1_s", new PatternData("wolf_steeltooth1") }, // startup
-        { "bp_wolf_steeltooth1_pt2_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt3_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt4_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt5_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt6_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt7_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt8_s", new PatternData("wolf_steeltooth1") },
-        { "bp_wolf_steeltooth1_pt9_s", new PatternData("wolf_steeltooth1") },
+        // times copied from multi UNIMPLEMENTED
+        { "bp_wolf_steeltooth1_pt2_s", new PatternData("wolf_steeltooth1", length: 21000) },
+        { "bp_wolf_steeltooth1_pt3_s", new PatternData("wolf_steeltooth1", length: 12500) },
+        { "bp_wolf_steeltooth1_pt4_s", new PatternData("wolf_steeltooth1", length: 20000) },
+        { "bp_wolf_steeltooth1_pt5_s", new PatternData("wolf_steeltooth1", length: 12500) },
+        { "bp_wolf_steeltooth1_pt6_s", new PatternData("wolf_steeltooth1", length: 22000) },
+        { "bp_wolf_steeltooth1_pt7_s", new PatternData("wolf_steeltooth1", length: 12500) },
+        { "bp_wolf_steeltooth1_pt8_s", new PatternData("wolf_steeltooth1", length: 21000) },
+        { "bp_wolf_steeltooth1_pt9_s", new PatternData("wolf_steeltooth1", length: 12500) },
 
         { "bp_wolf_steeltooth1", new PatternData("wolf_steeltooth1", true) }, // startup
         { "bp_wolf_steeltooth1_pt2", new PatternData("wolf_steeltooth1", true, 21000) },

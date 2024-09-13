@@ -152,6 +152,8 @@ public unsafe class Mod : IMod {
             { "scr_pattern_deal_damage_ally", this.PlayerDmgDetour},
             { "scr_player_invuln", this.InvulnDetour},
             { "scr_hbsflag_check", this.AddHbsFlagCheckDetour},
+            // speed control
+            { "scrbp_gamespeed", this.GameSpeedDetour},
             // permadeath
             { "scr_kotracker_can_revive", this.ReviveDetour},
             { "scr_kotracker_draw_timer", this.KOTimerDetour},
@@ -476,21 +478,12 @@ public unsafe class Mod : IMod {
         return &result;
     }
 
-    /*const double BULLETTIMESPEED = 0.3;
-    bool bulletTime = false;*/
     // GAMESPEED CONTROL
     private RValue* GameSpeedDetour(
     CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
         var hook = ScriptHooks["scrbp_gamespeed"];
-        /*if (this.bulletTime) {
-            (*argv)->Real *= this.gameSpeed;
-            this.bulletTime = false;
-        } else {
-            (*argv)->Real = this.gameSpeed;
-            this.bulletTime = true;
-        }*/
-        (*argv)->Real = this.gameSpeed;
+        (*argv)->Real *= this.gameSpeed;
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }

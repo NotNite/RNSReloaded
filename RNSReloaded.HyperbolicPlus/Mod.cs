@@ -221,6 +221,9 @@ public unsafe class Mod : IMod {
                     argv = [animName, new RValue(340), new RValue(2.50), new RValue(0.70)];
                     rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
                     break;
+                case Anims.Center:
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(0)]);
+                    break;
                 case Anims.Twili:
                     rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(0)]);
                     animName = new RValue(0);

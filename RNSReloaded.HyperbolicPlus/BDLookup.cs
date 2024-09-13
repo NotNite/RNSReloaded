@@ -30,6 +30,7 @@ public enum Stage {
 
 public enum Anims {
     None,
+    Center,
     Tassha,
     Karsi,
     Twili,
@@ -549,7 +550,6 @@ public class BDLookup {
         { "bp_wolf_blackear2_n", new PatternData("wolf_blackear2", true) }, // weirdo
 
         // nest
-        // the entirety of birds is weird, please fix (UNIMPLEMENTED)
         { "bp_bird_student0_s", new PatternData("bird_student0") },
         { "bp_bird_student1_s", new PatternData("bird_student1") },
         { "bp_bird_whispering0_s", new PatternData("bird_whispering0") },
@@ -592,15 +592,6 @@ public class BDLookup {
         { "bp_bird_archon0_pt6_h", new PatternData("bird_archon0", true) }, // weirdo
         { "bp_bird_archon0_pt7_h", new PatternData("bird_archon0", true) }, // weirdo
 
-        /*scrbp_time(1000) -> 0
-        scrbp_time(3000) -> 0
-        scrbp_time(5000) -> 0
-        scrbp_time(15000) -> 0
-        scrbp_time(30000) -> 0
-        scrbp_time(50000) -> 0
-        scrbp_time(66000) -> 0
-        scrbp_time(100000) -> 0 enrage
-        */
         { "bp_bird_valedictorian0_s", new PatternData("bird_valedictorian0") }, // startup
         { "bp_bird_valedictorian0_pt2_s", new PatternData("bird_valedictorian0", length: 17000) },
         { "bp_bird_valedictorian0_pt3_s", new PatternData("bird_valedictorian0", length: 19000) },
@@ -630,14 +621,14 @@ public class BDLookup {
         { "bp_bird_valedictorian0_pt7_h", new PatternData("bird_valedictorian0", true) }, // weirdo
 
         { "bp_bird_valedictorian1_s", new PatternData("bird_valedictorian1") }, // startup
-        { "bp_bird_valedictorian1_pt2_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt3_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt4_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt5_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt6_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt7_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt8_s", new PatternData("bird_valedictorian1", length: 50000) },
-        { "bp_bird_valedictorian1_pt9_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt2_s", new PatternData("bird_valedictorian1", length: 18000) },
+        { "bp_bird_valedictorian1_pt3_s", new PatternData("bird_valedictorian1", length: 26000) },
+        { "bp_bird_valedictorian1_pt4_s", new PatternData("bird_valedictorian1", length: 20000) },
+        { "bp_bird_valedictorian1_pt5_s", new PatternData("bird_valedictorian1", length: 25000) },
+        { "bp_bird_valedictorian1_pt6_s", new PatternData("bird_valedictorian1", length: 25000) },
+        { "bp_bird_valedictorian1_pt7_s", new PatternData("bird_valedictorian1", length: 27000) },
+        { "bp_bird_valedictorian1_pt8_s", new PatternData("bird_valedictorian1", length: 23000) },
+        { "bp_bird_valedictorian1_pt9_s", new PatternData("bird_valedictorian1", length: 26000) },
         { "bp_bird_valedictorian1_pt2_sh", new PatternData("bird_valedictorian1") }, // weirdo
         { "bp_bird_valedictorian1_pt3_sh", new PatternData("bird_valedictorian1") }, // weirdo
         { "bp_bird_valedictorian1_pt4_sh", new PatternData("bird_valedictorian1") }, // weirdo
@@ -699,13 +690,14 @@ public class BDLookup {
         { "bp_wolf_snowfur0_pt7", new PatternData("wolf_snowfur0", true) },
 
         { "bp_wolf_steeltooth0_s", new PatternData("wolf_steeltooth0") }, // startup
-        { "bp_wolf_steeltooth0_pt2_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt3_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt4_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt5_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt6_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt7_s", new PatternData("wolf_steeltooth0") },
-        { "bp_wolf_steeltooth0_pt8_s", new PatternData("wolf_steeltooth0") },
+        // what? for some reason the entirety of phase 1 always plays
+        { "bp_wolf_steeltooth0_pt2_s", new PatternData("wolf_steeltooth0", length: 46000) },
+        { "bp_wolf_steeltooth0_pt3_s", new PatternData("wolf_steeltooth0", length: 50000) },
+        { "bp_wolf_steeltooth0_pt4_s", new PatternData("wolf_steeltooth0", length: 50000) },
+        { "bp_wolf_steeltooth0_pt5_s", new PatternData("wolf_steeltooth0", length: 50000) },
+        { "bp_wolf_steeltooth0_pt6_s", new PatternData("wolf_steeltooth0", length: 50000) },
+        { "bp_wolf_steeltooth0_pt7_s", new PatternData("wolf_steeltooth0", length: 50000) },
+        { "bp_wolf_steeltooth0_pt8_s", new PatternData("wolf_steeltooth0", length: 50000) },
 
         { "bp_wolf_steeltooth0", new PatternData("wolf_steeltooth0", true) }, // startup
         { "bp_wolf_steeltooth0_pt2", new PatternData("wolf_steeltooth0", true) },
@@ -717,10 +709,9 @@ public class BDLookup {
         { "bp_wolf_steeltooth0_pt8", new PatternData("wolf_steeltooth0", true) },
 
         { "bp_wolf_steeltooth1_s", new PatternData("wolf_steeltooth1") }, // startup
-        // times copied from multi UNIMPLEMENTED
-        { "bp_wolf_steeltooth1_pt2_s", new PatternData("wolf_steeltooth1", length: 21000) },
+        { "bp_wolf_steeltooth1_pt2_s", new PatternData("wolf_steeltooth1", length: 22000) },
         { "bp_wolf_steeltooth1_pt3_s", new PatternData("wolf_steeltooth1", length: 12500) },
-        { "bp_wolf_steeltooth1_pt4_s", new PatternData("wolf_steeltooth1", length: 20000) },
+        { "bp_wolf_steeltooth1_pt4_s", new PatternData("wolf_steeltooth1", length: 24000) },
         { "bp_wolf_steeltooth1_pt5_s", new PatternData("wolf_steeltooth1", length: 12500) },
         { "bp_wolf_steeltooth1_pt6_s", new PatternData("wolf_steeltooth1", length: 22000) },
         { "bp_wolf_steeltooth1_pt7_s", new PatternData("wolf_steeltooth1", length: 12500) },
@@ -772,7 +763,7 @@ public class BDLookup {
         { "bp_dragon_mythril0_s", new PatternData("dragon_mythril0") }, // startup
         { "bp_dragon_mythril0_pt2_s", new PatternData("dragon_mythril0", length: 12500) },
         { "bp_dragon_mythril0_pt3_s", new PatternData("dragon_mythril0", length: 10000) },
-        { "bp_dragon_mythril0_pt4_s", new PatternData("dragon_mythril0", length: 15000) },
+        { "bp_dragon_mythril0_pt4_s", new PatternData("dragon_mythril0", length: 17000) },
         { "bp_dragon_mythril0_pt5_s", new PatternData("dragon_mythril0", length: 10000) },
         { "bp_dragon_mythril0_pt6_s", new PatternData("dragon_mythril0", length: 13000) },
         { "bp_dragon_mythril0_pt7_s", new PatternData("dragon_mythril0", length: 16000) },
@@ -788,14 +779,14 @@ public class BDLookup {
         { "bp_dragon_mythril0_pt8", new PatternData("dragon_mythril0", true) },
 
         { "bp_dragon_mythril1_s", new PatternData("dragon_mythril1") }, // startup
-        { "bp_dragon_mythril1_pt2_s", new PatternData("dragon_mythril1") },
-        { "bp_dragon_mythril1_pt3_s", new PatternData("dragon_mythril1") },
+        { "bp_dragon_mythril1_pt2_s", new PatternData("dragon_mythril1", length: 17000) },
+        { "bp_dragon_mythril1_pt3_s", new PatternData("dragon_mythril1", length: 21000) },
         { "bp_dragon_mythril1_pt4_s", new PatternData("dragon_mythril1", length: 12000) },
-        { "bp_dragon_mythril1_pt5_s", new PatternData("dragon_mythril1") },
-        { "bp_dragon_mythril1_pt6_s", new PatternData("dragon_mythril1") },
-        { "bp_dragon_mythril1_pt7_s", new PatternData("dragon_mythril1") },
-        { "bp_dragon_mythril1_pt8_s", new PatternData("dragon_mythril1") },
-        { "bp_dragon_mythril1_pt9_s", new PatternData("dragon_mythril1") },
+        { "bp_dragon_mythril1_pt5_s", new PatternData("dragon_mythril1", length: 22000) },
+        { "bp_dragon_mythril1_pt6_s", new PatternData("dragon_mythril1", length: 18000) },
+        { "bp_dragon_mythril1_pt7_s", new PatternData("dragon_mythril1", length: 24000) },
+        { "bp_dragon_mythril1_pt8_s", new PatternData("dragon_mythril1", length: 16000) },
+        { "bp_dragon_mythril1_pt9_s", new PatternData("dragon_mythril1", length: 23000) },
 
         { "bp_dragon_mythril1", new PatternData("dragon_mythril1", true) }, // startup
         { "bp_dragon_mythril1_pt2", new PatternData("dragon_mythril1", true) },
@@ -854,13 +845,13 @@ public class BDLookup {
         { "bp_mouse_commander0_pt7", new PatternData("mouse_commander0", true) },
 
         { "bp_mouse_paladin0_s", new PatternData("mouse_paladin0") }, // startup
-        { "bp_mouse_paladin0_pt2_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt3_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt4_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt5_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt6_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt7_s", new PatternData("mouse_paladin0") },
-        { "bp_mouse_paladin0_pt8_s", new PatternData("mouse_paladin0", length: 20000) },
+        { "bp_mouse_paladin0_pt2_s", new PatternData("mouse_paladin0", length: 16000) },
+        { "bp_mouse_paladin0_pt3_s", new PatternData("mouse_paladin0", length: 16000) },
+        { "bp_mouse_paladin0_pt4_s", new PatternData("mouse_paladin0", length: 50000) }, // unused pattern
+        { "bp_mouse_paladin0_pt5_s", new PatternData("mouse_paladin0", length: 19000) },
+        { "bp_mouse_paladin0_pt6_s", new PatternData("mouse_paladin0", length: 20000) },
+        { "bp_mouse_paladin0_pt7_s", new PatternData("mouse_paladin0", length: 23000) },
+        { "bp_mouse_paladin0_pt8_s", new PatternData("mouse_paladin0", length: 22000) },
         { "bp_mouse_paladin0_pt4_sl", new PatternData("mouse_paladin0") }, // weirdo
 
         { "bp_mouse_paladin0", new PatternData("mouse_paladin0", true) }, // startup
@@ -872,15 +863,16 @@ public class BDLookup {
         { "bp_mouse_paladin0_pt7", new PatternData("mouse_paladin0", true) },
         { "bp_mouse_paladin0_pt8", new PatternData("mouse_paladin0", true) },
 
+        // weird with mouse summons
         { "bp_mouse_paladin1_s", new PatternData("mouse_paladin1") }, // startup
-        { "bp_mouse_paladin1_pt2_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt3_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt4_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt5_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt6_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt7_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt8_s", new PatternData("mouse_paladin1") },
-        { "bp_mouse_paladin1_pt9_s", new PatternData("mouse_paladin1") },
+        { "bp_mouse_paladin1_pt2_s", new PatternData("mouse_paladin1", length: 50000) }, // summon
+        { "bp_mouse_paladin1_pt3_s", new PatternData("mouse_paladin1", length: 23000) },
+        { "bp_mouse_paladin1_pt4_s", new PatternData("mouse_paladin1", length: 50000) }, // summon
+        { "bp_mouse_paladin1_pt5_s", new PatternData("mouse_paladin1", length: 29000) },
+        { "bp_mouse_paladin1_pt6_s", new PatternData("mouse_paladin1", length: 50000) }, // summon
+        { "bp_mouse_paladin1_pt7_s", new PatternData("mouse_paladin1", length: 22000) }, // calls pt8 for some reason
+        { "bp_mouse_paladin1_pt8_s", new PatternData("mouse_paladin1", length: 50000) }, // summon
+        { "bp_mouse_paladin1_pt9_s", new PatternData("mouse_paladin1", length: 50000) }, // unused
 
         { "bp_mouse_paladin1", new PatternData("mouse_paladin1", true) }, // startup
         { "bp_mouse_paladin1_pt2", new PatternData("mouse_paladin1", true) },
@@ -928,12 +920,12 @@ public class BDLookup {
         { "bp_frog_painter0_pt3_l", new PatternData("frog_painter0", true) }, // weirdo
 
         { "bp_frog_idol0_s", new PatternData("frog_idol0") }, // startup
-        { "bp_frog_idol0_pt2_s", new PatternData("frog_idol0") },
-        { "bp_frog_idol0_pt3_s", new PatternData("frog_idol0") },
-        { "bp_frog_idol0_pt4_s", new PatternData("frog_idol0") },
-        { "bp_frog_idol0_pt5_s", new PatternData("frog_idol0") },
-        { "bp_frog_idol0_pt6_s", new PatternData("frog_idol0") },
-        { "bp_frog_idol0_pt7_s", new PatternData("frog_idol0") },
+        { "bp_frog_idol0_pt2_s", new PatternData("frog_idol0", length: 16000) },
+        { "bp_frog_idol0_pt3_s", new PatternData("frog_idol0", length: 21000) },
+        { "bp_frog_idol0_pt4_s", new PatternData("frog_idol0", length: 23000) },
+        { "bp_frog_idol0_pt5_s", new PatternData("frog_idol0", length: 22000) },
+        { "bp_frog_idol0_pt6_s", new PatternData("frog_idol0", length: 17000) },
+        { "bp_frog_idol0_pt7_s", new PatternData("frog_idol0", length: 23000) },
 
         { "bp_frog_idol0", new PatternData("frog_idol0", true) }, // startup
         { "bp_frog_idol0_pt2", new PatternData("frog_idol0", true) },
@@ -983,12 +975,12 @@ public class BDLookup {
 
         // pinnacle
         { "bp_rabbit_queen0_s", new PatternData("rabbit_queen0") }, // startup
-        { "bp_rabbit_queen0_pt2_s", new PatternData("rabbit_queen0") },
-        { "bp_rabbit_queen0_pt3_s", new PatternData("rabbit_queen0") },
-        { "bp_rabbit_queen0_pt4_s", new PatternData("rabbit_queen0") },
-        { "bp_rabbit_queen0_pt5_s", new PatternData("rabbit_queen0") },
-        { "bp_rabbit_queen0_pt6_s", new PatternData("rabbit_queen0") },
-        { "bp_rabbit_queen0_pt7_s", new PatternData("rabbit_queen0") },
+        { "bp_rabbit_queen0_pt2_s", new PatternData("rabbit_queen0", length: 15000) },
+        { "bp_rabbit_queen0_pt3_s", new PatternData("rabbit_queen0", length: 17000) },
+        { "bp_rabbit_queen0_pt4_s", new PatternData("rabbit_queen0", length: 15000) },
+        { "bp_rabbit_queen0_pt5_s", new PatternData("rabbit_queen0", length: 19000) },
+        { "bp_rabbit_queen0_pt6_s", new PatternData("rabbit_queen0", length: 23000) },
+        { "bp_rabbit_queen0_pt7_s", new PatternData("rabbit_queen0", length: 40000) },
 
         { "bp_rabbit_queen0", new PatternData("rabbit_queen0", true) }, // startup
         { "bp_rabbit_queen0_pt2", new PatternData("rabbit_queen0", true) },
@@ -1056,13 +1048,12 @@ public class BDLookup {
         { "frog_tinkerer2", new EnemyData(Stage.OUTSKIRTS) },
 
         // nest
-        // azel has a zoom exception, checked on pattern level (UNIMPLEMENTED)
         { "bird_student0", new EnemyData(Stage.NEST, 0.8) },
         { "bird_student1", new EnemyData(Stage.NEST) },
         { "bird_whispering0", new EnemyData(Stage.NEST, 0.9) }, // exception
         { "bird_whispering1", new EnemyData(Stage.NEST, 0.9) },
         { "bird_archon0", new EnemyData(Stage.NEST, 0.9, false) },
-        { "bird_valedictorian0", new EnemyData(Stage.NEST, 0.9, false) },
+        { "bird_valedictorian0", new EnemyData(Stage.NEST, 0.9, false, Anims.Center) },
         { "bird_valedictorian1", new EnemyData(Stage.NEST, 0.85, false, Anims.Twili) },
 
         // arsenal
@@ -1071,11 +1062,10 @@ public class BDLookup {
         { "wolf_bluepaw0", new EnemyData(Stage.ARSENAL, 0.9) },
         { "wolf_bluepaw1", new EnemyData(Stage.ARSENAL, 0.9) },
         { "wolf_snowfur0", new EnemyData(Stage.ARSENAL, 0.9, false, Anims.Tassha) },
-        { "wolf_steeltooth0", new EnemyData(Stage.ARSENAL, 0.9) },
+        { "wolf_steeltooth0", new EnemyData(Stage.ARSENAL, 0.9, false, Anims.Center) },
         { "wolf_steeltooth1", new EnemyData(Stage.ARSENAL, 0.75, false, Anims.Merran) },
 
         // lighthouse
-        // Karsi transformation is (UNIMPLEMENTED)
         { "dragon_gold0", new EnemyData(Stage.LIGHTHOUSE) },
         { "dragon_gold1", new EnemyData(Stage.LIGHTHOUSE) },
         { "dragon_emerald0", new EnemyData(Stage.LIGHTHOUSE, 0.95) },
@@ -1099,7 +1089,7 @@ public class BDLookup {
         { "frog_songstress0", new EnemyData(Stage.LAKESIDE, 0.9) },
         { "frog_songstress1", new EnemyData(Stage.LAKESIDE, 0.9) },
         { "frog_painter0", new EnemyData(Stage.LAKESIDE, 0.9, false) },
-        { "frog_idol0", new EnemyData(Stage.LAKESIDE, 0.85, false) },
+        { "frog_idol0", new EnemyData(Stage.LAKESIDE, 0.85, false, Anims.Center) },
         { "frog_idol1", new EnemyData(Stage.LAKESIDE, 0.85, false, Anims.Avy) },
 
         // keep
@@ -1110,7 +1100,7 @@ public class BDLookup {
         { "queens_staff0", new EnemyData(Stage.KEEP) },
 
         // pinnacle
-        { "rabbit_queen0", new EnemyData(Stage.PINNACLE, 0.9, false) },
+        { "rabbit_queen0", new EnemyData(Stage.PINNACLE, 0.9, false, Anims.Center) },
         { "rabbit_queen1", new EnemyData(Stage.PINNACLE, 0.75, false, Anims.Shira) }
     };
 
@@ -1171,7 +1161,8 @@ public class BDLookup {
             ( "bp_bird_valedictorian1_pt8", [null, null, "bp_bird_valedictorian1_pt8_h", "bp_bird_valedictorian1_pt8_h"]),
             ( "bp_bird_valedictorian1_pt9", [null, null, "bp_bird_valedictorian1_pt9_h", "bp_bird_valedictorian1_pt9_h"]),
 
-            ( "bp_mouse_paladin0_pt4_s", [null, null, "bp_mouse_paladin0_pt4_sl", "bp_mouse_paladin0_pt4_sl"]),
+            // this is an unused pattern in the game
+            // ( "bp_mouse_paladin0_pt4_s", [null, null, "bp_mouse_paladin0_pt4_sl", "bp_mouse_paladin0_pt4_sl"]),
             ( "bp_frog_seamstress1", [null, null, "bp_frog_seamstress1_h", "bp_frog_seamstress1_h"]),
 
             ( "bp_frog_painter0_pt3_s", [null, null, "bp_frog_painter0_pt3_sl", "bp_frog_painter0_pt3_sl"]),
@@ -1252,7 +1243,7 @@ public class BDLookup {
         { Mixes.Matti1_S, [
             "bp_mouse_paladin0_pt2_s",
             "bp_mouse_paladin0_pt3_s",
-            "bp_mouse_paladin0_pt4_s",
+            // "bp_mouse_paladin0_pt4_s", // unused pattern
             "bp_mouse_paladin0_pt5_s",
             "bp_mouse_paladin0_pt6_s",
             "bp_mouse_paladin0_pt7_s",

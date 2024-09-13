@@ -14,6 +14,8 @@ using System.Linq;
 using System.Threading;
 using System;
 using System.Security.Cryptography;
+using System.Security.AccessControl;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RNSReloaded.HyperbolicPlus;
 
@@ -43,6 +45,7 @@ public unsafe class Mod : IMod {
     private double damageMult = 0.0;
     private double gameSpeed = 1.0;
     private bool enFlag = false; // prevent infinite loops
+    private bool karsiDone = false; // makes sure karsi's circle is activated only once
     private bool isTakingDamage = false; // for invuln control
 
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = [];
@@ -57,6 +60,7 @@ public unsafe class Mod : IMod {
 
     private IHook<ScriptDelegate>? enemyHookS;
     private IHook<ScriptDelegate>? enemyHookM;
+    private List<string> hookedScripts = [];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -192,6 +196,7 @@ public unsafe class Mod : IMod {
     }
 
     private void RunAnimation(Anims id, CInstance* self, CInstance* other) {
+        // transform data will eventually be moved to battledata
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             RValue animName;
             RValue[] argv;
@@ -200,46 +205,56 @@ public unsafe class Mod : IMod {
                     break;
                 case Anims.Tassha:
                     this.execute_pattern(self, other, "bp_wolf_disappear", []);
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1000), new RValue(0)]);
                     break;
-                //scrbp_transform_animation(anim_bird_valedictorian_big, 300, 2, 0.50) -> undefined
-                //scrbp_transform_animation(anim_mouse_paladin_big, 300, 2, 0.50)->undefined
+                case Anims.Karsi:
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(0)]);
+                    animName = new RValue(0);
+                    rnsReloaded.CreateString(&animName, "anim_dragon_ruby_big");
+                    argv = [animName, new RValue(340), new RValue(2.50), new RValue(0.70)];
+                    rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
+                    break;
+                case Anims.Twili:
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(0)]);
+                    animName = new RValue(0);
+                    rnsReloaded.CreateString(&animName, "anim_bird_valedictorian_big");
+                    argv = [animName, new RValue(300), new RValue(2), new RValue(0.50)];
+                    rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
+                    break;
                 case Anims.Merran:
-                    //scrbp_move_character_absolute(1660, 540, 1500, 1) -> undefined
-                    //scrbp_move_character(700, 0, 1500, 1)->undefined
                     rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(1600), new RValue(540), new RValue(1500), new RValue(1)]);
                     animName = new RValue(0);
                     rnsReloaded.CreateString(&animName, "anim_wolf_steeltooth_big");
-                    argv = new RValue[] { animName, new RValue(380), new RValue(2), new RValue(0.70) };
+                    argv = [animName, new RValue(380), new RValue(2), new RValue(0.70)];
                     rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
-                    //scrbp_transform_animation(anim_wolf_steeltooth_big, 380, 2, 0.70)->undefined
                     break;
                 case Anims.Ranalie:
-                    //scrbp_move_character(700, 0, 1500, 1
-                    rnsReloaded.ExecuteScript("scrbp_move_character", self, other, [new RValue(700), new RValue(0), new RValue(1500), new RValue(1)]);
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(1660), new RValue(540), new RValue(1500), new RValue(1)]);
                     animName = new RValue(0);
                     rnsReloaded.CreateString(&animName, "anim_dragon_mythril_big");
-                    argv = new RValue[] { animName, new RValue(700), new RValue(4), new RValue(1) };
+                    argv = [animName, new RValue(700), new RValue(4), new RValue(1)];
                     rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
-                    //(anim_dragon_mythril_big, 700, 4, 1)
+                    break;
+                case Anims.Matti:
+                    rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(1)]);
+                    animName = new RValue(0);
+                    rnsReloaded.CreateString(&animName, "anim_mouse_paladin_big");
+                    argv = [animName, new RValue(300), new RValue(2), new RValue(0.50)];
+                    rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
                     break;
                 case Anims.Avy:
-                    //move_character_absolute(960, 540, 1500, 0)
                     rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(0)]);
                     animName = new RValue(0);
                     rnsReloaded.CreateString(&animName, "anim_frog_idol_big");
-                    argv = new RValue[] { animName, new RValue(300), new RValue(2), new RValue(0.50) };
+                    argv = [animName, new RValue(300), new RValue(2), new RValue(0.50)];
                     rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
-                    //ml_Script_scrbp_transform_animation(anim_frog_idol_big, 300, 2, 0.50) -> undefined
                     break;
                 case Anims.Shira:
-                    //move_character(0, 0, 1500, 1) ->
-                    //gml_Script_scrbp_move_character_absolute(960, 540, 1500, 1) -> undefined
                     rnsReloaded.ExecuteScript("scrbp_move_character_absolute", self, other, [new RValue(960), new RValue(540), new RValue(1500), new RValue(1)]);
                     animName = new RValue(0);
                     rnsReloaded.CreateString(&animName, "anim_rabbit_queen_big");
-                    argv = new RValue[] { animName, new RValue(500), new RValue(2.40), new RValue(0.60) };
+                    argv = [animName, new RValue(500), new RValue(2.40), new RValue(0.60)];
                     rnsReloaded.ExecuteScript("scrbp_transform_animation", self, other, argv);
-                    //scrbp_transform_animation(anim_rabbit_queen_big, 500, 2.40, 0.60) -> undefined
                     break;
             }
         }
@@ -272,55 +287,17 @@ public unsafe class Mod : IMod {
     }
 
     private void PlayMix(Mixes mix, CInstance* self, CInstance* other, IUtil utils, IBattleScripts scrbp) {
-        List<string> patterns = new List<string> { };
-        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
-            switch (mix) {
-                case Mixes.None:
-                    break;
-                case Mixes.Avy2_S:
-                    patterns = new List<string> {
-                        "bp_frog_idol1_pt2_s",
-                        "bp_frog_idol1_pt3_s",
-                        "bp_frog_idol1_pt4_s",
-                        "bp_frog_idol1_pt5_s",
-                        "bp_frog_idol1_pt6_s",
-                        "bp_frog_idol1_pt7_s",
-                        "bp_frog_idol1_pt8_s",
-                        "bp_frog_idol1_pt9_s"
-                    };
-                    break;
-                case Mixes.Ranalie1_S:
-                    patterns = new List<string> {
-                        "bp_dragon_mythril0_pt2_s",
-                        "bp_dragon_mythril0_pt3_s",
-                        "bp_dragon_mythril0_pt4_s",
-                        "bp_dragon_mythril0_pt5_s",
-                        "bp_dragon_mythril0_pt6_s",
-                        "bp_dragon_mythril0_pt7_s",
-                        "bp_dragon_mythril0_pt8_s"
-                    };
-                    break;
-                case Mixes.Shira2_S:
-                    patterns = new List<string> {
-                        "bp_rabbit_queen1_pt2_s",
-                        // "bp_rabbit_queen1_pt3_s", // steel, baited
-                        "bp_rabbit_queen1_pt4_s",
-                        "bp_rabbit_queen1_pt5_s", // steel
-                        "bp_rabbit_queen1_pt6_s",
-                        "bp_rabbit_queen1_pt7_s", // steel
-                        "bp_rabbit_queen1_pt8_s",
-                        // "bp_rabbit_queen1_pt9_s",
-                    };
-                    break;
-            }
-            this.PlayPatternList(patterns, self, other, utils, scrbp);
-        }
+        List<string> patterns = BattleData.GetPatternsByMix(mix);
+        this.PlayPatternList(patterns, self, other, utils, scrbp);
     }
 
     private RValue* StartRunDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_charselect2_start_run"];
         // update config on new run
         this.ConfigSetupHooks();
+        BattleData.ReadConfig(this.config);
+        this.enFlag = false;
+        this.karsiDone = false;
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
@@ -329,23 +306,28 @@ public unsafe class Mod : IMod {
     ) {
         var hook = ScriptHooks["scrdt_encounter"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            // replace this with new battleData function later
             this.battleName = Enum.GetName(this.config.ActivePattern) ?? "";
-            string enemy = BattleData.GetEnemy(this.battleName);
+            string enemy = BattleData.enemy;
 
             // replace current enc with chosen one
             rnsReloaded.CreateString(argv[0], "enc_" + enemy!);
 
-            CScript* enemyScriptS = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_" + enemy + "_s") - SCRIPTCONST);
-            this.enemyHookS = hooks.CreateHook<ScriptDelegate>(this.EnemyDetour, enemyScriptS->Functions->Function);
-            this.enemyHookS.Activate();
-            this.enemyHookS.Enable();
-
-            CScript* enemyScriptM = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_" + enemy) - SCRIPTCONST);
-            this.enemyHookM = hooks.CreateHook<ScriptDelegate>(this.EnemyMDetour, enemyScriptM->Functions->Function);
-            this.enemyHookM.Activate();
-            this.enemyHookM.Enable();
-
-            Console.WriteLine("bp_" + enemy + "_s");
+            // hook into the right scripts given the difficulty
+            if (!this.hookedScripts.Contains("bp_" + enemy + "_s")) {
+                CScript* enemyScriptS = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_" + enemy + "_s") - SCRIPTCONST);
+                this.enemyHookS = hooks.CreateHook<ScriptDelegate>(this.EnemyDetour, enemyScriptS->Functions->Function);
+                this.enemyHookS.Activate();
+                this.enemyHookS.Enable();
+                this.hookedScripts.Add("bp_" + enemy + "_s");
+            }
+            if (!this.hookedScripts.Contains("bp_" + enemy)) {
+                CScript* enemyScriptM = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_" + enemy) - SCRIPTCONST);
+                this.enemyHookM = hooks.CreateHook<ScriptDelegate>(this.EnemyMDetour, enemyScriptM->Functions->Function);
+                this.enemyHookM.Activate();
+                this.enemyHookM.Enable();
+                this.hookedScripts.Add("bp_" + enemy);
+            }
 
             // set level
             var enemyLevel = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyLevel");
@@ -353,6 +335,7 @@ public unsafe class Mod : IMod {
         }
 
         this.enFlag = false;
+        this.karsiDone = false;
         returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
@@ -360,59 +343,76 @@ public unsafe class Mod : IMod {
     private RValue* EnemyMDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        bool basic = BattleData.GetBasic(this.battleName);
+        bool basic = BattleData.basic;
         if (this.enFlag && basic) {
+            if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+                /*if (scrbp.time_repeating(self, other, 0, BattleData.length)) {
+                    // accelerate speed
+                    utils.GetGlobalVar("gameTimeSpeed")->Real = this.gameSpeed;
+                    if (this.config.AccelerateSpeed) {
+                        this.gameSpeed += 0.1;
+                    }
+                }*/
+            }
             if (this.enemyHookM != null) return this.enemyHookM.OriginalFunction(self, other, returnValue, argc, argv);
             else return returnValue;
         }
         return this.EnemyDetour(self, other, returnValue, argc, argv);
     }
+
     private RValue* EnemyDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        // initial setup, fetch battledata
-        int length = BattleData.GetLength(this.battleName);
-        string pattern = BattleData.GetPattern(this.battleName);
-        double zoom = BattleData.GetZoom(this.battleName);
-        int stage = BattleData.GetStage(this.battleName);
-        Anims anim = BattleData.GetAnim(this.battleName);
-        bool basic = BattleData.GetBasic(this.battleName);
-
-        if (this.enFlag && basic) {
-            if (this.enemyHookS != null) return this.enemyHookS.OriginalFunction(self, other, returnValue, argc, argv);
-            else return returnValue;
-        }
-        this.enFlag = true;
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            if (this.enFlag && BattleData.basic) {
+                if (scrbp.time_repeating(self, other, 0, BattleData.length)) {
+                    // accelerate speed
+                    utils.GetGlobalVar("gameTimeSpeed")->Real = this.gameSpeed;
+                    if (this.config.AccelerateSpeed) {
+                        this.gameSpeed += 0.1;
+                    }
+                }
+                // is calling different function the second time
+                // check if this is case for boss/midboss
+                if (this.enemyHookS != null) return this.enemyHookS.OriginalFunction(self, other, returnValue, argc, argv);
+                else {
+                    return returnValue;
+                }
+            }
+            this.enFlag = true;
+
             if (scrbp.time(self, other, 0)) {
+                Console.WriteLine(BattleData.zoom);
                 // change environment
-                this.RunAnimation(anim, self, other);
-                rnsReloaded.ExecuteScript("scrbp_zoom", self, other, [new RValue(zoom)]);
-                rnsReloaded.ExecuteScript("scr_stage_change", self, other, [new RValue(stage)]);
+                this.RunAnimation(BattleData.anim, self, other);
+                rnsReloaded.ExecuteScript("scrbp_zoom", self, other, [new RValue(BattleData.zoom)]);
+                rnsReloaded.ExecuteScript("scr_stage_change", self, other, [new RValue(BattleData.stage)]);
                 // set tracking variables
                 this.atkNo = 0;
                 this.gameSpeed = utils.GetGlobalVar("gameTimeSpeed")->Real;
             }
 
+            if (BattleData.anim == Anims.Karsi && !this.karsiDone && scrbp.time(self, other, ANIM_TIME)) {
+                Console.WriteLine("detoured twice");
+                this.execute_pattern(self, other, "bp_dragon_ruby0_perm", []);
+                this.karsiDone = true;
+            }
+
             // check if play mix
-            Mixes mix = BattleData.GetMix(this.battleName);
+            Mixes mix = BattleData.mix;
             if (mix != Mixes.None) {
                 this.PlayMix(mix, self, other, utils, scrbp);
                 return returnValue;
             }
 
-            Console.WriteLine($"Executing pattern: {pattern}");
-
-            if (basic) {
-                Console.Write("basic");
-                // this.execute_pattern(self, other, pattern, []);
-                rnsReloaded.ExecuteScript(pattern, self, other, argc, argv);
+            if (BattleData.basic) {
+                rnsReloaded.ExecuteScript(BattleData.pattern, self, other, argc, argv);
             }
 
-            else if (scrbp.time_repeating(self, other, ANIM_TIME, length)) {
+            else if (scrbp.time_repeating(self, other, ANIM_TIME, BattleData.length)) {
                 // call pattern on set loop
-                if (!BattleData.GetBasic(this.battleName)) {
-                    this.execute_pattern(self, other, pattern, []);
+                if (!BattleData.basic) {
+                    this.execute_pattern(self, other, BattleData.pattern, []);
                 }
 
                 // accelerate speed
@@ -469,6 +469,24 @@ public unsafe class Mod : IMod {
         return &result;
     }
 
+    /*const double BULLETTIMESPEED = 0.3;
+    bool bulletTime = false;*/
+    // GAMESPEED CONTROL
+    private RValue* GameSpeedDetour(
+    CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
+        var hook = ScriptHooks["scrbp_gamespeed"];
+        /*if (this.bulletTime) {
+            (*argv)->Real *= this.gameSpeed;
+            this.bulletTime = false;
+        } else {
+            (*argv)->Real = this.gameSpeed;
+            this.bulletTime = true;
+        }*/
+        (*argv)->Real = this.gameSpeed;
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
 
     public void Suspend() { }
 

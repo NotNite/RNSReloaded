@@ -2,11 +2,19 @@ using RNSReloaded.HyperbolicPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using static RNSReloaded.HyperbolicPlus.Config.Config;
 
 namespace RNSReloaded.HyperbolicPlus;
+
+public enum Difficulty {
+    CUTE = 0,
+    NORMAL = 1,
+    HARD = 2,
+    LUNAR = 3
+}
 
 public enum Stage {
     NONE = 0,
@@ -63,7 +71,7 @@ public class BDLookup {
         public string? partner { get; }
         public Mixes mixes { get; }
 
-        public PatternData(string enemy, bool multi = false, int length = 20000, string? partner = null, Mixes mix = Mixes.None) {
+        public PatternData(string enemy, bool multi = false, int length = 10000, string? partner = null, Mixes mix = Mixes.None) {
             this.enemy = enemy;
             this.multi = multi;
             this.length = length;
@@ -83,6 +91,18 @@ public class BDLookup {
             this.stage = (int) stage;
             this.zoom = zoom;
             this.anims = anim;
+        }
+    }
+
+    public struct DiffRedirect {
+        public string[] patterns { get; }
+
+        public DiffRedirect(string def, string?[] patterns) {
+            this.patterns = patterns.Select(p => p ?? string.Empty).ToArray();
+        }
+
+        public readonly string getPatternByDiff(Difficulty diff) {
+            return this.patterns[(int) diff];
         }
     }
 
@@ -372,7 +392,7 @@ public class BDLookup {
         { "LetteJay2_S", "bp_frog_songstress1_s" },
 
         { "Mav1_M", "bp_frog_seamstress0" },
-        { "Mav2_M", "bp_frog_seamstress1" }, // broken
+        { "Mav2_M", "bp_frog_seamstress1" }, // bp_frog_seamstress1_h for some reason players the solo variant
         { "LetteJay1_M", "bp_frog_songstress0" },
         { "LetteJay2_M", "bp_frog_songstress1" },
 
@@ -472,8 +492,17 @@ public class BDLookup {
         { "Shira2_8M", "bp_rabbit_queen1_pt9" },
 
         // mixes
+        { "Twili1_Mix_S", "mix_bird_valedictorian0_s"},
+        { "Twili2_Mix_S", "mix_bird_valedictorian1_s"},
+        { "Merran1_Mix_S", "mix_wolf_steeltooth0_s"},
+        { "Merran2_Mix_S", "mix_wolf_steeltooth1_s"},
         { "Ranalie1_Mix_S", "mix_dragon_mythril0_s"},
+        { "Ranalie2_Mix_S", "mix_dragon_mythril1_s"},
+        { "Matti1_Mix_S", "mix_mouse_paladin0_s"},
+        { "Matti2_Mix_S", "mix_mouse_paladin1_s"},
+        { "Avy1_Mix_S", "mix_frog_idol0_s"},
         { "Avy2_Mix_S", "mix_frog_idol1_s"},
+        { "Shira1_Mix_S", "mix_rabbit_queen0_s"},
         { "Shira2_Mix_S", "mix_rabbit_queen1_s"},
     };
 
@@ -563,13 +592,22 @@ public class BDLookup {
         { "bp_bird_archon0_pt6_h", new PatternData("bird_archon0", true) }, // weirdo
         { "bp_bird_archon0_pt7_h", new PatternData("bird_archon0", true) }, // weirdo
 
+        /*scrbp_time(1000) -> 0
+        scrbp_time(3000) -> 0
+        scrbp_time(5000) -> 0
+        scrbp_time(15000) -> 0
+        scrbp_time(30000) -> 0
+        scrbp_time(50000) -> 0
+        scrbp_time(66000) -> 0
+        scrbp_time(100000) -> 0 enrage
+        */
         { "bp_bird_valedictorian0_s", new PatternData("bird_valedictorian0") }, // startup
-        { "bp_bird_valedictorian0_pt2_s", new PatternData("bird_valedictorian0") },
-        { "bp_bird_valedictorian0_pt3_s", new PatternData("bird_valedictorian0") },
-        { "bp_bird_valedictorian0_pt4_s", new PatternData("bird_valedictorian0") },
-        { "bp_bird_valedictorian0_pt5_s", new PatternData("bird_valedictorian0") },
-        { "bp_bird_valedictorian0_pt6_s", new PatternData("bird_valedictorian0") },
-        { "bp_bird_valedictorian0_pt7_s", new PatternData("bird_valedictorian0") },
+        { "bp_bird_valedictorian0_pt2_s", new PatternData("bird_valedictorian0", length: 17000) },
+        { "bp_bird_valedictorian0_pt3_s", new PatternData("bird_valedictorian0", length: 19000) },
+        { "bp_bird_valedictorian0_pt4_s", new PatternData("bird_valedictorian0", length: 16000) },
+        { "bp_bird_valedictorian0_pt5_s", new PatternData("bird_valedictorian0", length: 20000) },
+        { "bp_bird_valedictorian0_pt6_s", new PatternData("bird_valedictorian0", length: 19000) },
+        { "bp_bird_valedictorian0_pt7_s", new PatternData("bird_valedictorian0", length: 20000) },
         { "bp_bird_valedictorian0_pt2_sh", new PatternData("bird_valedictorian0") }, // weirdo
         { "bp_bird_valedictorian0_pt3_sh", new PatternData("bird_valedictorian0") }, // weirdo
         { "bp_bird_valedictorian0_pt4_sh", new PatternData("bird_valedictorian0") }, // weirdo
@@ -592,14 +630,14 @@ public class BDLookup {
         { "bp_bird_valedictorian0_pt7_h", new PatternData("bird_valedictorian0", true) }, // weirdo
 
         { "bp_bird_valedictorian1_s", new PatternData("bird_valedictorian1") }, // startup
-        { "bp_bird_valedictorian1_pt2_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt3_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt4_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt5_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt6_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt7_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt8_s", new PatternData("bird_valedictorian1") },
-        { "bp_bird_valedictorian1_pt9_s", new PatternData("bird_valedictorian1") },
+        { "bp_bird_valedictorian1_pt2_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt3_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt4_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt5_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt6_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt7_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt8_s", new PatternData("bird_valedictorian1", length: 50000) },
+        { "bp_bird_valedictorian1_pt9_s", new PatternData("bird_valedictorian1", length: 50000) },
         { "bp_bird_valedictorian1_pt2_sh", new PatternData("bird_valedictorian1") }, // weirdo
         { "bp_bird_valedictorian1_pt3_sh", new PatternData("bird_valedictorian1") }, // weirdo
         { "bp_bird_valedictorian1_pt4_sh", new PatternData("bird_valedictorian1") }, // weirdo
@@ -720,7 +758,7 @@ public class BDLookup {
         { "bp_dragon_ruby0_pt4_s", new PatternData("dragon_ruby0") },
         { "bp_dragon_ruby0_pt5_s", new PatternData("dragon_ruby0") },
         { "bp_dragon_ruby0_pt6_s", new PatternData("dragon_ruby0") },
-        { "bp_dragon_ruby0_pt7_s", new PatternData("dragon_ruby0", length: 12500) },
+        { "bp_dragon_ruby0_pt7_s", new PatternData("dragon_ruby0", length: 21000) },
 
         { "bp_dragon_ruby0", new PatternData("dragon_ruby0", true) }, // startup
         { "bp_dragon_ruby0_pt2", new PatternData("dragon_ruby0", true) },
@@ -877,7 +915,7 @@ public class BDLookup {
         { "bp_frog_painter0_pt4_s", new PatternData("frog_painter0") },
         { "bp_frog_painter0_pt5_s", new PatternData("frog_painter0") },
         { "bp_frog_painter0_pt6_s", new PatternData("frog_painter0", length: 20000) },
-        { "bp_frog_painter0_pt7_s", new PatternData("frog_painter0", length: 24000) },
+        { "bp_frog_painter0_pt7_s", new PatternData("frog_painter0", length: 24000) }, // might be untimed
         { "bp_frog_painter0_pt3_sl", new PatternData("frog_painter0") }, // weirdo
 
         { "bp_frog_painter0", new PatternData("frog_painter0", true) }, // startup
@@ -982,10 +1020,17 @@ public class BDLookup {
 
         // mixes
         // { "mix_dragon_ruby0_s", new PatternData("dragon_ruby0", mix: Mixes.Karsi) },
-        //{ "mix_dragon_mythril0_s", new PatternData("dragon_mythril0", mix: Mixes.Ranalie1_S) },
-        // { "mix_dragon_mythril0_s", new PatternData("dragon_mythril0", mix: Mixes.Ranalie1_S) },
+        { "mix_bird_valedictorian0_s", new PatternData("bird_valedictorian0", mix: Mixes.Twili1_S) },
+        { "mix_bird_valedictorian1_s", new PatternData("bird_valedictorian1", mix: Mixes.Twili2_S) },
+        { "mix_wolf_steeltooth0_s", new PatternData("wolf_steeltooth0", mix: Mixes.Merran1_S) },
+        { "mix_wolf_steeltooth1_s", new PatternData("wolf_steeltooth1", mix: Mixes.Merran2_S) },
         { "mix_dragon_mythril0_s", new PatternData("dragon_mythril0", mix: Mixes.Ranalie1_S) },
+        { "mix_dragon_mythril1_s", new PatternData("dragon_mythril1", mix: Mixes.Ranalie2_S) },
+        { "mix_mouse_paladin0_s", new PatternData("mouse_paladin0", mix: Mixes.Matti1_S) },
+        { "mix_mouse_paladin1_s", new PatternData("mouse_paladin1", mix: Mixes.Matti2_S) },
+        { "mix_frog_idol0_s", new PatternData("frog_idol0", mix: Mixes.Avy1_S) },
         { "mix_frog_idol1_s", new PatternData("frog_idol1", mix: Mixes.Avy2_S) },
+        { "mix_rabbit_queen0_s", new PatternData("rabbit_queen0", mix: Mixes.Shira1_S) },
         { "mix_rabbit_queen1_s", new PatternData("rabbit_queen1", mix: Mixes.Shira2_S) }
     };
 
@@ -1069,8 +1114,168 @@ public class BDLookup {
         { "rabbit_queen1", new EnemyData(Stage.PINNACLE, 0.75, false, Anims.Shira) }
     };
 
+    private struct DiffRedirectMapMaker {
+        private static readonly (string key, string?[] patterns)[] Entries = {
+            // aka the collection of all of mino's weirdly named scripts
+            // these are all difficulty assumptions
+            ( "bp_wolf_blackear2", ["bp_wolf_blackear2_n", "bp_wolf_blackear2_n", null, null]),
+
+            ( "bp_bird_student0", ["bp_bird_student0_n", "bp_bird_student0_n", null, null]),
+            ( "bp_bird_student1", [null, null, "bp_bird_student1_l", "bp_bird_student1_l"]),
+            ( "bp_bird_whispering0", ["bp_bird_whispering0_n", "bp_bird_whispering0_n", null, null]),
+            ( "bp_bird_whispering1", ["bp_bird_whispering1_n", "bp_bird_whispering1_n", null, null]),
+
+            ( "bp_bird_archon0_pt2_s", ["bp_bird_archon0_pt2_sh", "bp_bird_archon0_pt2_sh", "bp_bird_archon0_pt2_sh", "bp_bird_archon0_pt2_sh"]),
+            ( "bp_bird_archon0_pt3_s", [null, null, "bp_bird_archon0_pt3_sh", "bp_bird_archon0_pt3_sh"]),
+            ( "bp_bird_archon0_pt4_s", [null, null, "bp_bird_archon0_pt4_sh", "bp_bird_archon0_pt4_sh"]),
+            ( "bp_bird_archon0_pt5_s", [null, null, "bp_bird_archon0_pt5_sh", "bp_bird_archon0_pt5_sh"]),
+            ( "bp_bird_archon0_pt6_s", [null, null, "bp_bird_archon0_pt6_sh", "bp_bird_archon0_pt6_sh"]),
+            ( "bp_bird_archon0_pt7_s", [null, null, "bp_bird_archon0_pt7_sh", "bp_bird_archon0_pt7_sh"]),
+
+            ( "bp_bird_archon0_pt2", [null, null, "bp_bird_archon0_pt2_h", "bp_bird_archon0_pt2_h"]),
+            ( "bp_bird_archon0_pt3", [null, null, "bp_bird_archon0_pt3_h", "bp_bird_archon0_pt3_h"]),
+            ( "bp_bird_archon0_pt4", [null, null, "bp_bird_archon0_pt4_h", "bp_bird_archon0_pt4_h"]),
+            ( "bp_bird_archon0_pt5", [null, null, "bp_bird_archon0_pt5_h", "bp_bird_archon0_pt5_h"]),
+            ( "bp_bird_archon0_pt6", [null, null, "bp_bird_archon0_pt6_h", "bp_bird_archon0_pt6_h"]),
+            ( "bp_bird_archon0_pt7", [null, null, "bp_bird_archon0_pt7_h", "bp_bird_archon0_pt7_h"]),
+
+            ( "bp_bird_valedictorian0_pt2_s", [null, null, "bp_bird_valedictorian0_pt2_sh", "bp_bird_valedictorian0_pt2_sh"]),
+            ( "bp_bird_valedictorian0_pt3_s", [null, null, "bp_bird_valedictorian0_pt3_sh", "bp_bird_valedictorian0_pt3_sh"]),
+            ( "bp_bird_valedictorian0_pt4_s", [null, null, "bp_bird_valedictorian0_pt4_sh", "bp_bird_valedictorian0_pt4_sh"]),
+            ( "bp_bird_valedictorian0_pt5_s", [null, null, "bp_bird_valedictorian0_pt5_sh", "bp_bird_valedictorian0_pt5_sh"]),
+            ( "bp_bird_valedictorian0_pt6_s", [null, null, "bp_bird_valedictorian0_pt6_sh", "bp_bird_valedictorian0_pt6_sh"]),
+            ( "bp_bird_valedictorian0_pt7_s", [null, null, "bp_bird_valedictorian0_pt7_sh", "bp_bird_valedictorian0_pt7_sh"]),
+
+            ( "bp_bird_valedictorian0_pt2", [null, null, "bp_bird_valedictorian0_pt2_h", "bp_bird_valedictorian0_pt2_h"]),
+            ( "bp_bird_valedictorian0_pt3", [null, null, "bp_bird_valedictorian0_pt3_h", "bp_bird_valedictorian0_pt3_h"]),
+            ( "bp_bird_valedictorian0_pt4", [null, null, "bp_bird_valedictorian0_pt4_h", "bp_bird_valedictorian0_pt4_h"]),
+            ( "bp_bird_valedictorian0_pt5", [null, null, "bp_bird_valedictorian0_pt5_h", "bp_bird_valedictorian0_pt5_h"]),
+            ( "bp_bird_valedictorian0_pt6", [null, null, "bp_bird_valedictorian0_pt6_h", "bp_bird_valedictorian0_pt6_h"]),
+            ( "bp_bird_valedictorian0_pt7", [null, null, "bp_bird_valedictorian0_pt7_h", "bp_bird_valedictorian0_pt7_h"]),
+
+            ( "bp_bird_valedictorian1_pt2_s", [null, null, "bp_bird_valedictorian1_pt2_sh", "bp_bird_valedictorian1_pt2_sh"]),
+            ( "bp_bird_valedictorian1_pt3_s", [null, null, "bp_bird_valedictorian1_pt3_sh", "bp_bird_valedictorian1_pt3_sh"]),
+            ( "bp_bird_valedictorian1_pt4_s", [null, null, "bp_bird_valedictorian1_pt4_sh", "bp_bird_valedictorian1_pt4_sh"]),
+            ( "bp_bird_valedictorian1_pt5_s", [null, null, "bp_bird_valedictorian1_pt5_sh", "bp_bird_valedictorian1_pt5_sh"]),
+            ( "bp_bird_valedictorian1_pt6_s", [null, null, "bp_bird_valedictorian1_pt6_sh", "bp_bird_valedictorian1_pt6_sh"]),
+            ( "bp_bird_valedictorian1_pt7_s", [null, null, "bp_bird_valedictorian1_pt7_sh", "bp_bird_valedictorian1_pt7_sl"]),
+            ( "bp_bird_valedictorian1_pt8_s", [null, null, "bp_bird_valedictorian1_pt8_sh", "bp_bird_valedictorian1_pt8_sh"]),
+            ( "bp_bird_valedictorian1_pt9_s", [null, null, "bp_bird_valedictorian1_pt9_sh", "bp_bird_valedictorian1_pt9_sl"]),
+
+            ( "bp_bird_valedictorian1_pt2", [null, null, "bp_bird_valedictorian1_pt2_l", "bp_bird_valedictorian1_pt2_l"]),
+            ( "bp_bird_valedictorian1_pt3", [null, null, "bp_bird_valedictorian1_pt3_h", "bp_bird_valedictorian1_pt3_h"]),
+            ( "bp_bird_valedictorian1_pt4", [null, null, "bp_bird_valedictorian1_pt4_h", "bp_bird_valedictorian1_pt4_h"]),
+            ( "bp_bird_valedictorian1_pt5", [null, null, "bp_bird_valedictorian1_pt5_h", "bp_bird_valedictorian1_pt5_h"]),
+            ( "bp_bird_valedictorian1_pt6", [null, null, "bp_bird_valedictorian1_pt6_h", "bp_bird_valedictorian1_pt6_h"]),
+            ( "bp_bird_valedictorian1_pt7", [null, null, "bp_bird_valedictorian1_pt7_h", "bp_bird_valedictorian1_pt7_h"]),
+            ( "bp_bird_valedictorian1_pt8", [null, null, "bp_bird_valedictorian1_pt8_h", "bp_bird_valedictorian1_pt8_h"]),
+            ( "bp_bird_valedictorian1_pt9", [null, null, "bp_bird_valedictorian1_pt9_h", "bp_bird_valedictorian1_pt9_h"]),
+
+            ( "bp_mouse_paladin0_pt4_s", [null, null, "bp_mouse_paladin0_pt4_sl", "bp_mouse_paladin0_pt4_sl"]),
+            ( "bp_frog_seamstress1", [null, null, "bp_frog_seamstress1_h", "bp_frog_seamstress1_h"]),
+
+            ( "bp_frog_painter0_pt3_s", [null, null, "bp_frog_painter0_pt3_sl", "bp_frog_painter0_pt3_sl"]),
+            ( "bp_frog_painter0_pt3", [null, null, "bp_frog_painter0_pt3_l", "bp_frog_painter0_pt3_l"]),
+
+            ( "bp_frog_idol1_pt7", [null, null, "bp_frog_idol1_pt7_h", "bp_frog_idol1_pt7_h"]),
+        };
+
+        public static Dictionary<string, DiffRedirect> Create() {
+            var map = new Dictionary<string, DiffRedirect>();
+            foreach (var (key, patterns) in Entries) {
+                map[key] = new DiffRedirect(key, patterns);
+            }
+            return map;
+        }
+    }
+
+    public static readonly Dictionary<string, DiffRedirect> DiffRedirectMap = DiffRedirectMapMaker.Create();
+
     public static readonly Dictionary<Mixes, List<string>> MixMap = new() {
         { Mixes.None, []},
+        { Mixes.Twili1_S, [
+            "bp_bird_valedictorian0_pt2_s",
+            "bp_bird_valedictorian0_pt3_s",
+            "bp_bird_valedictorian0_pt4_s",
+            "bp_bird_valedictorian0_pt5_s",
+            "bp_bird_valedictorian0_pt6_s",
+            "bp_bird_valedictorian0_pt7_s",
+        ]},
+        { Mixes.Twili2_S, [
+            "bp_bird_valedictorian1_pt2_s",
+            "bp_bird_valedictorian1_pt3_s",
+            "bp_bird_valedictorian1_pt4_s",
+            "bp_bird_valedictorian1_pt5_s",
+            "bp_bird_valedictorian1_pt6_s",
+            "bp_bird_valedictorian1_pt7_s",
+            "bp_bird_valedictorian1_pt8_s",
+            "bp_bird_valedictorian1_pt9_s",
+        ]},
+        { Mixes.Merran1_S, [
+            "bp_wolf_steeltooth0_pt2_s",
+            "bp_wolf_steeltooth0_pt3_s",
+            "bp_wolf_steeltooth0_pt4_s",
+            "bp_wolf_steeltooth0_pt5_s",
+            "bp_wolf_steeltooth0_pt6_s",
+            "bp_wolf_steeltooth0_pt7_s",
+            "bp_wolf_steeltooth0_pt8_s",
+        ]},
+        { Mixes.Merran2_S, [
+            "bp_wolf_steeltooth1_pt2_s",
+            "bp_wolf_steeltooth1_pt3_s",
+            "bp_wolf_steeltooth1_pt4_s",
+            "bp_wolf_steeltooth1_pt5_s",
+            "bp_wolf_steeltooth1_pt6_s",
+            "bp_wolf_steeltooth1_pt7_s",
+            "bp_wolf_steeltooth1_pt8_s",
+            "bp_wolf_steeltooth1_pt9_s",
+        ]},
+        { Mixes.Ranalie1_S, [
+            "bp_dragon_mythril0_pt2_s",
+            "bp_dragon_mythril0_pt3_s",
+            "bp_dragon_mythril0_pt4_s",
+            "bp_dragon_mythril0_pt5_s",
+            "bp_dragon_mythril0_pt6_s",
+            "bp_dragon_mythril0_pt7_s",
+            "bp_dragon_mythril0_pt8_s",
+        ] },
+        { Mixes.Ranalie2_S, [
+            "bp_dragon_mythril1_pt2_s",
+            "bp_dragon_mythril1_pt3_s",
+            "bp_dragon_mythril1_pt4_s",
+            "bp_dragon_mythril1_pt5_s",
+            "bp_dragon_mythril1_pt6_s",
+            "bp_dragon_mythril1_pt7_s",
+            "bp_dragon_mythril1_pt8_s",
+            "bp_dragon_mythril1_pt9_s",
+        ]},
+        { Mixes.Matti1_S, [
+            "bp_mouse_paladin0_pt2_s",
+            "bp_mouse_paladin0_pt3_s",
+            "bp_mouse_paladin0_pt4_s",
+            "bp_mouse_paladin0_pt5_s",
+            "bp_mouse_paladin0_pt6_s",
+            "bp_mouse_paladin0_pt7_s",
+            "bp_mouse_paladin0_pt8_s",
+            ]},
+        { Mixes.Matti2_S, [
+            "bp_mouse_paladin1_pt2_s",
+            "bp_mouse_paladin1_pt3_s",
+            "bp_mouse_paladin1_pt4_s",
+            "bp_mouse_paladin1_pt5_s",
+            "bp_mouse_paladin1_pt6_s",
+            "bp_mouse_paladin1_pt7_s",
+            "bp_mouse_paladin1_pt8_s",
+            "bp_mouse_paladin1_pt9_s",
+            ]},
+        { Mixes.Avy1_S, [
+            "bp_frog_idol0_pt2_s",
+            "bp_frog_idol0_pt3_s",
+            "bp_frog_idol0_pt4_s",
+            "bp_frog_idol0_pt5_s",
+            "bp_frog_idol0_pt6_s",
+            "bp_frog_idol0_pt7_s",
+            ]},
         { Mixes.Avy2_S, [
             "bp_frog_idol1_pt2_s",
             "bp_frog_idol1_pt3_s",
@@ -1081,24 +1286,27 @@ public class BDLookup {
             "bp_frog_idol1_pt8_s",
             "bp_frog_idol1_pt9_s"
         ] },
-        { Mixes.Ranalie1_S, [
-            "bp_dragon_mythril0_pt2_s",
-            "bp_dragon_mythril0_pt3_s",
-            "bp_dragon_mythril0_pt4_s",
-            "bp_dragon_mythril0_pt5_s",
-            "bp_dragon_mythril0_pt6_s",
-            "bp_dragon_mythril0_pt7_s",
-            "bp_dragon_mythril0_pt8_s"
-        ] },
+        { Mixes.Shira1_S, [
+            "bp_rabbit_queen0_pt2_s",
+            "bp_rabbit_queen0_pt3_s",
+            "bp_rabbit_queen0_pt4_s",
+            "bp_rabbit_queen0_pt5_s",
+            "bp_rabbit_queen0_pt6_s",
+            "bp_rabbit_queen0_pt7_s",
+        ]},
         { Mixes.Shira2_S, [
             "bp_rabbit_queen1_pt2_s",
-            // "bp_rabbit_queen1_pt3_s", // steel, baited
+            "bp_rabbit_queen1_pt3_s", // steel, baited
             "bp_rabbit_queen1_pt4_s",
             "bp_rabbit_queen1_pt5_s", // steel
             "bp_rabbit_queen1_pt6_s",
             "bp_rabbit_queen1_pt7_s", // steel
             "bp_rabbit_queen1_pt8_s",
-            // "bp_rabbit_queen1_pt9_s",
+            // "bp_rabbit_queen1_pt9_s", // enrage
         ] }
     };
+
+    public static bool HasRedirect(string pattern) {
+        return DiffRedirectMap.ContainsKey(pattern);
+    }
 }

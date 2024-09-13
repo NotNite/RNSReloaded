@@ -45,6 +45,7 @@ public unsafe class Mod : IMod {
     private double damageMult = 0.0;
     private double gameSpeed = 1.0;
     private int seed = 0;
+    private Difficulty diff = Difficulty.LUNAR;
     private int deadPlayers = 0; // bitmask representing dead players
     private bool enFlag = false; // prevent infinite loops
     private bool karsiDone = false; // makes sure karsi's circle is activated only once
@@ -276,7 +277,8 @@ public unsafe class Mod : IMod {
         // play every pattern in bag
         foreach (string pattern in patterns) {
             if (scrbp.time(self, other, ANIM_TIME + totalTime + totalLength * currentBag)) {
-                this.execute_pattern(self, other, pattern, []);
+                string rpatt = BattleData.GetRealPatternByPattern(pattern, this.diff);
+                this.execute_pattern(self, other, rpatt, []);
                 this.atkNo++;
                 utils.GetGlobalVar("gameTimeSpeed")->Real = this.gameSpeed;
                 if (this.config.AccelerateSpeed) {
@@ -299,13 +301,16 @@ public unsafe class Mod : IMod {
 
     private RValue* StartRunDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_charselect2_start_run"];
-        // update config on new run
-        this.ConfigSetupHooks();
-        BattleData.ReadConfig(this.config);
-        this.deadPlayers = 0; // reset mask
-        this.enFlag = false;
-        this.karsiDone = false;
+        // save seed
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            // update config on new run
+            this.ConfigSetupHooks();
+            RValue diffr = rnsReloaded.ExecuteScript("scr_difficulty", self, other, []) ?? new RValue(0);
+            this.diff = (Difficulty) utils.RValueToLong(&diffr); 
+            BattleData.ReadConfig(this.config);
+            this.deadPlayers = 0; // reset mask
+            this.enFlag = false;
+            this.karsiDone = false;
             RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
             this.seed = (int) utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
         }
@@ -415,13 +420,13 @@ public unsafe class Mod : IMod {
             }
 
             if (BattleData.basic) {
-                rnsReloaded.ExecuteScript(BattleData.pattern, self, other, argc, argv);
+                rnsReloaded.ExecuteScript(BattleData.GetRealPattern(this.diff), self, other, argc, argv);
             }
 
             else if (scrbp.time_repeating(self, other, ANIM_TIME, BattleData.length)) {
                 // call pattern on set loop
                 if (!BattleData.basic) {
-                    this.execute_pattern(self, other, BattleData.pattern, []);
+                    this.execute_pattern(self, other, BattleData.GetRealPattern(this.diff), []);
                 }
 
                 // accelerate speed
@@ -496,7 +501,7 @@ public unsafe class Mod : IMod {
             int id = (int) utils.RValueToLong(argv[0]);
             if ((this.deadPlayers & (1 << id)) == 0) { // player hasn't been marked dead yet
                 Console.WriteLine($"Player {id} has just fallen");
-                this.deadPlayers |= (1 << id);
+                this.deadPlayers |= (1 << id); // set the bit for player
             }
         }
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);

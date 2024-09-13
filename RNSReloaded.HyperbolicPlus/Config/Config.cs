@@ -374,8 +374,17 @@ public class Config : Configurable<Config> {
         Shira2_8M,
 
         // mixes
+        Twili1_Mix_S,
+        Twili2_Mix_S,
+        Merran1_Mix_S,
+        Merran2_Mix_S,
         Ranalie1_Mix_S,
+        Ranalie2_Mix_S,
+        Matti1_Mix_S,
+        Matti2_Mix_S,
+        Avy1_Mix_S,
         Avy2_Mix_S,
+        Shira1_Mix_S,
         Shira2_Mix_S
     }
 

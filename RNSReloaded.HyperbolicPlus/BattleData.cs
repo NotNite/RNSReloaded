@@ -70,10 +70,21 @@ public class BattleData {
         mix = Mixes.None;
     }
 
-    public static string GetRealPattern() {
+    public static string GetRealPattern(Difficulty d) {
         // to account for the named difficulty cases
-        return pattern; // UNIMPLEMENTED
-    } // GetEnemy -> "bird_student_0"
+        if (BDLookup.HasRedirect(pattern)) {
+            return BDLookup.DiffRedirectMap[pattern].getPatternByDiff(d);
+        }
+        return pattern;
+    }
+
+    public static string GetRealPatternByPattern(string pattern, Difficulty d) {
+        // to account for the named difficulty cases
+        if (BDLookup.HasRedirect(pattern)) {
+            return BDLookup.DiffRedirectMap[pattern].getPatternByDiff(d);
+        }
+        return pattern;
+    }
 
     public static int GetTotalLength(List<string> patterns) {
         return patterns.Sum(pattern => BDLookup.PatternMap[pattern].length);

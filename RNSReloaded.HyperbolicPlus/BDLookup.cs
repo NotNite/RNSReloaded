@@ -82,7 +82,6 @@ public class BDLookup {
             this.basic = basic;
             this.stage = (int) stage;
             this.zoom = zoom;
-            Console.WriteLine(zoom);
             this.anims = anim;
         }
     }

@@ -44,6 +44,8 @@ public unsafe class Mod : IMod {
     private int atkNo = 0;
     private double damageMult = 0.0;
     private double gameSpeed = 1.0;
+    private int seed = 0;
+    private int deadPlayers = 0; // bitmask representing dead players
     private bool enFlag = false; // prevent infinite loops
     private bool karsiDone = false; // makes sure karsi's circle is activated only once
     private bool isTakingDamage = false; // for invuln control
@@ -55,7 +57,8 @@ public unsafe class Mod : IMod {
         "scr_hbsflag_check"
     ];
     private static readonly string[] PERMADEATHSCRIPTS = [
-        "scr_kotracker_can_revive"
+        "scr_kotracker_can_revive",
+        "scr_kotracker_draw_timer"
     ];
 
     private IHook<ScriptDelegate>? enemyHookS;
@@ -150,7 +153,8 @@ public unsafe class Mod : IMod {
             { "scr_player_invuln", this.InvulnDetour},
             { "scr_hbsflag_check", this.AddHbsFlagCheckDetour},
             // permadeath
-            { "scr_kotracker_can_revive", this.ReviveDetour}
+            { "scr_kotracker_can_revive", this.ReviveDetour},
+            { "scr_kotracker_draw_timer", this.KOTimerDetour},
         };
 
         foreach (var detourPair in detourMap) {
@@ -265,7 +269,7 @@ public unsafe class Mod : IMod {
         int currTime = 0;
         int totalTime = currTime;
         int currentBag = (this.atkNo) / patterns.Count;
-        this.rng = new Random(currentBag); // add hallwaySeed to randomize this
+        this.rng = new Random(currentBag + this.seed); // add hallwaySeed to randomize this
         patterns = patterns.OrderBy(x => this.rng.Next()).ToList();
         // play every pattern in bag
         foreach (string pattern in patterns) {
@@ -296,8 +300,13 @@ public unsafe class Mod : IMod {
         // update config on new run
         this.ConfigSetupHooks();
         BattleData.ReadConfig(this.config);
+        this.deadPlayers = 0; // reset mask
         this.enFlag = false;
         this.karsiDone = false;
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
+            this.seed = (int) utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
+        }
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
@@ -346,13 +355,13 @@ public unsafe class Mod : IMod {
         bool basic = BattleData.basic;
         if (this.enFlag && basic) {
             if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-                /*if (scrbp.time_repeating(self, other, 0, BattleData.length)) {
+                if (scrbp.time_repeating(self, other, 0, BattleData.length)) {
                     // accelerate speed
                     utils.GetGlobalVar("gameTimeSpeed")->Real = this.gameSpeed;
                     if (this.config.AccelerateSpeed) {
                         this.gameSpeed += 0.1;
                     }
-                }*/
+                }
             }
             if (this.enemyHookM != null) return this.enemyHookM.OriginalFunction(self, other, returnValue, argc, argv);
             else return returnValue;
@@ -382,7 +391,6 @@ public unsafe class Mod : IMod {
             this.enFlag = true;
 
             if (scrbp.time(self, other, 0)) {
-                Console.WriteLine(BattleData.zoom);
                 // change environment
                 this.RunAnimation(BattleData.anim, self, other);
                 rnsReloaded.ExecuteScript("scrbp_zoom", self, other, [new RValue(BattleData.zoom)]);
@@ -393,7 +401,6 @@ public unsafe class Mod : IMod {
             }
 
             if (BattleData.anim == Anims.Karsi && !this.karsiDone && scrbp.time(self, other, ANIM_TIME)) {
-                Console.WriteLine("detoured twice");
                 this.execute_pattern(self, other, "bp_dragon_ruby0_perm", []);
                 this.karsiDone = true;
             }
@@ -486,6 +493,20 @@ public unsafe class Mod : IMod {
         (*argv)->Real = this.gameSpeed;
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
+    }
+
+    // PLAYER DEATH LOGGER
+    private RValue* KOTimerDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_kotracker_draw_timer"];
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            // if KOtimer is drawn, add player to mask
+            int id = (int) utils.RValueToLong(argv[0]);
+            if ((this.deadPlayers & (1 << id)) == 0) { // player hasn't been marked dead yet
+                Console.WriteLine($"Player {id} has just fallen");
+                this.deadPlayers |= (1 << id);
+            }
+        }
+        return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
     public void Suspend() { }

@@ -13,7 +13,6 @@ public class BattleData {
         // DO NOT FORGET ABOUT CROW EXCEPTIONS
         // UNIMPLEMENTED
         pattern = BDLookup.NameMap[name];
-        Console.WriteLine(pattern);
 
         // read pattern data
         BDLookup.PatternData pd = BDLookup.PatternMap[pattern];
@@ -22,7 +21,6 @@ public class BattleData {
         length = pd.length;
         partner = pd.partner;
         mix = pd.mixes;
-        Console.WriteLine(enemy);
 
         // read enemy data
         BDLookup.EnemyData ed = BDLookup.EnemyMap[enemy];
@@ -30,7 +28,6 @@ public class BattleData {
         stage = ed.stage;
         zoom = ed.zoom;
         anim = ed.anims;
-        Console.WriteLine(zoom);
     }
 
     public static string name { get; set; } // ex: Menna0_S

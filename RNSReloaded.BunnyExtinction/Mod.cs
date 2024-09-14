@@ -119,7 +119,6 @@ public unsafe class Mod : IMod {
             { "scr_hbsflag_check", this.AddHbsFlagCheckDetour },
             // permadeath
             { "scr_kotracker_draw_timer", this.KOTimerDetour },
-            { "scr_kotracker_can_revive", this.ReviveDetour },
             { "scrbp_time_repeating", this.TimeRepeatingDetour },
             // shira invuln
             { "scrbp_warning_msg_enrage", this.SteelWarningDetour },
@@ -167,7 +166,7 @@ public unsafe class Mod : IMod {
 
     private RValue* StartRunDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_charselect2_start_run"];
-        ConfigSetupHooks(); // update settings at the start of every run
+        this.ConfigSetupHooks(); // update settings at the start of every run
         this.deadPlayers = 0; // reset mask
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
@@ -212,7 +211,7 @@ public unsafe class Mod : IMod {
     private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrdt_encounter"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
-        LimitHealth();
+        this.LimitHealth();
         return returnValue;
     }
 
@@ -227,7 +226,7 @@ public unsafe class Mod : IMod {
     private void LimitHealth() {
         // health is recalculated very often, so this doesnt work
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            RValue* playerStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "playerStat");
+            /*RValue* playerStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "playerStat");
             RValue* playerArr = playerStat->Get(0);
             int[] playerInd = [0, 1, 2, 3];
             foreach (int i in playerInd) {
@@ -240,7 +239,9 @@ public unsafe class Mod : IMod {
                     //rnsReloaded.ExecuteScript("tpat_player_set_stat")
                     
                 }
-            }
+            }*/
+            /*RValue* itemStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "itemStat");
+            itemStat*/
         }
     }
 
@@ -284,7 +285,7 @@ public unsafe class Mod : IMod {
         if (argv[1]->ToString() == "eff_steelyourself") {
             if (this.config.InfernalBBQ) {
                 this.EnableInvuls();
-            }tpat_player_set_stat
+            }
         }
         hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;

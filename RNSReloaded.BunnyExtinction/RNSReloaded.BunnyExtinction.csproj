@@ -6,13 +6,13 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded.Fullmetal</OutputPath>
+        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded.BunnyExtinction</OutputPath>
         <ImplicitUsings>enable</ImplicitUsings>
         <ReloadedILLink>false</ReloadedILLink>
     </PropertyGroup>
 
     <ItemGroup>
-        <ReloadedLinkRoots Include="RNSReloaded.Fullmetal"/>
+        <ReloadedLinkRoots Include="RNSReloaded.BunnyExtinction"/>
     </ItemGroup>
 
     <Import Project="../Reloaded.Trimming.targets"/>

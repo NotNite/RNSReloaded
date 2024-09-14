@@ -373,7 +373,8 @@ public unsafe class Mod : IMod {
                     }
                 }
             }
-            if (this.enemyHookM != null) return this.enemyHookM.OriginalFunction(self, other, returnValue, argc, argv);
+            // basic only works for solo
+            if (this.enemyHookS != null) return this.enemyHookS.OriginalFunction(self, other, returnValue, argc, argv);
             else return returnValue;
         }
         return this.EnemyDetour(self, other, returnValue, argc, argv);

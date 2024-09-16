@@ -556,13 +556,18 @@ public unsafe class BattlePatterns : IBattlePatterns {
     }
 
     public void gravity_pull_temporary(
-        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null, Position? position = null
     ) {
         RValue[] args = [];
         args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
         args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
         args = this.add_if_not_null(args, "trgBinary", targetMask);
         args = this.add_if_not_null(args, "mult", mult);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
 
         this.execute_pattern(self, other, "bp_gravity_pull_temporary", args);
     }

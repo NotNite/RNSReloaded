@@ -17,7 +17,7 @@ namespace RNSReloaded.FullmoonArsenal {
             this.playerRng = new Random();
             // Regualar fight = setup
             // pt2 = final phase
-
+            
             var script = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_wolf_snowfur0_pt3") - 100000);
             this.starburstHook =
                 hooks.CreateHook<ScriptDelegate>(this.StarburstPhase, script->Functions->Function);
@@ -198,13 +198,11 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.myX = 1920 / 2;
                 this.myY = 1080 / 2;
                 this.bp.ray_single(self, other, warningDelay: 500, spawnDelay: 3000, eraseDelay: 3000, width: 5, position: (-50, 1080/2));
+
             }
-            time += 2500;
+            time += 3000;
             if (this.scrbp.time(self, other, time)) {
-                this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration);
-            }
-            time += 500;
-            if (this.scrbp.time(self, other, time)) {
+                this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration, position: (1920/2, 1080/2));
                 this.bp.ray_single(self, other, spawnDelay: 0, eraseDelay: bubbleDuration, width: 150, position: (-50, 1080 / 2));
             }
             if (this.scrbp.time_repeat_times(self, other, time, 500, bubbleDuration / 500)) {
@@ -256,11 +254,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     position: (1920 / 2, 1080 / 2)
                 );
             }
-            time += 2500;
-            if (this.scrbp.time(self, other, time)) {
-                this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration);
-            }
-            time += 500;
+            time += 3000;
             if (this.scrbp.time(self, other, time)) {
                 this.bp.ray_spinfast(self, other,
                     warningDelay: 0,
@@ -273,6 +267,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     warningRadius: 100,
                     position: (1920 / 2, 1080 / 2)
                 );
+                this.bp.gravity_pull_temporary(self, other, eraseDelay: bubbleDuration, position: (1920/2, 1080/2));
             }
             if (this.scrbp.time_repeat_times(self, other, time, 500, bubbleDuration / 500)) {
                 int thisBattleTime = (int) this.rnsReloaded.FindValue(self, "patternExTime")->Real;
@@ -421,7 +416,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.scrbp.set_special_flags(self, other, IBattleScripts.FLAG_HOLMGANG);
             }
             if (this.scrbp.time_repeating(self, other, 0, 500)) {
-                this.PhaseChange(self, other, 1);
+                this.PhaseChange(self, other, 1.1);
             }
 
             return returnValue;
@@ -716,8 +711,6 @@ namespace RNSReloaded.FullmoonArsenal {
                     minY = Math.Min(minY, (int) playerY->Real);
                     maxY = Math.Max(maxY, (int) playerY->Real);
                 }
-                minX = 500;
-                minY = 500;
 
                 int width = maxX - minX;
                 int height = maxY - minY;
@@ -749,24 +742,44 @@ namespace RNSReloaded.FullmoonArsenal {
             time += this.BubbleLine(self, other, time, 8000);
             time += this.BubbleLineRotating(self, other, time, 8000, this.playerRng.Next(0, 2) == 1 ? 180 : -180);
 
+            // KB players 2+2 to top/bot, add line, resolve get in circle
+            time += 1000;
             if (this.scrbp.time(self, other, time)) {
-                this.bp.clockspot(self, other, warningDelay2: 1000, fanAngle: 30, spawnDelay: 4000, warnMsg: 2);
+                this.scrbp.order_random(self, other, false, 2, 2);
+                var orderBin = this.rnsReloaded.FindValue(self, "orderBin");
+                int group1 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 0)->Real;
+                int group2 = (int) this.rnsReloaded.ArrayGetEntry(orderBin, 1)->Real;
+
+                this.bp.knockback_line(self, other, spawnDelay: 3500, kbAmount: 800, position: (0, 1080), horizontal: true, targetMask: group1);
+                this.bp.knockback_line(self, other, spawnDelay: 3500, kbAmount: 800, position: (0, 0), horizontal: true, targetMask: group2);
             }
             time += 1000;
-            this.BubbleLine(self, other, time, 8000, skipPercent: 60);
-            time += this.BubbleLineRotating(self, other, time, 8000, this.playerRng.Next(0, 2) == 1 ? 90 : -90, skipPercent: 40);
+            this.BubbleLine(self, other, time, 10000);
+            time += 3000;
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.prscircle_follow(self, other, warnMsg: 2, spawnDelay: 6000, doubled: true, numBullets: 35, radius: 400, targetId: this.rng.Next(0, this.utils.GetNumPlayers()));
+            }
+            time += 10000;
 
             time += this.MinkRainstormCallback(self, other, time);
 
-            // Stacking them gives double the projectile spam. Is it possible? Maybe not
+            // Stacking them gives double the projectile spam. Is it possible? Maybe not, so the 2nd one skips casting sometimes
             this.BubbleLine(self, other, time, 8000);
-            time += this.BubbleLine(self, other, time, 8000, skipPercent: 50);
+            time += this.BubbleLine(self, other, time, 8000, skipPercent: 60);
 
-            // Something with cleaves?
-
+            this.BubbleLine(self, other, time, 25000);
+            time += 3000;
+            for (int i = 0; i < 25; i++) {
+                if (this.scrbp.time(self, other, time)) {
+                    this.bp.ray_single(self, other, spawnDelay: 2000, eraseDelay: 2800, width: 100, position: (120 * i, -20), angle: 90);
+                    if (i >= 10) {
+                        this.bp.ray_single(self, other, spawnDelay: 2000, eraseDelay: 2800, width: 100, position: (120 * (i - 10), -20), angle: 90);
+                    }
+                }
+                time += 1000;
+            }
 
             // Soft enrage
-            /*
             if (this.scrbp.time(self, other, time)) {
                 if (!this.PhaseChange(self, other, 0.3)) {
                     this.bp.enrage_deco(self, other);
@@ -791,7 +804,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     this.bp.enrage(self, other, spawnDelay: 0, timeBetween: 667);
                 }
             }
-            */
+            
             this.logger.PrintMessage("Time " + time, this.logger.ColorRedLight);
             return returnValue;
         }

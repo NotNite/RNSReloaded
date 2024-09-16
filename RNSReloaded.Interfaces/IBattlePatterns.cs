@@ -130,7 +130,7 @@ public unsafe interface IBattlePatterns {
     );
 
     public void gravity_pull_temporary(
-        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? mult = null, int? targetMask = null, Position? position = null
     );
 
     public void heavy(

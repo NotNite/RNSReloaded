@@ -194,9 +194,11 @@ public unsafe class Mod : IMod {
             for (var i = 0; i < rnsReloaded.ArrayGetLength(enemyData)!.Value.Real; i++) {
                 string enemyName = enemyData->Get(i)->Get(0)->ToString();
                 if (enemyName == "en_wolf_blackear") {
-                    enemyData->Get(i)->Get(8)->Real = 420;
+                    enemyData->Get(i)->Get(9)->Real = 420;
                 } else if (enemyName == "en_wolf_greyeye") {
-                    enemyData->Get(i)->Get(8)->Real = 300;
+                    enemyData->Get(i)->Get(9)->Real = 300;
+                } else if (enemyName == "en_wolf_snowfur") {
+                    enemyData->Get(i)->Get(9)->Real = 350;
                 }
             }
 
@@ -219,7 +221,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 // Temp for testing because I'm too lazy to steel yourself lol
-                    new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
+                new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),

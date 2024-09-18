@@ -34,6 +34,7 @@ public unsafe class Mod : IMod {
     private Config.Config config = null!;
 
     private int deadPlayers = 0; // bitmask representing dead players
+    private List<(int, long)> hpItems = [];
 
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
 
@@ -151,6 +152,7 @@ public unsafe class Mod : IMod {
             ScriptHooks["scr_kotracker_draw_timer"].Disable(); // permadeath
             ScriptHooks["scr_kotracker_can_revive"].Disable();
             ScriptHooks["scrbp_time_repeating"].Disable();
+            this.UnlimitHealth();
         } else {
             // playing BBQ
             ScriptHooks["scrbp_erase_radius"].Enable();
@@ -160,6 +162,7 @@ public unsafe class Mod : IMod {
             ScriptHooks["scr_kotracker_draw_timer"].Enable(); // permadeath
             ScriptHooks["scr_kotracker_can_revive"].Enable();
             ScriptHooks["scrbp_time_repeating"].Enable();
+            this.LimitHealth();
         }
     }
 
@@ -211,7 +214,6 @@ public unsafe class Mod : IMod {
     private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrdt_encounter"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
-        this.LimitHealth();
         return returnValue;
     }
 
@@ -224,30 +226,36 @@ public unsafe class Mod : IMod {
             RValue newHealth = new RValue(1);
             return &newHealth;
         } else {
-            Console.WriteLine($"intercepted this instead.. {argv[0]->Real}, {argv[1]->Real}, {argv[2]->Real}, {argv[3]->Real}");
             return returnValue;
         }
     }
 
-    private void LimitHealth() {
-        // health is recalculated very often, so this doesnt work
+    private void UnlimitHealth() {
+        // readds hp to items
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            /*RValue* playerStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "playerStat");
-            RValue* playerArr = playerStat->Get(0);
-            int[] playerInd = [0, 1, 2, 3];
-            foreach (int i in playerInd) {
-                RValue* player = playerArr->Get(i);
-                double health = utils.RValueToDouble(player->Get(1));
-                RValue* playerHealth = player->Get(1);
-                if (health > 1) {
-                    RValue newHealth = new RValue(1);
-                    *(player->Get(1)) = newHealth;
-                    //rnsReloaded.ExecuteScript("tpat_player_set_stat")
-                    
+            RValue* itemStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "itemStat");
+            foreach ((int, long) item in this.hpItems) {
+                RValue* itemHp = itemStat->Get(item.Item1)->Get(0)->Get(1); // location of hp stat
+                *itemHp = new RValue(item.Item2);
+            }
+            this.hpItems.Clear();
+        }
+    }
+
+    private void LimitHealth() {
+        // goes through and removes +hp from items
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            RValue* itemStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "itemStat");
+            RValue rlength = rnsReloaded.ArrayGetLength(itemStat) ?? new RValue(-1);
+            for (int i = 0; i < utils.RValueToLong(&rlength); i++) {
+                RValue* itemHp = itemStat->Get(i)->Get(0)->Get(1); // location of hp stat
+                long hp = utils.RValueToLong(itemHp);
+                if (hp != 0) {
+                    // save hp for if config turns off
+                    this.hpItems.Add((i, hp));
+                    *itemHp = new RValue(0);
                 }
-            }*/
-            /*RValue* itemStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "itemStat");
-            itemStat*/
+            }
         }
     }
 

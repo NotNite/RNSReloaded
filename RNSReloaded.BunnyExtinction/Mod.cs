@@ -218,9 +218,15 @@ public unsafe class Mod : IMod {
     private RValue* DiffSwitchDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_diffswitch"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
-        //return returnValue;
-        RValue newHealth = new RValue(1);
-        return &newHealth;
+        // diifSwitch is used for multiple things
+        // to intercept health, we check all the arguments
+        if (argv[0]->Real == 8 && argv[1]->Real == 5 && argv[2]->Real == 5 && argv[3]->Real == 3) {
+            RValue newHealth = new RValue(1);
+            return &newHealth;
+        } else {
+            Console.WriteLine($"intercepted this instead.. {argv[0]->Real}, {argv[1]->Real}, {argv[2]->Real}, {argv[3]->Real}");
+            return returnValue;
+        }
     }
 
     private void LimitHealth() {

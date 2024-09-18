@@ -25,6 +25,7 @@ namespace RNSReloaded.BunnyExtinction;
 
 public unsafe class Mod : IMod {
     private const int SCRIPTCONST = 100000;
+    private const double BBQSPEED = 6.30;
 
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
@@ -106,9 +107,6 @@ public unsafe class Mod : IMod {
 
     public void InitializeHooks() {
         var detourMap = new Dictionary<string, ScriptDelegate>{
-            { "scrdt_encounter", this.EncounterDetour }, // UNUSED
-            { "scr_kotracker_can_revive", this.ReviveDetour }, // UNUSED
-
             { "scr_charselect2_start_run", this.StartRunDetour },
             { "scr_diffswitch", this.DiffSwitchDetour},
             { "scr_player_charspeed_calc", this.SpeedCalcDetour }, // max speed
@@ -119,6 +117,7 @@ public unsafe class Mod : IMod {
             { "scr_pattern_deal_damage_ally", this.PlayerDmgDetour },
             { "scr_hbsflag_check", this.AddHbsFlagCheckDetour },
             // permadeath
+            { "scr_kotracker_can_revive", this.ReviveDetour },
             { "scr_kotracker_draw_timer", this.KOTimerDetour },
             { "scrbp_time_repeating", this.TimeRepeatingDetour },
             // shira invuln
@@ -210,13 +209,6 @@ public unsafe class Mod : IMod {
     }
 
     // MAX HEALTH/SPEED
-    // originally for PERMADEATH unused
-    private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scrdt_encounter"];
-        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
-        return returnValue;
-    }
-
     private RValue* DiffSwitchDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_diffswitch"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
@@ -263,8 +255,8 @@ public unsafe class Mod : IMod {
         var hook = ScriptHooks["scr_player_charspeed_calc"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            if (utils.RValueToDouble(returnValue) > 7.70) {
-                *returnValue = new RValue(7.70);
+            if (utils.RValueToDouble(returnValue) > BBQSPEED) {
+                *returnValue = new RValue(BBQSPEED);
             }
         }
         return returnValue;

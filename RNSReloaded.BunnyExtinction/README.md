@@ -11,7 +11,7 @@
 - Bullet Deletion Disabled
 - Invulnerability Disabled
 - 1 Health Max
-- 1 Speed Max
+- -2 Speed Max
 - Red Tanzaku no longer forgives you
 - Shira "Steel Yourself" attacks are invulnable (must be placed above Steelheart)
 

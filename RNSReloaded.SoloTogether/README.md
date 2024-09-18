@@ -18,3 +18,13 @@ By default, when a player dies, they can no longer revive. In subsequent battles
 ### Adorable
 An option is available for casual players which disables all the permadeath features.
 In order to properly play, ensure that all players in the party have the same configuration.
+
+# Special Thanks
+Thank you to the following people for helping me with the production of this mod
+
+Development
+- glassoup
+- mino_dev
+
+Testing
+- dragonfally

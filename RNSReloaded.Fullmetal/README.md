@@ -80,3 +80,19 @@ Levels and Notches of Each Area
 | 11        |              |              |              |              |              |       |           |
 | 12        |              |              |              |              |              |       |           |
 | 13        |              |              |              |              |              |       |           |
+
+# Special Thanks
+Thank you to the following people for helping me with the production of this mod
+
+Development
+- glassoup
+- fuzzything44
+- mino_dev
+
+Testing
+- kkx
+- ry_i
+- TomeKing
+- tranced
+- xgit
+- yuuniquea

@@ -23,12 +23,12 @@ Ensure that BunnyExtinction is placed above Steelheart within your mod arrangeme
 # Special Thanks
 Thank you to the following people for helping me with the production of this mod
 
-Development
+**Development**
 - glassoup
 - fuzzything44
 - mino_dev
 
-Testing:
+**Testing**
 - _cherri
 - razormad
 - tkxkd

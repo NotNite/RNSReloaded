@@ -320,9 +320,7 @@ public unsafe class Mod : IMod {
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
-    private RValue* EncounterDetour(
-        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-    ) {
+    private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrdt_encounter"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             // replace this with new battleData function later

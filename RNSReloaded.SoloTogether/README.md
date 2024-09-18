@@ -22,9 +22,9 @@ In order to properly play, ensure that all players in the party have the same co
 # Special Thanks
 Thank you to the following people for helping me with the production of this mod
 
-Development
+**Development**
 - glassoup
 - mino_dev
 
-Testing
+**Testing**
 - dragonfally

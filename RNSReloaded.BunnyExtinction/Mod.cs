@@ -52,7 +52,8 @@ public unsafe class Mod : IMod {
         "scr_kotracker_draw_timer",  // permadeath
         "scr_kotracker_can_revive",
         "scrbp_time_repeating",
-        "scr_pattern_deal_damage_ally", // invuln
+        "scr_player_invuln", // invuln
+        "scr_pattern_deal_damage_ally",
         "scrbp_warning_msg_enrage",
         "scr_hbsflag_check",
     ];
@@ -324,10 +325,24 @@ public unsafe class Mod : IMod {
     }
 
     // INVUL CONTROL
+    private void EnableInvuls() {
+        ScriptHooks["scr_pattern_deal_damage_ally"].Disable();
+        ScriptHooks["scr_player_invuln"].Disable();
+        ScriptHooks["scr_hbsflag_check"].Disable();
+        this.invulnOn = true;
+    }
+
+    private void DisableInvuls() {
+        ScriptHooks["scr_pattern_deal_damage_ally"].Enable();
+        ScriptHooks["scr_player_invuln"].Enable();
+        ScriptHooks["scr_hbsflag_check"].Enable();
+        this.invulnOn = false;
+    }
+
     // steel hooks
     private RValue* SteelWarningDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrbp_warning_msg_enrage"];
-        if (argv[1]->ToString() == "eff_steelyourself") this.invulnOn = true;
+        if (argv[1]->ToString() == "eff_steelyourself") this.EnableInvuls();
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
@@ -337,7 +352,7 @@ public unsafe class Mod : IMod {
         this.bbqScripts.Add(scriptName);
         return (CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
             var hook = ScriptHooks[scriptName];
-            this.invulnOn = false;
+            this.DisableInvuls();
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             return returnValue;
         };

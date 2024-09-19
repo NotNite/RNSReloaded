@@ -36,10 +36,14 @@ public unsafe class Mod : IMod {
 
     private bool newRun = true;
     private bool inBattle = false;
+    private bool invulnOn = false;
     private int deadPlayers = 0; // bitmask representing dead players
     private List<(int, long)> hpItems = [];
 
+    private bool isTakingDamage = false;
+
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
+    private List<string> postSteelDetours = [];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -150,23 +154,27 @@ public unsafe class Mod : IMod {
         // function to enable/disable certain hooks depending on config
         if (!this.config.InfernalBBQ) {
             // playing BEX
-            ScriptHooks["scrbp_erase_radius"].Disable();
-            ScriptHooks["scr_player_charspeed_calc"].Disable();
-            this.EnableInvuls();
-            ScriptHooks["scrbp_warning_msg_enrage"].Disable();
+            ScriptHooks["scrbp_erase_radius"].Disable(); // bullet deletion
+            ScriptHooks["scr_player_charspeed_calc"].Disable(); // speed limit
             ScriptHooks["scr_kotracker_draw_timer"].Disable(); // permadeath
             ScriptHooks["scr_kotracker_can_revive"].Disable();
             ScriptHooks["scrbp_time_repeating"].Disable();
+            ScriptHooks["scr_pattern_deal_damage_ally"].Disable(); // invuln
+            ScriptHooks["scrbp_warning_msg_enrage"].Disable();
+            ScriptHooks["scr_hbsflag_check"].Disable();
+            foreach (var script in this.postSteelDetours) ScriptHooks[script].Disable();
             this.UnlimitHealth();
         } else {
             // playing BBQ
-            ScriptHooks["scrbp_erase_radius"].Enable();
-            ScriptHooks["scr_player_charspeed_calc"].Enable();
-            this.DisableInvuls();
-            ScriptHooks["scrbp_warning_msg_enrage"].Enable();
+            ScriptHooks["scrbp_erase_radius"].Enable(); // bullet deletion
+            ScriptHooks["scr_player_charspeed_calc"].Enable(); // speed limit
             ScriptHooks["scr_kotracker_draw_timer"].Enable(); // permadeath
             ScriptHooks["scr_kotracker_can_revive"].Enable();
             ScriptHooks["scrbp_time_repeating"].Enable();
+            ScriptHooks["scr_pattern_deal_damage_ally"].Enable(); // invuln
+            ScriptHooks["scrbp_warning_msg_enrage"].Enable();
+            ScriptHooks["scr_hbsflag_check"].Enable();
+            foreach (var script in this.postSteelDetours) ScriptHooks[script].Enable();
             this.LimitHealth();
         }
     }
@@ -196,7 +204,8 @@ public unsafe class Mod : IMod {
             this.ConfigSetupHooks(); // update settings at the start of every run
             this.deadPlayers = 0; // reset mask
             this.newRun = false;
-        }
+            this.invulnOn = false;
+}
         return hook.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
@@ -298,38 +307,20 @@ public unsafe class Mod : IMod {
     }
 
     // INVUL CONTROL
-    private bool isTakingDamage = false;
-
-    private void EnableInvuls() {
-        ScriptHooks["scr_pattern_deal_damage_ally"].Disable();
-        ScriptHooks["scr_player_invuln"].Disable();
-        ScriptHooks["scr_hbsflag_check"].Disable();
-    }
-
-    private void DisableInvuls() {
-        ScriptHooks["scr_pattern_deal_damage_ally"].Enable();
-        ScriptHooks["scr_player_invuln"].Enable();
-        ScriptHooks["scr_hbsflag_check"].Enable();
-    }
-
     // steel hooks
     private RValue* SteelWarningDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrbp_warning_msg_enrage"];
-        if (argv[1]->ToString() == "eff_steelyourself") {
-            if (this.config.InfernalBBQ) {
-                this.EnableInvuls();
-            }
-        }
-        hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        if (argv[1]->ToString() == "eff_steelyourself") this.invulnOn = true;
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
     
     private ScriptDelegate CreatePostSteelDetour(string scriptName) {
+        // add script to list to enable/disable hook on config update
+        this.postSteelDetours.Add(scriptName);
         return (CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
             var hook = ScriptHooks[scriptName];
-            if (this.config.InfernalBBQ) {
-                this.DisableInvuls();
-            }
+            this.invulnOn = false;
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             return returnValue;
         };
@@ -346,9 +337,8 @@ public unsafe class Mod : IMod {
 
     private RValue* InvulnDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_player_invuln"];
-        // this is basically steelheart's implementation
-        if (!this.isTakingDamage) { argv[0]->Real = -30000; }
-        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        if (!this.isTakingDamage && this.invulnOn == false) argv[0]->Real = -30000; // this is basically steelheart's implementation
+        else argv[0]->Real = 1000; // allows player to invuln during STEEL YOURSELF
         return returnValue;
     }
 

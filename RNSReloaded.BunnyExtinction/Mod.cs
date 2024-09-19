@@ -39,11 +39,23 @@ public unsafe class Mod : IMod {
     private bool invulnOn = false;
     private int deadPlayers = 0; // bitmask representing dead players
     private List<(int, long)> hpItems = [];
+    private double[] movementSpeeds = [4];
 
     private bool isTakingDamage = false;
 
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
-    private List<string> postSteelDetours = [];
+    private List<string> bbqScripts = [
+        "scr_diffswitch", // max health
+        "scr_player_charspeed_calc",  // speed limit
+        "scrbp_movespeed_mult",
+        "scrbp_erase_radius", // bullet deletion
+        "scr_kotracker_draw_timer",  // permadeath
+        "scr_kotracker_can_revive",
+        "scrbp_time_repeating",
+        "scr_pattern_deal_damage_ally", // invuln
+        "scrbp_warning_msg_enrage",
+        "scr_hbsflag_check",
+    ];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -113,23 +125,24 @@ public unsafe class Mod : IMod {
 
     public void InitializeHooks() {
         var detourMap = new Dictionary<string, ScriptDelegate>{
+            // flag setting
             { "scr_hallwayprogress_choose_halls", this.ChooseHallsDetour},
             { "scr_rankbar_give_rewards", this.GiveRewardsDetour},
             { "scrdt_encounter", this.EncounterDetour},
-
-            //{ "scr_charselect2_start_run", this.StartRunDetour },
+            // max health/speed
             { "scr_diffswitch", this.DiffSwitchDetour},
-            { "scr_player_charspeed_calc", this.SpeedCalcDetour }, // max speed
-
-            { "scrbp_erase_radius", this.EraseRadiusDetour }, // bullet deletion
-            // invuln control
-            { "scr_player_invuln", this.InvulnDetour },
-            { "scr_pattern_deal_damage_ally", this.PlayerDmgDetour },
-            { "scr_hbsflag_check", this.AddHbsFlagCheckDetour },
+            { "scr_player_charspeed_calc", this.SpeedCalcDetour }, 
+            { "scrbp_movespeed_mult", this.MovespeedMultDetour},
+            // bullet deletion
+            { "scrbp_erase_radius", this.EraseRadiusDetour },
             // permadeath
             { "scr_kotracker_can_revive", this.ReviveDetour },
             { "scr_kotracker_draw_timer", this.KOTimerDetour },
             { "scrbp_time_repeating", this.TimeRepeatingDetour },
+            // invuln control
+            { "scr_player_invuln", this.InvulnDetour },
+            { "scr_pattern_deal_damage_ally", this.PlayerDmgDetour },
+            { "scr_hbsflag_check", this.AddHbsFlagCheckDetour },
             // shira invuln
             { "scrbp_warning_msg_enrage", this.SteelWarningDetour },
             { "bp_rabbit_queen1_pt4", this.CreatePostSteelDetour("bp_rabbit_queen1_pt4")},
@@ -154,27 +167,11 @@ public unsafe class Mod : IMod {
         // function to enable/disable certain hooks depending on config
         if (!this.config.InfernalBBQ) {
             // playing BEX
-            ScriptHooks["scrbp_erase_radius"].Disable(); // bullet deletion
-            ScriptHooks["scr_player_charspeed_calc"].Disable(); // speed limit
-            ScriptHooks["scr_kotracker_draw_timer"].Disable(); // permadeath
-            ScriptHooks["scr_kotracker_can_revive"].Disable();
-            ScriptHooks["scrbp_time_repeating"].Disable();
-            ScriptHooks["scr_pattern_deal_damage_ally"].Disable(); // invuln
-            ScriptHooks["scrbp_warning_msg_enrage"].Disable();
-            ScriptHooks["scr_hbsflag_check"].Disable();
-            foreach (var script in this.postSteelDetours) ScriptHooks[script].Disable();
+            foreach (var script in this.bbqScripts) ScriptHooks[script].Disable();
             this.UnlimitHealth();
         } else {
             // playing BBQ
-            ScriptHooks["scrbp_erase_radius"].Enable(); // bullet deletion
-            ScriptHooks["scr_player_charspeed_calc"].Enable(); // speed limit
-            ScriptHooks["scr_kotracker_draw_timer"].Enable(); // permadeath
-            ScriptHooks["scr_kotracker_can_revive"].Enable();
-            ScriptHooks["scrbp_time_repeating"].Enable();
-            ScriptHooks["scr_pattern_deal_damage_ally"].Enable(); // invuln
-            ScriptHooks["scrbp_warning_msg_enrage"].Enable();
-            ScriptHooks["scr_hbsflag_check"].Enable();
-            foreach (var script in this.postSteelDetours) ScriptHooks[script].Enable();
+            foreach (var script in this.bbqScripts) ScriptHooks[script].Enable();
             this.LimitHealth();
         }
     }
@@ -291,10 +288,30 @@ public unsafe class Mod : IMod {
         var hook = ScriptHooks["scr_player_charspeed_calc"];
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            // store original speed
+            var s = new RValue(self);
+            int id = (int) utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
+            this.movementSpeeds[id] = utils.RValueToDouble(returnValue);
+            // cap at -2
             if (utils.RValueToDouble(returnValue) > BBQSPEED) {
                 *returnValue = new RValue(BBQSPEED);
             }
         }
+        return returnValue;
+    }
+
+    private RValue* MovespeedMultDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scrbp_movespeed_mult"];
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            int id = (int) utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
+            double movementSpeed = utils.RValueToDouble(utils.GetPlayerVar(id, "movementSpeed"));
+            // change mult to be based off original movement speed and cap at -2
+            if (argv[0]->Real * this.movementSpeeds[id] > BBQSPEED) {
+                double cutSpeed = this.movementSpeeds[id] < BBQSPEED ? this.movementSpeeds[id] : BBQSPEED;
+                argv[0]->Real = BBQSPEED / cutSpeed;
+            }
+        }
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 
@@ -317,7 +334,7 @@ public unsafe class Mod : IMod {
     
     private ScriptDelegate CreatePostSteelDetour(string scriptName) {
         // add script to list to enable/disable hook on config update
-        this.postSteelDetours.Add(scriptName);
+        this.bbqScripts.Add(scriptName);
         return (CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
             var hook = ScriptHooks[scriptName];
             this.invulnOn = false;

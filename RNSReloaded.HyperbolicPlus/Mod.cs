@@ -173,22 +173,14 @@ public unsafe class Mod : IMod {
     private void ConfigSetupHooks() {
         // function to enable/disable certain hooks depending on config
         if (this.config.PreventInvulns) {
-            foreach (string script in PREVENTINVULNSCRIPTS) {
-                ScriptHooks[script].Enable();
-            }
+            foreach (var script in PREVENTINVULNSCRIPTS) ScriptHooks[script].Enable();
         } else {
-            foreach (string script in PREVENTINVULNSCRIPTS) {
-                ScriptHooks[script].Disable();
-            }
+            foreach (var script in PREVENTINVULNSCRIPTS) ScriptHooks[script].Disable();
         }
         if (this.config.Permadeath) {
-            foreach (string script in PERMADEATHSCRIPTS) {
-                ScriptHooks[script].Enable();
-            }
+            foreach (var script in PERMADEATHSCRIPTS) ScriptHooks[script].Enable();
         } else {
-            foreach (string script in PERMADEATHSCRIPTS) {
-                ScriptHooks[script].Disable();
-            }
+            foreach (var script in PERMADEATHSCRIPTS) ScriptHooks[script].Disable();
         }
     }
 

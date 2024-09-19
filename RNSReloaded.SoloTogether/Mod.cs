@@ -231,13 +231,9 @@ public unsafe class Mod : IMod {
     private void ConfigSetupHooks() {
         // function to enable/disable certain hooks depending on config
         if (this.config.Adorable) {
-            foreach (string script in PERMADEATHSCRIPTS) {
-                ScriptHooks[script].Disable();
-            }
+            foreach (var script in PERMADEATHSCRIPTS) ScriptHooks[script].Disable();
         } else {
-            foreach (string script in PERMADEATHSCRIPTS) {
-                ScriptHooks[script].Enable();
-            }
+            foreach (var script in PERMADEATHSCRIPTS) ScriptHooks[script].Enable();
         }
     }
 

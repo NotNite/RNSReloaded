@@ -39,7 +39,7 @@ public unsafe class Mod : IMod {
     private bool invulnOn = false;
     private int deadPlayers = 0; // bitmask representing dead players
     private List<(int, long)> hpItems = [];
-    private double[] movementSpeeds = [4];
+    private double[] movementSpeeds = { BBQSPEED, BBQSPEED, BBQSPEED, BBQSPEED };
 
     private bool isTakingDamage = false;
 
@@ -305,10 +305,10 @@ public unsafe class Mod : IMod {
         var hook = ScriptHooks["scrbp_movespeed_mult"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             int id = (int) utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
-            double movementSpeed = utils.RValueToDouble(utils.GetPlayerVar(id, "movementSpeed"));
             // change mult to be based off original movement speed and cap at -2
             if (argv[0]->Real * this.movementSpeeds[id] > BBQSPEED) {
                 double cutSpeed = this.movementSpeeds[id] < BBQSPEED ? this.movementSpeeds[id] : BBQSPEED;
+                //double cutSpeed = BBQSPEED; // temp
                 argv[0]->Real = BBQSPEED / cutSpeed;
             }
         }

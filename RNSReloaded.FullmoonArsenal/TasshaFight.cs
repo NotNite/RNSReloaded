@@ -66,7 +66,14 @@ namespace RNSReloaded.FullmoonArsenal {
             }
             return 500;
         }
-        private int DashCleave(CInstance* self, CInstance* other, int startTime, int target) {
+
+        private ((double x, double y) pos, int angle) CalculateCleave(double posX, double posY) {
+            (double x, double y) vec = (this.myX - posX, this.myY - posY);
+            int cleaveAngle = (int) (Math.Atan2(vec.y, vec.x) * 180 / Math.PI) + 180;
+
+            return ((this.myX, this.myY), cleaveAngle);
+        }
+        private int DashCleave(CInstance* self, CInstance* other, int startTime, int target, bool save = false) {
             int time = startTime;
             time += this.DashToPlayer(self, other, time, target);
             if (this.scrbp.time(self, other, time)) {
@@ -76,20 +83,21 @@ namespace RNSReloaded.FullmoonArsenal {
             }
             time += 100;
             if (this.scrbp.time(self, other, time)) {
-                (double x, double y) vec = (this.myX - this.posSnapshot.x, this.myY - this.posSnapshot.y);
-                int cleaveAngle = (int) (Math.Atan2(vec.y, vec.x) * 180 / Math.PI) + 180;
-
-                this.bp.cleave_fixed(self, other, spawnDelay: 600, positions: [((this.myX, this.myY), cleaveAngle)]);
+                var cleave = this.CalculateCleave(this.posSnapshot.x, this.posSnapshot.y);
+                this.bp.cleave_fixed(self, other, spawnDelay: 600, positions: [cleave]);
+                if (save) {
+                    this.cleaves.Add(cleave);
+                }
             }
             time += 600;
             return time - startTime;
         }
 
-        private int DashCleaveWarn(CInstance* self, CInstance* other, int startTime, int target) {
+        private int DashCleaveWarn(CInstance* self, CInstance* other, int startTime, int target, int warnTime = 1500) {
             if (this.scrbp.time(self, other, startTime)) {
-                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 1500, radius: 150, targetMask: 1 << target, position: (this.myX, this.myY));
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: warnTime, radius: 150, targetMask: 1 << target, position: (this.myX, this.myY));
             }
-            return 1500 + this.DashCleave(self, other, startTime + 1500, target);
+            return warnTime + this.DashCleave(self, other, startTime + warnTime, target);
         }
 
         private Dictionary<int, ((double x, double y) pos, int rot)[]> starburstCached = new Dictionary<int, ((double x, double y) pos, int rot)[]>();
@@ -333,25 +341,20 @@ namespace RNSReloaded.FullmoonArsenal {
             return warnDelay + eraseDelay;
         }
 
+        private int AddWarningThorns(CInstance* self, CInstance* other, int startTime, int spawnDelay = 1500, int interval = 1200) {
+            if (this.scrbp.time(self, other, startTime)) {
+                this.rng.Shuffle(this.playerTargets);
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay, radius: 150, targetMask: 1 << this.playerTargets[0], position: (this.myX, this.myY));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + interval, radius: 150, targetMask: (1 << this.playerTargets[0]) | (1 << this.playerTargets[1]));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 2 * interval, radius: 150, targetMask: (1 << this.playerTargets[1]) | (1 << this.playerTargets[2]));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 3 * interval, radius: 150, targetMask: (1 << this.playerTargets[2]) | (1 << this.playerTargets[3]));
+            }
+            return spawnDelay;
+        }
+
         private int LimitCut(CInstance* self, CInstance* other, int startTime) {
             int time = startTime;
-            if (this.scrbp.time(self, other, time)) {
-                this.playerTargets = [0, 1, 2, 3];
-                // if <4p make sure no crash by just targeting player 0
-                this.playerTargets = this.playerTargets.Select(x => x >= this.utils.GetNumPlayers() ? 0 : x).ToArray();
-                this.rng.Shuffle(this.playerTargets);
-                // Give the classic limit cut markers
-                this.bp.apply_hbs_synced(self, other, hbs: "hbs_group_0", hbsDuration: 6500, targetMask: 1 << this.playerTargets[0]);
-                this.bp.apply_hbs_synced(self, other, hbs: "hbs_group_1", hbsDuration: 6500, targetMask: 1 << this.playerTargets[1]);
-                this.bp.apply_hbs_synced(self, other, hbs: "hbs_group_2", hbsDuration: 6500, targetMask: 1 << this.playerTargets[2]);
-                this.bp.apply_hbs_synced(self, other, hbs: "hbs_group_3", hbsDuration: 6500, targetMask: 1 << this.playerTargets[3]);
-
-                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 1500, radius: 150, targetMask: 1 << this.playerTargets[0], position: (this.myX, this.myY));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 2700, radius: 150, targetMask: (1 << this.playerTargets[0]) | (1 << this.playerTargets[1]));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 4300, radius: 150, targetMask: (1 << this.playerTargets[1]) | (1 << this.playerTargets[2]));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 5500, radius: 150, targetMask: (1 << this.playerTargets[2]) | (1 << this.playerTargets[3]));
-            }
-            time += 2000;
+            time += this.AddWarningThorns(self, other, time, spawnDelay: 1500);
             time += this.DashCleave(self, other, time, this.playerTargets[0]); // 1200 ms
             time += this.DashToPlayer(self, other, time, this.playerTargets[1]); // 500 ms
             this.StarburstLaser(self, other, time, this.playerTargets[1], spawnDelay: 1100, eraseDelay: 4700);
@@ -657,23 +660,43 @@ namespace RNSReloaded.FullmoonArsenal {
             return returnValue;
         }
 
+        List<((double x, double y) pos, int rot)> cleaves;
         // "pt4"
         public RValue* JumpCleavePhase(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
             this.logger.PrintMessage("Jump Cleave phase", this.logger.ColorRed);
+            this.playerRng = new Random(this.seed);
 
             int time = 0;
-            if (this.scrbp.time(self, other, time)) {
-                this.scrbp.phase_pattern_remove(self, other);
-                this.scrbp.heal(self, other, 1);
-            }
-            // Add field limit yeet + jump cleave thing?
+            time += this.StartRegularPhase(self, other, time);
 
-            if (this.scrbp.time_repeating(self, other, 0, 10000)) {
-                this.bp.fieldlimit_rectangle_temporary(self, other, position: (500, 1000), width: 100, height: 100, targetMask: 0, eraseDelay: 1000);
-                this.PhaseChange(self, other, 0.9);
+            time += this.DashCleaveWarn(self, other, time, this.playerRng.Next(0, this.utils.GetNumPlayers()));
+
+            time += this.AddWarningThorns(self, other, time);
+            time += this.DashCleave(self, other, time, this.playerTargets[0]);
+            time += this.DashCleave(self, other, time, this.playerTargets[1]);
+            time += this.DashCleave(self, other, time, this.playerTargets[2]);
+            time += this.DashCleave(self, other, time, this.playerTargets[3]);
+
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.cleave_fixed(self, other, warnMsg: 0, spawnDelay: 50000, positions: [
+                    ((1920 - 67, 0), 0),
+                    ((0, 1080 - 67), 90),
+                    ((67, 0), 180),
+                    ((0, 67), 270),
+                ]);
+                this.cleaves.Clear();
             }
+            time += 1000;
+            time += this.AddWarningThorns(self, other, time);
+
+
+            // Cleave each player in turn, with lingering cleaves that all pulse together
+            // So more of the field is cut off each player cleaved.
+            // Might need some other mechanic too, IDK
+
+            // Add field limit yeet + jump cleave thing?
             return returnValue;
         }
 

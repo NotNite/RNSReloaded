@@ -17,6 +17,8 @@ public unsafe class Mod : IMod {
     private IHook<ScriptDelegate>? arsenalHook;
     private IHook<ScriptDelegate>? pinnacleHook;
     private IHook<ScriptDelegate>? chooseHallsHook;
+    private IHook<ScriptDelegate>? healHook;
+
 
     private IHook<ScriptDelegate>? damageHook;
 
@@ -159,6 +161,12 @@ public unsafe class Mod : IMod {
             this.chooseHallsHook.Activate();
             this.chooseHallsHook.Enable();
 
+            var healScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("ipat_heal_light") - 100000);
+            this.healHook =
+                hooks.CreateHook<ScriptDelegate>(this.HealDetour, healScript->Functions->Function);
+            this.healHook.Activate();
+            this.healHook.Enable();
+
             var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
             this.damageHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
                 argv[2]->Real *= this.damageMult;
@@ -180,6 +188,23 @@ public unsafe class Mod : IMod {
         }
         rnsReloaded = null;
         return false;
+    }
+
+    private RValue* HealDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        if (this.IsReady(out var rnsReloaded)) {
+            int playerId = (int) rnsReloaded.utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
+            this.logger.PrintMessage("Player ID: " + playerId, this.logger.ColorGreen);
+
+            var playerTrinket = rnsReloaded.utils.GetGlobalVar("playerTrinket");
+            int trinketId = (int) rnsReloaded.utils.RValueToLong(playerTrinket->Get(playerId));
+            // They have a floof equipped, so we want to suppress healing
+            if (trinketId >= 19 && trinketId <= 22) {
+                return returnValue;
+            }
+        }
+        // self.playerId
+        returnValue = this.healHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
     }
 
     private RValue* ChooseHallsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {

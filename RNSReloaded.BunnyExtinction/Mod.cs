@@ -203,7 +203,7 @@ public unsafe class Mod : IMod {
             this.deadPlayers = 0; // reset mask
             this.newRun = false;
             this.invulnOn = false;
-}
+        }
         return hook.OriginalFunction(self, other, returnValue, argc, argv);
     }
 

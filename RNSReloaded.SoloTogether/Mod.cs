@@ -31,6 +31,8 @@ public unsafe class Mod : IMod {
     private Configurator configurator = null!;
     private Config.Config config = null!;
 
+    private bool newRun = true;
+    private bool inBattle = false;
     private int deadPlayers = 0; // bitmask representing dead players
 
     private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
@@ -108,7 +110,11 @@ public unsafe class Mod : IMod {
 
     public void InitializeHooks() {
         var detourMap = new Dictionary<string, ScriptDelegate>{
-            { "scr_charselect2_start_run", this.StartRunDetour },
+            // config control
+            { "scr_hallwayprogress_choose_halls", this.ChooseHallsDetour},
+            { "scr_rankbar_give_rewards", this.GiveRewardsDetour},
+            { "scrdt_encounter", this.EncounterDetour},
+            // permadeath
             { "scr_kotracker_draw_timer", this.KOTimerDetour },
             { "scr_kotracker_can_revive", this.ReviveDetour },
             { "scrbp_time_repeating", this.TimeRepeatingDetour },
@@ -237,11 +243,33 @@ public unsafe class Mod : IMod {
         }
     }
 
-    private RValue* StartRunDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scr_charselect2_start_run"];
-        this.deadPlayers = 0; // reset mask
-        this.ConfigSetupHooks();
+    // flags for inBattle / newRun
+    private RValue* ChooseHallsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_hallwayprogress_choose_halls"];
+        // use choosehalls to tell if a run is reset
+        // for things that activate on run start, activate on the next encounter.
+        this.inBattle = false;
+        this.newRun = true;
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
+    }
+
+    private RValue* GiveRewardsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        // to determine if a battle is over
+        var hook = ScriptHooks["scr_rankbar_give_rewards"];
+        this.inBattle = false;
+        return hook.OriginalFunction(self, other, returnValue, argc, argv);
+    }
+
+    private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scrdt_encounter"];
+        this.inBattle = true;
+        if (this.newRun) {
+            // reset things
+            this.ConfigSetupHooks(); // update settings at the start of every run
+            this.deadPlayers = 0; // reset mask
+            this.newRun = false;
+        }
+        return hook.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
     private ScriptDelegate CreateBattlePatternDetour(string scriptName) {

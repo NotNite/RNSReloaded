@@ -327,14 +327,12 @@ public unsafe class Mod : IMod {
     // INVUL CONTROL
     private void EnableInvuls() {
         ScriptHooks["scr_pattern_deal_damage_ally"].Disable();
-        ScriptHooks["scr_player_invuln"].Disable();
         ScriptHooks["scr_hbsflag_check"].Disable();
         this.invulnOn = true;
     }
 
     private void DisableInvuls() {
         ScriptHooks["scr_pattern_deal_damage_ally"].Enable();
-        ScriptHooks["scr_player_invuln"].Enable();
         ScriptHooks["scr_hbsflag_check"].Enable();
         this.invulnOn = false;
     }
@@ -371,6 +369,7 @@ public unsafe class Mod : IMod {
         var hook = ScriptHooks["scr_player_invuln"];
         if (!this.isTakingDamage && this.invulnOn == false) argv[0]->Real = -30000; // this is basically steelheart's implementation
         else argv[0]->Real = 1000; // allows player to invuln during STEEL YOURSELF
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 

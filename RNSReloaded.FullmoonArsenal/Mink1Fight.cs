@@ -4,10 +4,6 @@ using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 
 namespace RNSReloaded.FullmoonArsenal {
-    internal struct FieldNode {
-        public int playerId;
-        public int endTime;
-    }
     internal unsafe class Mink1Fight : CustomFight {
         public Mink1Fight(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) :
             base(rnsReloaded, logger, hooks, "bp_wolf_greyeye1") {}

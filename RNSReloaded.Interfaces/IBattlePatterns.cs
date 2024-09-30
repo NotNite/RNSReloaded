@@ -71,7 +71,11 @@ public unsafe interface IBattlePatterns {
     );
 
     public void colormatch(
-        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null, Position? position = null
+    );
+
+    public void colormatch2(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? warnMsg = null, int ? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null, int? ringNum = null, int? displayNumber = null, Position? position = null
     );
 
     public void cone_direction(
@@ -154,12 +158,12 @@ public unsafe interface IBattlePatterns {
     );
 
     public void knockback_circle(
-        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, int? radius = null,
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, int? radius = null, int? kbDuration = null, int? targetMask = null,
         Position? position = null
     );
 
     public void knockback_line(
-        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, Position? position = null, bool? horizontal = null, int? targetMask = null
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, int? kbAmount = null, Position? position = null, bool? horizontal = null, int? kbDuration = null, int? targetMask = null
     );
 
     public void light_crosswave(
@@ -261,6 +265,10 @@ public unsafe interface IBattlePatterns {
 
     public void thorns(
         CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, double? radius = null, int? targetMask = null
+    );
+
+    public void thorns_bin(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warnMsg = null, int? spawnDelay = null, double? radius = null, (int, int, int, int)? groupMasks = null
     );
 
     public void thorns_fixed(

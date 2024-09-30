@@ -13,7 +13,7 @@ namespace RNSReloaded.FullmoonArsenal {
         private IHook<ScriptDelegate>? bubbleLineHook;
 
         public TasshaFight(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) :
-            base(rnsReloaded, logger, hooks, "bp_wolf_snowfur0_s", "bp_wolf_snowfur0_pt2") {
+            base(rnsReloaded, logger, hooks, "bp_wolf_snowfur0", "bp_wolf_snowfur0_pt2") {
             this.playerRng = new Random();
             // Regualar fight = setup
             // pt2 = final phase
@@ -73,7 +73,7 @@ namespace RNSReloaded.FullmoonArsenal {
 
             return ((this.myX, this.myY), cleaveAngle);
         }
-        private int DashCleave(CInstance* self, CInstance* other, int startTime, int target, bool save = false) {
+        private int DashCleave(CInstance* self, CInstance* other, int startTime, int target, bool chain = false) {
             int time = startTime;
             time += this.DashToPlayer(self, other, time, target);
             if (this.scrbp.time(self, other, time)) {
@@ -85,7 +85,8 @@ namespace RNSReloaded.FullmoonArsenal {
             if (this.scrbp.time(self, other, time)) {
                 var cleave = this.CalculateCleave(this.posSnapshot.x, this.posSnapshot.y);
                 this.bp.cleave_fixed(self, other, spawnDelay: 600, positions: [cleave]);
-                if (save) {
+                if (chain) {
+                    this.bp.cleave_fixed(self, other, spawnDelay: 600, positions: this.cleaves.ToArray());
                     this.cleaves.Add(cleave);
                 }
             }
@@ -341,13 +342,23 @@ namespace RNSReloaded.FullmoonArsenal {
             return warnDelay + eraseDelay;
         }
 
-        private int AddWarningThorns(CInstance* self, CInstance* other, int startTime, int spawnDelay = 1500, int interval = 1200) {
+        private int AddWarningThorns(CInstance* self, CInstance* other, int startTime, int spawnDelay = 2000, int interval = 1200) {
             if (this.scrbp.time(self, other, startTime)) {
                 this.rng.Shuffle(this.playerTargets);
-                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay, radius: 150, targetMask: 1 << this.playerTargets[0], position: (this.myX, this.myY));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + interval, radius: 150, targetMask: (1 << this.playerTargets[0]) | (1 << this.playerTargets[1]));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 2 * interval, radius: 150, targetMask: (1 << this.playerTargets[1]) | (1 << this.playerTargets[2]));
-                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 3 * interval, radius: 150, targetMask: (1 << this.playerTargets[2]) | (1 << this.playerTargets[3]));
+                this.bp.showorder(self, other, eraseDelay: spawnDelay + 4 * interval - 700, timeBetween: 0, orderMasks: (1 << this.playerTargets[0], 1 << this.playerTargets[1], 1 << this.playerTargets[2], 1 << this.playerTargets[3]));
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + interval - 700, radius: 1, targetMask: 1 << this.playerTargets[0], position: (this.myX, this.myY));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + interval - 700, radius: 1, targetMask: (1 << this.playerTargets[0]) | (1 << this.playerTargets[1]));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 2 * interval - 700, radius: 1, targetMask: (1 << this.playerTargets[1]) | (1 << this.playerTargets[2]));
+                this.bp.thorns(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: spawnDelay + 3 * interval - 700, radius: 1, targetMask: (1 << this.playerTargets[2]) | (1 << this.playerTargets[3]));
+            }
+            if (this.scrbp.time(self, other, startTime + spawnDelay + interval - 700)) {
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: interval, radius: 1, targetMask: 1 << this.playerTargets[1], position: (this.myX, this.myY));
+            }
+            if (this.scrbp.time(self, other, startTime + spawnDelay + 2 * interval - 700)) {
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: interval, radius: 1, targetMask: 1 << this.playerTargets[2], position: (this.myX, this.myY));
+            }
+            if (this.scrbp.time(self, other, startTime + spawnDelay + 3 * interval - 700)) {
+                this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: interval, radius: 1, targetMask: 1 << this.playerTargets[3], position: (this.myX, this.myY));
             }
             return spawnDelay;
         }
@@ -415,7 +426,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.phasesRemaining = new Stack<string>(phases);
 
                 // Testing
-                this.phasesRemaining.Push("bp_wolf_snowfur0_pt5");
+                this.phasesRemaining.Push("bp_wolf_snowfur0_pt4");
                 this.scrbp.set_special_flags(self, other, IBattleScripts.FLAG_HOLMGANG);
             }
             if (this.scrbp.time_repeating(self, other, 0, 500)) {
@@ -660,7 +671,7 @@ namespace RNSReloaded.FullmoonArsenal {
             return returnValue;
         }
 
-        List<((double x, double y) pos, int rot)> cleaves;
+        List<((double x, double y) pos, double rot)> cleaves = new List<((double x, double y) pos, double rot)>();
         // "pt4"
         public RValue* JumpCleavePhase(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
@@ -671,32 +682,122 @@ namespace RNSReloaded.FullmoonArsenal {
             int time = 0;
             time += this.StartRegularPhase(self, other, time);
 
-            time += this.DashCleaveWarn(self, other, time, this.playerRng.Next(0, this.utils.GetNumPlayers()));
+            time += this.DashCleaveWarn(self, other, time, this.playerRng.Next(0, this.utils.GetNumPlayers()), warnTime: 2000);
 
-            time += this.AddWarningThorns(self, other, time);
+            time += 1000;
+
+            time += this.AddWarningThorns(self, other, time, spawnDelay: 3000);
             time += this.DashCleave(self, other, time, this.playerTargets[0]);
             time += this.DashCleave(self, other, time, this.playerTargets[1]);
             time += this.DashCleave(self, other, time, this.playerTargets[2]);
             time += this.DashCleave(self, other, time, this.playerTargets[3]);
 
+            time += 1500;
+
             if (this.scrbp.time(self, other, time)) {
-                this.bp.cleave_fixed(self, other, warnMsg: 0, spawnDelay: 50000, positions: [
+                this.cleaves.Clear();
+                this.cleaves = this.cleaves.Concat([
+                    ((1920 - 67, 0), 0),
+                    ((67, 0), 180),
+                ]).ToList();
+                this.bp.cleave_fixed(self, other, warnMsg: 0, spawnDelay: 2500, positions: this.cleaves.ToArray());
+            }
+
+            time += 1000;
+            time += this.AddWarningThorns(self, other, time);
+            time += this.DashCleave(self, other, time, this.playerTargets[0], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[1], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[2], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[3], chain: true);
+
+            time += 2500;
+            // Levinstrike summoning
+            this.AddWarningThorns(self, other, time, spawnDelay: 0, interval: 5000);
+
+            for (int i = 0; i < 4; i++) {
+                if (this.scrbp.time(self, other, time)) {
+                    int colormatchTarget = 1 << this.playerTargets[(1 + i) % 4] | 1 << this.playerTargets[(3 + i) % 4];
+                    (int, int)[] positions = [(500, 200), (500, 1080 - 200), (1920 - 500, 1080 - 200), (1920 - 500, 200)];
+                    this.bp.colormatch2(self, other,
+                        spawnDelay: 5000,
+                        radius: 150,
+                        targetMask: colormatchTarget,
+                        color: IBattlePatterns.COLORMATCH_BLUE,
+                        position: positions[(this.playerRng.Next(0, positions.Length) + i) % 4]
+                    );
+                    this.bp.circle_spreads(self, other, spawnDelay: 5000, radius: 850, targetMask: 1 << this.playerTargets[(2 + i) % 4]);
+                }
+                time += 3800;
+                time += this.DashCleave(self, other, time, this.playerTargets[i]);
+            }
+
+            time += 2000;
+
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.prscircle(self, other, spawnDelay: 3000, radius: 350, position: (1920 / 2, 1080 / 2));
+                this.bp.circle_spreads(self, other, spawnDelay: 3000 - 600, radius: 200);
+            }
+            time += this.AddWarningThorns(self, other, time, spawnDelay: 1800);
+            for (int i = 0; i < 8; i++) {
+                if (this.scrbp.time(self, other, time + 600)) {
+                    this.bp.circle_spreads(self, other, spawnDelay: 1200, radius: 200, warnMsg: 2);
+                }
+                time += this.DashCleave(self, other, time, this.playerTargets[i % 4]);
+                if (i != 7 && this.scrbp.time(self, other, time)) {
+                    this.bp.prscircle(self, other, spawnDelay: 1200, radius: 350, position: (1920 / 2, 1080 / 2));
+                }
+            }
+
+            time += 2000;
+
+            if (this.scrbp.time(self, other, time)) {
+                this.cleaves.Clear();
+                this.cleaves = this.cleaves.Concat([
                     ((1920 - 67, 0), 0),
                     ((0, 1080 - 67), 90),
                     ((67, 0), 180),
                     ((0, 67), 270),
-                ]);
-                this.cleaves.Clear();
+                ]).ToList();
+                this.bp.cleave_fixed(self, other, warnMsg: 0, spawnDelay: 2500, positions: this.cleaves.ToArray());
             }
+
             time += 1000;
             time += this.AddWarningThorns(self, other, time);
+            time += this.DashCleave(self, other, time, this.playerTargets[0], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[1], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[2], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[3], chain: true);
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.showorder(self, other, eraseDelay: 4 * 1200 - 700, timeBetween: 0, orderMasks: (1 << this.playerTargets[0], 1 << this.playerTargets[1], 1 << this.playerTargets[2], 1 << this.playerTargets[3]));
+            }
+            time += this.DashCleave(self, other, time, this.playerTargets[0], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[1], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[2], chain: true);
+            time += this.DashCleave(self, other, time, this.playerTargets[3], chain: true);
 
+            time += 1500;
 
-            // Cleave each player in turn, with lingering cleaves that all pulse together
-            // So more of the field is cut off each player cleaved.
-            // Might need some other mechanic too, IDK
-
+            // Start soft enrage
             // Add field limit yeet + jump cleave thing?
+
+            if (this.scrbp.time(self, other, 0)) {
+                this.cleaves.Clear();
+                this.bp.enrage_deco(self, other);
+            }
+            for (int i = 0; i < 12; i++) {
+                int target = this.playerRng.Next(0, this.utils.GetNumPlayers());
+                if (this.scrbp.time(self, other, time)) {
+                    if (!this.PhaseChange(self, other, 0.5)) {
+                        this.bp.thorns_fixed(self, other, warningDelay: 0, warnMsg: 0, spawnDelay: 1500, radius: 150, targetMask: 1 << target, position: (this.myX, this.myY));
+                        time += 1500;
+                    }
+                }
+                time += this.DashCleave(self, other, time, target, true);
+            }
+
+            if (this.scrbp.time(self, other, time)) {
+                this.bp.enrage(self, other, warningDelay: 0, spawnDelay: 0, timeBetween: 400);
+            }
             return returnValue;
         }
 
@@ -828,7 +929,6 @@ namespace RNSReloaded.FullmoonArsenal {
                 }
             }
             
-            this.logger.PrintMessage("Time " + time, this.logger.ColorRedLight);
             return returnValue;
         }
 

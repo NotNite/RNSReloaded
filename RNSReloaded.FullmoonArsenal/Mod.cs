@@ -223,7 +223,7 @@ public unsafe class Mod : IMod {
                 } else if (enemyName == "en_wolf_greyeye") {
                     enemyData->Get(i)->Get(9)->Real = 300;
                 } else if (enemyName == "en_wolf_snowfur") {
-                    enemyData->Get(i)->Get(9)->Real = 350;
+                    enemyData->Get(i)->Get(9)->Real = 420;
                 }
             }
 

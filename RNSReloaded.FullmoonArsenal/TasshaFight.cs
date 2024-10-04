@@ -437,6 +437,11 @@ namespace RNSReloaded.FullmoonArsenal {
 
             int time = 0;
             if (this.scrbp.time(self, other, time)) {
+                // 4 player check
+                if (this.utils.GetNumPlayers() != 4) {
+                    this.bp.enrage(self, other, spawnDelay: 3000, timeBetween: 500);
+                }
+
                 this.bp.move_position_synced(self, other, duration: 1000, position: (1920 / 2, 1080 / 2));
                 this.myX = 1920 / 2;
                 this.myY = 1080 / 2;

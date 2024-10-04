@@ -132,6 +132,11 @@ namespace RNSReloaded.FullmoonArsenal {
         public override RValue* FightDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
+            if (this.scrbp.time(self, other, 0)) {
+                if (this.utils.GetNumPlayers() != 4) {
+                    this.bp.enrage(self, other, spawnDelay: 3000, timeBetween: 500);
+                }
+            }
             int time = this.Setup(self, other);
 
             this.AoeSpamRepeat(self, other, time, 10000);

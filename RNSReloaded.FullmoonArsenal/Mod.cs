@@ -195,17 +195,18 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
+        20, // - Testing
         30, // Chicken Tendies
         20, // Fieldlimit YEET
-        3, // Boss 1
+        28, // Boss 1
         0, // Skipped due to hall transition
-        4, // Troll
-        5, // Mink Electric Windmill
-        6, // Mink rainstorm
-        7, // Boss 2
+        15, // Troll
+        35, // Mink Electric Windmill
+        18, // Mink rainstorm
+        1, // Boss 2
         0, // Skipped due to hall transition
         0, // Pinnacle cutscene
-        8, // Tassha!
+        1, // Tassha!
         0, // End
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
@@ -260,7 +261,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 // Temp for testing because I'm too lazy to steel yourself lol
-                //new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
+                new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),

@@ -235,6 +235,8 @@ public unsafe interface IBattlePatterns {
 
     public void ray_spinfast(CInstance* self, CInstance* other, int? warningDelay = null, int? warningRadius = null, int? displayNumber = null, int? spawnDelay = null, int? eraseDelay = null, int? width = null, double? angle = null, Position? position = null, double? rot = null, int? numLasers = null);
 
+    public void setgamespeed(CInstance* self, CInstance* other, int? spawnDelay = null, double? timeMult = null);
+
     public void showgroups(
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, (int, int, int, int)? groupMasks = null
     );

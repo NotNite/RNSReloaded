@@ -65,8 +65,8 @@ namespace RNSReloaded.FullmoonArsenal {
                 time += (int) (6000 * gameSpeed);
                 gameSpeed += 1f/3;
 
-                if (this.scrbp.time(self, other, time)) {
-                    this.utils.GetGlobalVar("gameTimeSpeed")->Real = gameSpeed;
+                if (this.scrbp.time(self, other, (int) (time - 500 * gameSpeed))) {
+                    this.bp.setgamespeed(self, other, (int) (500 * gameSpeed), gameSpeed);
                 }
             }
             // This actually happens ~80s into the run, and ~40s real time

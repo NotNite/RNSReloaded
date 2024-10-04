@@ -198,7 +198,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
                 ]).ToArray();
             }
         }
-        
+
         this.execute_pattern(self, other, "bp_circle_position", args);
     }
 
@@ -288,7 +288,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_clockspot", args);
     }
 
@@ -417,7 +417,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
                 ]).ToArray();
             }
         }
-        
+
         this.execute_pattern(self, other, "bp_dark_targeted", args);
     }
 
@@ -480,7 +480,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_fieldlimit_rectangle", args);
     }
 
@@ -514,7 +514,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
         //this.utils.CreateString("type")!.Value, new RValue(type),
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(positions.Length)]).ToArray();
-        
+
             for (int i = 0; i < positions.Length; i++) {
                 args = args.Concat([
                     this.utils.CreateString($"posX_{i}")!.Value, new RValue(positions[i].x),
@@ -553,7 +553,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_fire2_line", args);
     }
 
@@ -562,7 +562,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
     ) {
         RValue[] args = [];
         args = this.add_if_not_null(args, "mult", mult);
-        
+
         this.execute_pattern(self, other, "bp_gravity_fall", args);
     }
 
@@ -744,7 +744,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
 
         if (positions != null) {
             args = args.Concat([this.utils.CreateString("numLines")!.Value, new RValue(positions.Length)]).ToArray();
-        
+
             for (int i = 0; i < positions.Length; i++) {
                 PosRot position = positions[i];
                 args = args.Concat([
@@ -790,9 +790,15 @@ public unsafe class BattlePatterns : IBattlePatterns {
         args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
         args = this.add_if_not_null(args, "timeBetween", timeBetween);
         args = this.add_if_not_null(args, "scale", scale);
-        
+
         if (positions != null) {
-            this.set_pattern_positions(self, other, positions);
+            args = this.add_if_not_null(args, "numPoints", positions.Length);
+            for (int i = 0; i < positions.Length; i++) {
+                args = args.Concat([
+                    this.utils.CreateString($"posX_{i}")!.Value, new RValue(positions[i].x),
+                    this.utils.CreateString($"posY_{i}")!.Value, new RValue(positions[i].y),
+                ]).ToArray();
+            }
         }
         this.execute_pattern(self, other, "bp_marching_bullet", args);
     }
@@ -874,7 +880,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
         args = this.add_if_not_null(args, "radius", radius);
         args = this.add_if_not_null(args, "number", numBullets);
         args = this.add_if_not_null(args, "spd", speed);
-        args = this.add_if_not_null(args, "targetId", targetId);        
+        args = this.add_if_not_null(args, "targetId", targetId);
 
         this.execute_pattern(self, other, "bp_prscircle_follow", args);
     }
@@ -1027,8 +1033,16 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
         }
-        
+
         this.execute_pattern(self, other, "bp_ray_spinfast", args);
+    }
+
+    public void setgamespeed(CInstance* self, CInstance* other, int? spawnDelay = null, double? timeMult = null) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "timeMult", timeMult);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+
+        this.execute_pattern(self, other, "bp_setgamespeed", args);
     }
 
     public void showgroups(

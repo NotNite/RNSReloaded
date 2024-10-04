@@ -4,6 +4,7 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Emit;
 
 namespace RNSReloaded.FullmoonArsenal;
 
@@ -18,16 +19,12 @@ public unsafe class Mod : IMod {
     private IHook<ScriptDelegate>? pinnacleHook;
     private IHook<ScriptDelegate>? chooseHallsHook;
     private IHook<ScriptDelegate>? healHook;
-
-
-    private IHook<ScriptDelegate>? damageHook;
-
-    private IHook<ScriptDelegate>? globalHook;
+    private IHook<ScriptDelegate>? moveNextHook;
 
     private Random rng = new Random();
     private List<CustomFight> fights = [];
 
-    private double damageMult = 0.6;
+    private int notchCount = -1;
 
     static void CopyDirectory(string sourceDir, string destinationDir, bool recursive) {
         // Get information about the source directory
@@ -113,21 +110,13 @@ public unsafe class Mod : IMod {
         ) {
             rnsReloaded.LimitOnlinePlay();
             this.fights = [
-                // TODO: Should be 0.6x damage
                 new Rem0Fight  (rnsReloaded, this.logger, hooks),
-                // Should do 0.6x damage, probably
                 new Rem1Fight (rnsReloaded, this.logger, hooks),
-                // Should do 0.420x damage, probably
-                new Mink0Fight (rnsReloaded, this.logger, hooks),
-                // Should do 0.475x damage, probably
                 new RanXin0Fight (rnsReloaded, this.logger, hooks),
-                // Should do 0.6x damage, probably
                 new Rem2Fight (rnsReloaded, this.logger, hooks),
-                // Not made yet
+                new Mink0Fight (rnsReloaded, this.logger, hooks),
                 new RanXin1Fight (rnsReloaded, this.logger, hooks),
-                // Not made yet
                 new Mink1Fight (rnsReloaded, this.logger, hooks),
-                // Not made yet
                 new TasshaFight(rnsReloaded, this.logger, hooks)
             ];
 
@@ -167,14 +156,11 @@ public unsafe class Mod : IMod {
             this.healHook.Activate();
             this.healHook.Enable();
 
-            var damageScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_pattern_deal_damage_enemy_subtract") - 100000);
-            this.damageHook = hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
-                argv[2]->Real *= this.damageMult;
-                return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
-            }, damageScript->Functions->Function);
-            this.damageHook.Activate();
-            this.damageHook.Enable();
-
+            var moveNextScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwayprogress_move_next") - 100000);
+            this.moveNextHook =
+                hooks.CreateHook<ScriptDelegate>(this.MoveNextDetour, moveNextScript->Functions->Function);
+            this.moveNextHook.Activate();
+            this.moveNextHook.Enable();
         }
     }
 
@@ -207,9 +193,37 @@ public unsafe class Mod : IMod {
         return returnValue;
     }
 
+    private readonly static int[] ENEMY_LEVELS = [
+        0, // Target dummy
+        30, // Chicken Tendies
+        20, // Fieldlimit YEET
+        3, // Boss 1
+        0, // Skipped due to hall transition
+        4, // Troll
+        5, // Mink Electric Windmill
+        6, // Mink rainstorm
+        7, // Boss 2
+        0, // Skipped due to hall transition
+        0, // Pinnacle cutscene
+        8, // Tassha!
+        0, // End
+    ];
+    private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        if (this.IsReady(out var rnsReloaded)) {
+            returnValue = this.moveNextHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            this.notchCount++;
+            RValue* enemyLevel = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyLevel");
+            enemyLevel->Real = ENEMY_LEVELS[this.notchCount];
+            enemyLevel->Type = RValueType.Real;
+        }
+        return returnValue;
+    }
+
     private RValue* ChooseHallsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         returnValue = this.chooseHallsHook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded)) {
+            this.notchCount = -1; // Reset enemy level tracking
+
             var hallkey = rnsReloaded.FindValue(self, "hallkey");
             rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
             rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), "hw_arsenal");
@@ -246,7 +260,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 // Temp for testing because I'm too lazy to steel yourself lol
-                new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
+                //new Notch(NotchType.Encounter, "enc_wolf_snowfur0", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),

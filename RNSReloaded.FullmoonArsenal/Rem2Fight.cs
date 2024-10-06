@@ -12,7 +12,7 @@ namespace RNSReloaded.FullmoonArsenal {
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
             int time = 1000;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.cleave_fixed(self, other,
                     warningDelay: 0,
@@ -40,15 +40,15 @@ namespace RNSReloaded.FullmoonArsenal {
                 );
             }
             time += 6000;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.prscircle(self, other, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (400, 1080 / 2), numBullets: 0);
                 this.bp.prscircle(self, other, warningDelay: 1000, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (1920 - 400, 1080 / 2), numBullets: 0);
-
+            
                 this.bp.fire_aoe(self, other, warningDelay: 3500, spawnDelay: 3500, eraseDelay: 4000, scale: 2.2, positions: [(300, 1080 / 2), (1920 - 300, 1080 / 2)]);
             }
             time += 4500;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b0001, color: 7);
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b0010, color: 12);
@@ -56,12 +56,12 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.colormatch(self, other, spawnDelay: 4000, radius: 300, targetMask: 0b1000, color: 22);
             }
             time += 5000;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.enrage_deco(self, other);
             }
             time += 3000;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.ray_spinfast(self, other,
                     position: (1920 / 2, 1080 / 2),
@@ -75,7 +75,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 );
             }
             time += 8000;
-
+            
             if (this.scrbp.time(self, other, time)) {
                 this.bp.ray_spinfast(self, other,
                     position: (1920 / 2, 1080 / 2),
@@ -101,7 +101,7 @@ namespace RNSReloaded.FullmoonArsenal {
             time += 5500;
 
             if (this.scrbp.time(self, other, time)) {
-                this.bp.enrage(self, other, spawnDelay: 4000, timeBetween: 1000);
+                this.bp.enrage(self, other, spawnDelay: 6000, timeBetween: 1000);
             }
             
             return returnValue;

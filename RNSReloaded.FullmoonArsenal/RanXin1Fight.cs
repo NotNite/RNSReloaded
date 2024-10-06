@@ -34,24 +34,13 @@ namespace RNSReloaded.FullmoonArsenal {
         private RValue* BulletClearDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             if (this.enableConsistentDefensive) {
                 var hbId = this.rnsReloaded.FindValue(self, "hbId");
-                int hotbarId = 4;
-                switch (hbId->Type) {
-                    case RValueType.Real:
-                        hotbarId = (int) hbId->Real;
-                        break;
-                    case RValueType.Int64:
-                        hotbarId = (int) hbId->Int64;
-                        break;
-                    case RValueType.Int32:
-                        hotbarId = hbId->Int32;
-                        break;
-                }
+                int hotbarId = (int) this.utils.RValueToLong(hbId);
 
                 argv[2]->Real = 450;
                 argv[2]->Type = RValueType.Real;
 
                 // 4 = defensive. Only defender should clear bullets besides that (on special)
-                if (hotbarId != 4) {
+                if (hotbarId % 14 != 4) {
                     argv[2]->Real = 50;
                 }
             }

@@ -195,18 +195,17 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-        20, // - Testing
         30, // Chicken Tendies
         20, // Fieldlimit YEET
-        28, // Boss 1
+        27, // Boss 1
         0, // Skipped due to hall transition
-        15, // Troll
-        35, // Mink Electric Windmill
-        18, // Mink rainstorm
-        1, // Boss 2
+        18, // Troll
+        37, // Mink Electric Windmill
+        20, // Mink rainstorm
+        22, // Boss 2
         0, // Skipped due to hall transition
         0, // Pinnacle cutscene
-        1, // Tassha!
+        8, // Tassha!
         0, // End
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
@@ -236,7 +235,7 @@ public unsafe class Mod : IMod {
                 if (enemyName == "en_wolf_blackear") {
                     enemyData->Get(i)->Get(9)->Real = 420;
                 } else if (enemyName == "en_wolf_greyeye") {
-                    enemyData->Get(i)->Get(9)->Real = 300;
+                    enemyData->Get(i)->Get(9)->Real = 420;
                 } else if (enemyName == "en_wolf_snowfur") {
                     enemyData->Get(i)->Get(9)->Real = 420;
                 }
@@ -260,9 +259,6 @@ public unsafe class Mod : IMod {
         if (this.IsReady(out var rnsReloaded)) {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
-                // Temp for testing because I'm too lazy to steel yourself lol
-                new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
-
                 new Notch(NotchType.Encounter, "enc_wolf_blackear0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_blackear1", 0, 0),
                 new Notch(NotchType.Boss, "enc_wolf_bluepaw0", 0, Notch.BOSS_FLAG)

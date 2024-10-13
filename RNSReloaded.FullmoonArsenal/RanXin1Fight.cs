@@ -453,7 +453,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 int iteration = (thisBattleTime - 1000) / 12000;
                 this.bp.move_position_synced(self, other,
                     duration: 2000,
-                    position: ((iteration % 2 == 1) ^ isPrimary ? 300 : 1920 - 300, 1080/2)
+                    position: ((iteration % 2 == 1) ^ isPrimary ? 240 : 1920 - 240, 1080/2)
                 );
             }
         }

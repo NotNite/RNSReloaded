@@ -26,6 +26,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     (int) this.rnsReloaded.ArrayGetEntry(orderBin, 2)->Real,
                     (int) this.rnsReloaded.ArrayGetEntry(orderBin, 3)->Real,
                 ];
+                this.scrbp.set_special_flags(self, other, IBattleScripts.FLAG_NO_TARGET);
             }
             return 3000;
         }
@@ -83,8 +84,8 @@ namespace RNSReloaded.FullmoonArsenal {
 
         private int SpreadStack(CInstance* self, CInstance* other, int startTime) {
             if (this.scrbp.time(self, other, startTime)) {
-                this.bp.prscircle_follow(self, other, 0, 2, 0, false, CYCLE_TIME + 800, 190, 30, 10, this.rng.Next(0, this.utils.GetNumPlayers()));
-                this.bp.circle_spreads(self, other, 1000, 2, CYCLE_TIME + 800, 140, null);
+                this.bp.prscircle_follow(self, other, warningDelay: 0, warnMsg: 2, doubled: false, spawnDelay: CYCLE_TIME + 1000, radius: 220, numBullets: 30, speed: 10, targetId: this.rng.Next(0, this.utils.GetNumPlayers()));
+                this.bp.circle_spreads(self, other, warningDelay: 1000, warnMsg: 2, spawnDelay: CYCLE_TIME + 1000, radius: 110, null);
             }
             return CYCLE_TIME;
         }
@@ -93,6 +94,7 @@ namespace RNSReloaded.FullmoonArsenal {
             const int CLEAVE_TIME = CYCLE_TIME / 3;
             // Start 1 cleave early but delay cleaves for better phase transition setup
             if (this.scrbp.time_repeat_times(self, other, startTime - CLEAVE_TIME, CLEAVE_TIME, 6) && this.utils.GetEnemyHP(1) < 1) {
+                this.scrbp.set_special_flags(self, other, 0);
                 int thisBattleTime = (int) this.rnsReloaded.FindValue(self, "patternExTime")->Real;
                 thisBattleTime -= startTime - CLEAVE_TIME;
                 int iteration = thisBattleTime / CLEAVE_TIME;
@@ -115,6 +117,8 @@ namespace RNSReloaded.FullmoonArsenal {
 
         private int YeetCallback(CInstance* self, CInstance* other, int startTime) {
             if (this.scrbp.time(self, other, startTime)) {
+                this.scrbp.set_special_flags(self, other, 0);
+
                 this.bp.fieldlimit_rectangle_temporary(self, other,
                     position: (960, 540),
                     width: 50,
@@ -370,25 +374,25 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.cleave_fixed(self, other,
                     warningDelay: 0,
                     warnMsg: 0,
-                    spawnDelay: CYCLE_TIME - 200,
+                    spawnDelay: CYCLE_TIME,
                     positions: [((1200, 795), 180)]
                 );
                 this.bp.displaynumbers(self, other,
                     displayNumber: 1,
                     warningDelay: 0,
-                    spawnDelay: CYCLE_TIME - 200,
+                    spawnDelay: CYCLE_TIME,
                     positions: [(1100, 395)]
                 );
                 this.bp.cleave_fixed(self, other,
                     warningDelay: 500,
                     warnMsg: 0,
-                    spawnDelay: CYCLE_TIME + 800,
+                    spawnDelay: CYCLE_TIME + 1000,
                     positions: [((1200, 795), 0)]
                 );
                 this.bp.displaynumbers(self, other,
                     displayNumber: 2,
                     warningDelay: 500,
-                    spawnDelay: CYCLE_TIME + 800,
+                    spawnDelay: CYCLE_TIME + 1000,
                     positions: [(1300, 395)]
                 );
             }

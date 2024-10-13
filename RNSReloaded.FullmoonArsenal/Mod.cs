@@ -201,11 +201,11 @@ public unsafe class Mod : IMod {
         0, // Skipped due to hall transition
         18, // Troll
         37, // Mink Electric Windmill
-        20, // Mink rainstorm
-        22, // Boss 2
+        18, // Mink rainstorm
+        25, // Boss 2
         0, // Skipped due to hall transition
         0, // Pinnacle cutscene
-        8, // Tassha!
+        10, // Tassha!
         0, // End
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
@@ -235,7 +235,7 @@ public unsafe class Mod : IMod {
                 if (enemyName == "en_wolf_blackear") {
                     enemyData->Get(i)->Get(9)->Real = 420;
                 } else if (enemyName == "en_wolf_greyeye") {
-                    enemyData->Get(i)->Get(9)->Real = 420;
+                    enemyData->Get(i)->Get(9)->Real = 500;
                 } else if (enemyName == "en_wolf_snowfur") {
                     enemyData->Get(i)->Get(9)->Real = 420;
                 }

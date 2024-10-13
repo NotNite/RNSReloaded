@@ -28,7 +28,7 @@ namespace RNSReloaded.FullmoonArsenal {
             // While this is repeating, I'd still consider it setup - it only repeats because I can't
             // make it permanent, and the uptime is 100%
             if (this.scrbp.time_repeating(self, other, 1500, 6000)) {
-                this.bp.fire_aoe(self, other, 1000, 6000, 65000, .5, [(960, 540)]);
+                this.bp.fire_aoe(self, other, 1000, 6000, 14000, .25, [(960, 540)]);
             }
 
             time += 1000;
@@ -38,8 +38,8 @@ namespace RNSReloaded.FullmoonArsenal {
         private void YeetRepeat(CInstance* self, CInstance* other, int delayStart, int interval) {
             if (this.scrbp.time_repeating(self, other, delayStart, 6000)) {
                 this.bp.fire_aoe(self, other,
-                    spawnDelay: 2500,
-                    eraseDelay: 3000,
+                    spawnDelay: 2400,
+                    eraseDelay: 2900,
                     scale: 2,
                     positions: [(960, 540)]
                 );
@@ -50,6 +50,7 @@ namespace RNSReloaded.FullmoonArsenal {
                     spawnDelay: 3500,
                     warnMsg: 2,
                     doubled: true,
+                    numBullets: 40,
                     angle: this.rng.Next(0, 360)
                 );
                 this.scrbp.order_random(self, other, false, 1, 1, 1, 1);

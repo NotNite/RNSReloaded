@@ -72,8 +72,8 @@ namespace RNSReloaded.FullmoonArsenal {
 
         private void MoveAndAttack(CInstance* self, CInstance* other, int startDelay, int interval) {
             if (this.scrbp.time_repeating(self, other, startDelay, interval)) {
-                int x = this.rng.Next(100, 1820);
-                int y = this.rng.Next(100, 980);
+                int x = this.rng.Next(150, 1920 - 150);
+                int y = this.rng.Next(100, 1080 - 100);
                 int midTime = interval / 2;
                 this.bp.move_position_synced(self, other, duration: midTime, position: (x, y));
                 this.bp.dark_targeted(self, other, warningDelay: midTime, spawnDelay: 2500 + midTime, eraseDelay: 3000 + midTime, scale: 0.7, positions: [(x, y)]);

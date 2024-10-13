@@ -45,7 +45,7 @@ namespace RNSReloaded.FullmoonArsenal {
                 this.bp.prscircle(self, other, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (400, 1080 / 2), numBullets: 0);
                 this.bp.prscircle(self, other, warningDelay: 1000, warnMsg: 2, spawnDelay: 3500, radius: 400, position: (1920 - 400, 1080 / 2), numBullets: 0);
             
-                this.bp.fire_aoe(self, other, warningDelay: 3500, spawnDelay: 3500, eraseDelay: 4000, scale: 2.2, positions: [(300, 1080 / 2), (1920 - 300, 1080 / 2)]);
+                this.bp.fire_aoe(self, other, warningDelay: 3500, spawnDelay: 3500, eraseDelay: 4000, scale: 2.2, positions: [(400, 1080 / 2), (1920 - 400, 1080 / 2)]);
             }
             time += 4500;
             

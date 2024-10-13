@@ -5,6 +5,7 @@ namespace RNSReloaded.Interfaces;
 public unsafe interface IBattleScripts {
     public const int FLAG_HOLMGANG      = 0b0001;
     public const int FLAG_NO_POSITIONAL = 0b0010;
+    public const int FLAG_NO_TARGET     = 0b0100;
 
     public void end(CInstance* self, CInstance* other);
 

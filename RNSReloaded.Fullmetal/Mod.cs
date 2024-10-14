@@ -27,7 +27,6 @@ public unsafe class Mod : IMod {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
     private ILoggerV1 logger = null!;
-    private Random random = new();
     private Random hallRand = new();
 
     private string[] hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
@@ -39,20 +38,7 @@ public unsafe class Mod : IMod {
     private CInstance* potionOther;
     private bool potionStored = false;
 
-    private IHook<ScriptDelegate>? outskirtsHook;
-    private IHook<ScriptDelegate>? outskirtsHookN;
-    private IHook<ScriptDelegate>? nestHook;
-    private IHook<ScriptDelegate>? arsenalHook;
-    private IHook<ScriptDelegate>? lighthouseHook;
-    private IHook<ScriptDelegate>? streetsHook;
-    private IHook<ScriptDelegate>? lakesideHook;
-    private IHook<ScriptDelegate>? keepHook;
-    private IHook<ScriptDelegate>? pinnacleHook;
-    private IHook<ScriptDelegate>? chooseHallsHook;
-    private IHook<ScriptDelegate>? startHallwayHook;
-    private IHook<ScriptDelegate>? moveNextHook;
-    private IHook<ScriptDelegate>? giveRewardsHook;
-    private IHook<ScriptDelegate>? erasePotionsHook;
+    private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
 
     public void Start(IModLoaderV1 loader) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
@@ -113,20 +99,29 @@ public unsafe class Mod : IMod {
     }
 
     public void InitializeHooks() {
-        this.CreateAndEnableHook("scr_hallwaygen_outskirts", this.OutskirtsDetour, out this.outskirtsHook);
-        this.CreateAndEnableHook("scr_hallwaygen_outskirts_n", this.OutskirtsDetour, out this.outskirtsHookN);
-        this.CreateAndEnableHook("scr_hallwaygen_nest", this.NestDetour, out this.nestHook);
-        this.CreateAndEnableHook("scr_hallwaygen_arsenal", this.ArsenalDetour, out this.arsenalHook);
-        this.CreateAndEnableHook("scr_hallwaygen_lighthouse", this.LighthouseDetour, out this.lighthouseHook);
-        this.CreateAndEnableHook("scr_hallwaygen_streets", this.StreetsDetour, out this.streetsHook);
-        this.CreateAndEnableHook("scr_hallwaygen_lakeside", this.LakesideDetour, out this.lakesideHook);
-        this.CreateAndEnableHook("scr_hallwaygen_keep", this.KeepDetour, out this.keepHook);
-        this.CreateAndEnableHook("scr_hallwaygen_pinnacle", this.PinnacleDetour, out this.pinnacleHook);
-        this.CreateAndEnableHook("scr_hallwayprogress_choose_halls", this.ChooseHallsDetour, out this.chooseHallsHook);
-        this.CreateAndEnableHook("scr_hallwayprogress_start_hallway", this.StartHallwayDetour, out this.startHallwayHook);
-        this.CreateAndEnableHook("scr_hallwayprogress_move_next", this.MoveNextDetour, out this.moveNextHook);
-        this.CreateAndEnableHook("scr_rankbar_give_rewards", this.GiveRewardsDetour, out this.giveRewardsHook);
-        this.CreateAndEnableHook("scr_itemsys_erase_potions", this.ErasePotionsDetour, out this.erasePotionsHook);
+        var detourMap = new Dictionary<string, ScriptDelegate>{
+            { "scr_hallwaygen_outskirts", this.OutskirtsDetour},
+            { "scr_hallwaygen_outskirts_n", this.OutskirtsDetour},
+            { "scr_hallwaygen_nest", this.MakeMainAreaDetour("scr_hallwaygen_nest")},
+            { "scr_hallwaygen_arsenal", this.MakeMainAreaDetour("scr_hallwaygen_arsenal")},
+            { "scr_hallwaygen_lighthouse", this.MakeMainAreaDetour("scr_hallwaygen_lighthouse")},
+            { "scr_hallwaygen_streets", this.MakeMainAreaDetour("scr_hallwaygen_streets")},
+            { "scr_hallwaygen_lakeside", this.MakeMainAreaDetour("scr_hallwaygen_lakeside")},
+            { "scr_hallwaygen_keep", this.KeepDetour},
+            { "scr_hallwaygen_pinnacle", this.PinnacleDetour},
+            { "scr_hallwayprogress_choose_halls", this.ChooseHallsDetour},
+            { "scr_hallwayprogress_start_hallway", this.StartHallwayDetour},
+            { "scr_hallwayprogress_move_next", this.MoveNextDetour},
+            { "scr_rankbar_give_rewards", this.GiveRewardsDetour},
+            { "scr_itemsys_erase_potions", this.ErasePotionsDetour}
+        };
+
+        foreach (var detourPair in detourMap) {
+            this.CreateAndEnableHook(detourPair.Key, detourPair.Value, out var hook);
+            if (hook != null) {
+                ScriptHooks[detourPair.Key] = hook;
+            }
+        }
     }
 
     private int getRandInt() => this.hallRand.Next(0, maxValue: int.MaxValue);
@@ -278,26 +273,39 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* ChooseHallsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_hallwayprogress_choose_halls"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            returnValue = this.chooseHallsHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             // resets tracking variables
             this.potionStored = false;
             this.hallCount = -1;
-            this.hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
-
-            // randomizes hallkeys based on seed from host
-            RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-            long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
-            this.hallRand = new Random((int) mapSeed);
-            this.hallRand.Shuffle(this.hallkeys);
-
-            // determines notches for every area
-            this.hallNotches = this.CreateNotches(this.hallkeys);
-
-            // sets hallkeys in game
+            
+            // check if Toybox is on
             RValue* hallkey = rnsReloaded.FindValue(self, "hallkey");
             RValue hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new RValue(0);
             if (utils.RValueToLong(&hallkeyLength) != 1) {
+                // randomizes hallkeys based on seed from host
+                RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
+                long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
+
+                string firstArea = hallkey->Get(1)->ToString();
+                this.hallkeys = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
+
+                this.hallRand = new Random((int) mapSeed);
+                this.hallRand.Shuffle(this.hallkeys);
+
+                int index = Array.IndexOf(this.hallkeys, firstArea);
+                if (index > 0) {
+                    // Swap the first element with the element at the found index
+                    string temp = this.hallkeys[0];
+                    this.hallkeys[0] = this.hallkeys[index];
+                    this.hallkeys[index] = temp;
+                }
+
+                // determines notches for every area
+                this.hallNotches = this.CreateNotches(this.hallkeys);
+
+                // sets hallkeys in game
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), "hw_outskirts");
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[0]);
                 rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);
@@ -310,8 +318,9 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* StartHallwayDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_hallwayprogress_start_hallway"];
         this.notchesCount = 0;
-        return this.startHallwayHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
     private RValue* GenericAreaDetour(
@@ -327,36 +336,25 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* OutskirtsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.outskirtsHook, _ => this.CreateOutskirtsNotches(), self, other, returnValue, argc, argv);
+        var hook = ScriptHooks["scr_hallwaygen_outskirts"];
+        return this.GenericAreaDetour(hook, _ => this.CreateOutskirtsNotches(), self, other, returnValue, argc, argv);
     }
 
-    private RValue* NestDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.nestHook, count => this.hallNotches[count], self, other, returnValue, argc, argv);
-    }
-
-    private RValue* ArsenalDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.arsenalHook, count => this.hallNotches[count], self, other, returnValue, argc, argv);
-    }
-
-    private RValue* LighthouseDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.lighthouseHook, count => this.hallNotches[count], self, other, returnValue, argc, argv);
-    }
-
-    private RValue* StreetsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.streetsHook, count => this.hallNotches[count], self, other, returnValue, argc, argv);
-    }
-
-    private RValue* LakesideDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.lakesideHook, count => this.hallNotches[count], self, other, returnValue, argc, argv);
+    private ScriptDelegate MakeMainAreaDetour(string hookName) {
+        return (CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
+            return this.GenericAreaDetour(ScriptHooks[hookName], count => this.hallNotches[count], self, other, returnValue, argc, argv);
+        };
     }
 
     private RValue* KeepDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        return this.GenericAreaDetour(this.keepHook, _ => this.CreateKeepNotches(), self, other, returnValue, argc, argv);
+        var hook = ScriptHooks["scr_hallwaygen_keep"];
+        return this.GenericAreaDetour(hook, _ => this.CreateKeepNotches(), self, other, returnValue, argc, argv);
     }
 
     private RValue* PinnacleDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_hallwaygen_pinnacle"];
         this.hallCount++;
-        return this.pinnacleHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
     private static int stageFromKey(string key) {
@@ -403,8 +401,9 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_hallwayprogress_move_next"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            returnValue = this.moveNextHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             this.notchesCount += 1; // counts notch
 
             // updates enemy level upon hall entry
@@ -437,6 +436,7 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* GiveRewardsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_rankbar_give_rewards"];
         // gets scale factor based on hall
         double enemyScale = this.GetEnemyScale();
         RValue*[] newArgv = new RValue*[3];
@@ -455,19 +455,20 @@ public unsafe class Mod : IMod {
 
         // updates reward values
         fixed (RValue** newArgv2 = newArgv) {
-            returnValue = this.giveRewardsHook!.OriginalFunction(self, other, returnValue, argc, newArgv2);
+            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, newArgv2);
         }
         return returnValue;
     }
 
     private RValue* ErasePotionsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["scr_itemsys_erase_potions"];
         // only need to erase potions past outskirts
         if (!this.potionStored) {
             this.potionStored = true;
             this.potionSelf = self;
             this.potionOther = other;
         }
-        return this.erasePotionsHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
     public void Suspend() {}

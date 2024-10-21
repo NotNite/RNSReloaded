@@ -34,6 +34,8 @@ public readonly struct Notch {
 public unsafe interface IUtil {
     public long RValueToLong(RValue* arg);
 
+    public long RValueToLong(RValue arg);
+
     public double RValueToDouble(RValue* arg);
 
     public RValue? CreateString(string str);

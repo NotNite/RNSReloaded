@@ -25,6 +25,10 @@ public unsafe class Util : IUtil {
         };
     }
 
+    public long RValueToLong(RValue arg) {
+        return this.RValueToLong(&arg);
+    }
+
     public double RValueToDouble(RValue* arg) {
         RValueType type = arg->Type;
         return type switch {

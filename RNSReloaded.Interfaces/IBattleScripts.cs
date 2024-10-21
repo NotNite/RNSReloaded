@@ -27,4 +27,6 @@ public unsafe interface IBattleScripts {
 
     public void pattern_deal_damage_enemy_subtract(CInstance* self, CInstance* other, int teamId, int playerId, int damageAmount);
 
+    public RValue sbgv(CInstance* self, CInstance* other, string name, RValue defaultVal);
+    public RValue sbsv(CInstance* self, CInstance* other, string name, RValue toSave);
 }

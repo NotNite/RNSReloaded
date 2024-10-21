@@ -99,4 +99,16 @@ public unsafe class BattleScripts : IBattleScripts {
         // }
     }
 
+    public RValue sbgv(CInstance* self, CInstance* other, string name, RValue defaultVal) {
+        RValue key = new RValue(0);
+        this.rnsReloaded.CreateString(&key, name);
+        return this.rnsReloaded.ExecuteScript("sbgv", self, other, [key, defaultVal])!.Value;
+    }
+
+    public RValue sbsv(CInstance* self, CInstance* other, string name, RValue toSave) {
+        RValue key = new RValue(0);
+        this.rnsReloaded.CreateString(&key, name);
+        return this.rnsReloaded.ExecuteScript("sbsv", self, other, [key, toSave])!.Value;
+    }
+
 }

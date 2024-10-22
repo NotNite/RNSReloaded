@@ -43,7 +43,7 @@ public unsafe class Functions {
             addr => { this.GetTheFunction = Marshal.GetDelegateForFunctionPointer<GetTheFunctionDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 48 85 C0 74 9B",
             addr => { this.FindValue = Marshal.GetDelegateForFunctionPointer<FindValueDelegate>(addr); });
-        this.utils.Scan("40 53 48 83 EC ?? 8B 41 ?? 48 8B D9 25 ?? ?? ?? ?? 83 F8 02 75",
+        this.utils.Scan("E8 ?? ?? ?? ?? 48 8B D8 EB 4F",
             addr => { this.ArrayGetEntry = Marshal.GetDelegateForFunctionPointer<ArrayGetEntryDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 48 89 45 87",
             addr => { this.YYGetString = Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr); });

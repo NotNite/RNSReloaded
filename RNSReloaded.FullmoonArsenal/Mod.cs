@@ -4,7 +4,6 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Emit;
 
 namespace RNSReloaded.FullmoonArsenal;
 
@@ -202,7 +201,7 @@ public unsafe class Mod : IMod {
         18, // Troll
         37, // Mink Electric Windmill
         18, // Mink rainstorm
-        25, // Boss 2
+        28, // Boss 2
         0, // Skipped due to hall transition
         0, // Pinnacle cutscene
         10, // Tassha!

@@ -1,4 +1,4 @@
 Sheet Type,filename
-NameSheet,Mods/ArsenalHealItem/Items_Names
-DescriptionSheet,Mods/ArsenalHealItem/Items_Descriptions
-ItemSheet,Mods/ArsenalHealItem/Items
+NameSheet,Items_Names
+DescriptionSheet,Items_Descriptions
+ItemSheet,Items

@@ -18,9 +18,10 @@ public unsafe class Util : IUtil {
     public long RValueToLong(RValue* arg) {
         RValueType type = arg->Type;
         return type switch {
-            RValueType.Real => (long) (*arg).Real,
-            RValueType.Int32 => (long) (*arg).Int32,
-            RValueType.Int64 => (long) (*arg).Int64,
+            RValueType.Real => (long) arg->Real,
+            RValueType.Int32 => (long) arg->Int32,
+            RValueType.Int64 => (long) arg->Int64,
+            RValueType.Bool => (long) arg->Real,
             _ => 0,
         };
     }

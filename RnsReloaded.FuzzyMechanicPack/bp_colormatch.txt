@@ -1,0 +1,111 @@
+bp_colormatch:
+
+warningDelay = sbgv("warningDelay", 0.0)
+spawnDelay = sbgv("spawnDelay", 3000.0)
+radius = sbgv("radius", 400.0)
+trgBinary = sbgv("trgBinary", 127.0)
+warnMsg = sbgv("warnMsg", 0.0)
+element = sbgv("element", 2) // Purple
+hasFixed = sbgv("hasFixed", false)
+displayNumber = sbgv("displayNumber", 0.0)
+
+if (scrbp_time(0)) {
+    scrbp_pattern_set_projectile_key("pjb_dark", "sfxset_enemy")
+    scrbp_pattern_set_drawlayer(1) // Double check with hooking this and seeing rvalue, it's weird
+    ttrg_players_opponent_binary(trgBinary) // Sets self.ts_players to the list of players targeted
+    scrbp_pattern_set_color_colormatch(element)
+
+    noTarget = trgBinary == 0
+    if (noTarget && !hasFixed) {
+        self.patternEnded = <True 1.0>
+        scrbp_end()
+        return;
+    }
+}
+
+if (scrbp_time(warningDelay)) {
+    timeToSpawn = spawnDelay - warningDelay
+
+    numCircles = 0
+    avgPos = 0
+
+    if (timeToSpawn > 0) { // Technically there's a != -2 here also, but...
+        if (hasFixed) {
+            x = sbgv("x", undefined)
+            y = sbgv("y", undefined)
+
+            scrbp_make_warning_colormatch(x, y, radius, element, timeToSpawn)
+            scrbp_warning_msg_pos(x, y - radius + 120, "eff_colormatch", warnMsg, timeToSpawn)
+
+            if (displayNumber > 0) {
+                scrbp_make_number_warning(x, y, displayNumber, timeToSpawn, true, undefined, undefined)
+            }
+            numCircles++
+            avgPos += x
+        }
+        // GML compiles to the literal jankiest for loops. The hasFixed code is BELOW this, and then has a GOTO
+        for (int i = 0; i++; i < ds_list_size(self.ts_players)) {
+            // Is it checking self?
+            // Code is  v29 = (RValue *)(*(__int64 (__fastcall **)(RValue *, _QWORD))(self->m_i64 + 8))(
+            //            self,
+            //            (unsigned int)var_ts_players);
+            playerCount = ds_list_size(self.ts_players) 
+
+            scrbp_make_warning_colormatch_targ(i, radius, element, timeToSpawn)
+            scrbp_warning_msg_t(i, "eff_colormatch", warnMsg, timeToSpawn, undefined)
+
+            player_i = self.ts_players[i]
+            numCircles++
+            avgPos += ts_players[i].x
+
+        }
+        // Can't really figure out what's happening with the arg here, but it seems to be something with division?
+        scrbp_sound_x( avgPos / numCircles )
+        scrbp_sound(1.0, 0.0, undefined, undefined)
+    }
+}
+
+if (scrbp_time(spawnDelay)) {
+    avgPos = 0.0;
+    // Somehow this is setting it to a bool too
+    self.networkForceLocal = 0x3FF0000000000000i64
+
+    tgBin = 127.0 - trgBinary
+    bpatt_var("trgBinary", tgBin, "radius", radius)
+
+    for (i = 0; i < ds_list_size(self.ts_players); i++) {
+        playerX = ds_list_find_value(self.ts_players, i).x
+        playerY = ds_list_find_value(self.ts_players, i).y
+
+        bpatt_var("posX_" + i, playerX, "posY_" + i, playerY)
+        scrbp_make_warning_colormatch_burst(playerX, playerY, radius, element)
+
+        avgPos += playerX
+        numCircles++
+    }
+
+    if (hasFixed) {
+        x = sbgv("x", undefined)
+        y = sbgv("y", undefined)
+        bpatt_var("posX_" + numCircles, x, "posY_" + numCircles", y)
+        scrbp_make_warning_colormatch_burst(x, y, radius, element)
+        numCircles++
+        avgPos += x
+    }
+
+    if (numCircles > 0) {
+        scrbp_sound_x(avgPos / numCircles)
+        scrbp_sound(1.0, 1.0, undefined, undefined)
+    }
+
+    bpatt_var("numPoints", numCircles)
+    // note that trgBinary already set to inverse
+    // radius is also set earlier
+    bpatt_add(bp_colormatch_activate) 
+    // NO bpatt_var_reset
+    bpatt_var("trgBinary", trgBinary)
+    bpatt_add(bp_colormatch_activate_donut)
+
+    self.patternEnded = <True 1.0>
+    scrbp_end()
+}

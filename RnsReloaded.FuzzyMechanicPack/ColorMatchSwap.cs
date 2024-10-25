@@ -9,6 +9,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace RnsReloaded.FuzzyMechanicPack {
     // Handles the mechanic that allows color match colors to be changed mid-mechanic
@@ -18,10 +19,6 @@ namespace RnsReloaded.FuzzyMechanicPack {
         private IUtil utils;
         private IBattleScripts scrbp;
 
-        // Key is the pointer value of the self object of the color match.
-        private Dictionary<nint, int> playerStates;
-
-        private IHook<ScriptDelegate> bulletClearHook;
         private IHook<ScriptDelegate> colormatchHook;
 
         public ColorMatchSwap(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) {
@@ -30,57 +27,11 @@ namespace RnsReloaded.FuzzyMechanicPack {
             this.utils = rnsReloaded.utils;
             this.scrbp = rnsReloaded.battleScripts;
 
-            this.playerStates = new Dictionary<nint, int>();
-
-            var bulletScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrbp_erase_radius") - 100000);
-            this.bulletClearHook =
-                hooks.CreateHook<ScriptDelegate>(this.BulletClearDetour, bulletScript->Functions->Function);
-            this.bulletClearHook.Activate();
-            this.bulletClearHook.Enable();
-
             var colormatchScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_colormatch") - 100000);
             this.colormatchHook =
                 hooks.CreateHook<ScriptDelegate>(this.ColormatchDetour, colormatchScript->Functions->Function);
             this.colormatchHook.Activate();
             this.colormatchHook.Enable();
-        }
-
-        private RValue* BulletClearDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-            var dataId = this.rnsReloaded.FindValue(self, "dataId");
-            var dataMap = this.utils.GetGlobalVar("itemData");
-            var moveName = dataMap->Get((int) this.utils.RValueToLong(dataId))->Get(0)->Get(0)->ToString();
-
-            if (moveName != "mv_defender_2") {
-                this.logger.PrintMessage("Wow defensived!", this.logger.ColorRed);
-
-                var layers = this.rnsReloaded.GetCurrentRoom()->Layers;
-
-                var layer = layers.First;
-                var maxLayer = layers.First;
-                while (layer != null) {
-                    if (layer->ID > maxLayer->ID) { //Marshal.PtrToStringAnsi((nint) layer->Name)! == "BattleWarningMid") {
-                        maxLayer = layer;
-                    } else {
-                        layer = layer->Next;
-                    }
-                }
-
-                if (maxLayer != null) {
-                    this.logger.PrintMessage("Yay found layer " + maxLayer->ID, this.logger.ColorRed);
-                    CLayerElementBase* elem = maxLayer->Elements.First;
-                    if (elem != null) {
-                        var instance = (CLayerInstanceElement*) elem;
-                        var instanceValue = new RValue(instance->Instance);
-
-                        var color = this.rnsReloaded.FindValue(instance->Instance, "color");
-                        color->Real = 0;
-                        color->Type = RValueType.Real;
-                    }
-                }
-            }
-
-            returnValue = this.bulletClearHook.OriginalFunction(self, other, returnValue, argc, argv);
-            return returnValue;
         }
 
         private CLayer* FindLayer(string layerName = "") {
@@ -129,110 +80,179 @@ namespace RnsReloaded.FuzzyMechanicPack {
 
             return null;
         }
+
+        private int GenerateShiftingColor(int time) {
+            const int cycleTime = 3000; // Do a full rotation every 6000ms
+            time %= cycleTime; 
+            int red = 0, green = 0, blue = 0;
+
+            if (time < cycleTime / 3) {
+                // linearize between red and green
+                red = 255 - (255 * time / (cycleTime / 3));
+                green = 255 * time / (cycleTime / 3);
+            } else if (time < 2 * cycleTime / 3) {
+                time -= cycleTime / 3;
+                // linearize between green and blue
+                green = 255 - (255 * time / (cycleTime / 3));
+                blue = 255 * time / (cycleTime / 3);
+            } else {
+                time -= 2 * (cycleTime / 3);
+                // linearize between blue and red
+                blue = 255 - (255 * time / (cycleTime / 3));
+                red = 255 * time / (cycleTime / 3);
+            }
+            return blue + green * 256 + red * 256 * 256;
+        }
+
         private RValue* ColormatchDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             long type = this.utils.RValueToLong(this.scrbp.sbgv(self, other, "type", new RValue(0)));
 
             if (type == 1 || true) {
+                // API:
+                //   number: number of colors (up to 4 supported)
+                //   warningDelay, spawnDelay, radius, warnMsg, displayNumber as normal (displayNumber displays on ALL circles, damage and set)
+                //   posX_<i>, posY_<i>: coordinates for circle to set color to i
+                //   offX_<i>, offY_<i>: coordinates for matching color i (set to -1, -1 to disable)
+                //   orderBin_<i>: target mask for color i
+                //   rot_<i>: color i (used as element, since there's no indexed element variable)
+                //   amount: radius of the circles that set your color
+
+                int numColors = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "number", new RValue(2)));
+
                 int warningDelay   = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "warningDelay",  new RValue(0)));
                 int spawnDelay     = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "spawnDelay",    new RValue(3000)));
                 int radius         = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "radius",        new RValue(400)));
-                int trgBinary      = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "trgBinary",     new RValue(0b1111)));
+                int setRadius      = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "amount",        new RValue(radius / 2)));
                 int warnMsg        = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "warnMsg",       new RValue(0)));
-                int element        = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "element",       new RValue(IBattlePatterns.COLORMATCH_PURPLE)));
-                int hasFixed       = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "hasFixed",      new RValue(0)));
-                int xPos           = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "x",             new RValue(0)));
-                int yPos           = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "y",             new RValue(0)));
-                int displayNumber  = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "displayNumber", new RValue(0)));
+                int displayNumber  = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "displayNumber", new RValue(2)));
 
-                int numColors = 2;
+                int[] trgBinary = new int[numColors];
+                (int x, int y)[] setCirclePositions = new (int x, int y)[numColors];
+                (int x, int y)[] damageCirclePositions = new (int x, int y)[numColors];
+                int[] colorIds = new int[numColors];
+                for (int i = 0; i < numColors; i++) {
+                    trgBinary[i] = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "orderBin_" + i, new RValue(i == 0 ? 127 : 0)));
+                    setCirclePositions[i].x = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "posX_" + i, new RValue(1920/ (numColors + 2) * (i + 1))));
+                    setCirclePositions[i].y = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "posY_" + i, new RValue(1080/2)));
+
+                    damageCirclePositions[i].x = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "offX_" + i, new RValue(-1)));
+                    damageCirclePositions[i].y = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "offY_" + i, new RValue(-1)));
+
+                    colorIds[i] = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "rot_" + i, new RValue(IBattlePatterns.COLORMATCH_PURPLE + i)));
+                }
+
+                // Make sure that no target binaries overlap - each player can only be a single color at once
+                int accumOrderBin = 0;
+                for (int i = 0; i < numColors; i++) {
+                    if ((accumOrderBin & trgBinary[i]) > 0) {
+                        this.logger.PrintMessage("Fuzzy's colormatch type 1 error: a player is multiple colors. trgBinary[]=" + string.Join(", ", trgBinary), this.logger.ColorRed);
+                        this.scrbp.end(self, other);
+                        return returnValue;
+                    }
+                    accumOrderBin |= trgBinary[i];
+                }
+
+                // Basic setup. Normal colormatch sets pattern color here too, but we'll be changing that quite often.
                 if (this.scrbp.time(self, other, 0)) {
                     this.scrbp.pattern_set_projectile_key(self, other, "pjb_dark", "sfxset_enemy");
                     this.scrbp.pattern_set_drawlayer(self, other, 1);
-
-                    this.scrbp.pattern_set_color_colormatch(self, other, element);
-
-                    this.scrbp.sbsv(self, other, "trgBinary2", new RValue(0));
                 }
+
+                // Warning creation
                 if (this.scrbp.time(self, other, warningDelay)) {
                     int timeToSpawn = spawnDelay - warningDelay;
                     int numCircles = 0;
                     int avgPos = 0;
 
+                    // Skip everything if it's already time to damage players
                     if (timeToSpawn > 0) {
-                        if (hasFixed != 0) {
-                            // Set starting element to 99
-                            this.scrbp.make_warning_colormatch(self, other, xPos, yPos, radius, 99, timeToSpawn);
+                        // Create warnings for color i
+                        for (int i = 0; i < numColors; i++) {
+                            this.scrbp.pattern_set_color_colormatch(self, other, colorIds[i]);
+
+                            // Create color setting circle - element has a +5 because that causes a stationary circle with the same symbol
+                            this.scrbp.make_warning_colormatch(self, other, setCirclePositions[i].x, setCirclePositions[i].y, setRadius, colorIds[i] + 5, timeToSpawn);
 
                             // Background (set to black)
                             var background = this.GetMostRecentObjectFromLayer("BattleWarningMid");
-                            
                             var color = this.rnsReloaded.FindValue(background->Instance, "color");
                             color->Real = 0;
                             color->Type = RValueType.Real;
 
-                            // Ring (set to bright white)
+                            // Ring (set to main color to black, keep secondary color)
                             var ring = this.GetMostRecentObjectFromLayer("BattleWarningOver");
-                            
                             color = this.rnsReloaded.FindValue(ring->Instance, "color");
-                            color->Real = 0;
-                            color->Type = RValueType.Real;
 
                             var color2 = this.rnsReloaded.FindValue(ring->Instance, "color2");
-                            color2->Real = 0xFFFFFF;
+                            color2->Real = this.utils.RValueToDouble(color);
                             color2->Type = RValueType.Real;
 
-                            // Inside symbol (remove entirely)
-                            var insideSymbol = this.GetMostRecentObjectFromLayer("BattleWarningUnder");
-                            var alpha = this.rnsReloaded.FindValue(insideSymbol->Instance, "alpha");
-                            alpha->Real = 0;
-                            alpha->Type = RValueType.Real;
+                            color->Real = 0xFFFFFF;
+                            color->Type = RValueType.Real;
 
-                            this.scrbp.warning_msg_pos(self, other, xPos, yPos - radius + 120, "eff_colormatch", warnMsg, timeToSpawn);
+                            // Inside symbol (set to white)
+                            var insideSymbol = this.GetMostRecentObjectFromLayer("BattleWarningUnder");
+                            color = this.rnsReloaded.FindValue(insideSymbol->Instance, "color");
+                            color->Real = 0xFFFFFF;
+                            color->Type = RValueType.Real;
+
+                            this.scrbp.warning_msg_pos(self, other, setCirclePositions[i].x, setCirclePositions[i].y - radius + 120, "eff_colormatch", warnMsg, timeToSpawn);
 
                             if (displayNumber > 0) {
-                                this.scrbp.make_number_warning(self, other, xPos, yPos, displayNumber, timeToSpawn);
+                                this.scrbp.make_number_warning(self, other, setCirclePositions[i].x, setCirclePositions[i].y, displayNumber, timeToSpawn);
                             }
 
                             numCircles++;
-                            avgPos += xPos;
-                        }
+                            avgPos += setCirclePositions[i].x;
 
-                        for (int i = 0; i < this.utils.GetNumPlayers(); i++) {
-                            // Player is targeted
-                            if ((trgBinary & (1 << i)) > 0) {
-                                for (int colorIndex = 0; colorIndex < numColors; colorIndex++) {
-                                    this.scrbp.pattern_set_color_colormatch(self, other, element + colorIndex);
-
-                                    this.scrbp.make_warning_colormatch_targ(self, other, i, 20000 + colorIndex * 10 + i, element + colorIndex, timeToSpawn);
-                                    var background = this.GetMostRecentObjectFromLayer("BattleWarningMid");
-
-                                    var color = this.rnsReloaded.FindValue(background->Instance, "color");
-                                    color->Real = 0;
-                                    color->Type = RValueType.Real;
-
-                                    var rad = this.rnsReloaded.FindValue(background->Instance, "radius");
-                                    rad->Real = colorIndex == 0 ? radius : 0;
-                                    rad->Type = RValueType.Real;
-
-                                    if (colorIndex == 0) {
-                                        this.scrbp.sbsv(self, other, "player_" + i + "_bg", new RValue(background->Instance));
-                                    }
-                                    // TODO: figure out what's going on here
-                                    // The new layer isn't added until after colormatch resolves
-                                    var ring = this.GetMostRecentObjectFromLayer();
-
-                                    color = this.rnsReloaded.FindValue(ring->Instance, "color");
-                                    color->Real = 0;
-                                    color->Type = RValueType.Real;
+                            // Create color damage circle
+                            if (damageCirclePositions[i].x != -1 || damageCirclePositions[i].y != -1) {
+                                // A regular display setup, without any weird value changing. Wow, this is so much simpler
+                                this.scrbp.make_warning_colormatch(self, other, damageCirclePositions[i].x, damageCirclePositions[i].y, radius, colorIds[i], timeToSpawn);
+                                if (displayNumber > 0) {
+                                    this.scrbp.make_number_warning(self, other, damageCirclePositions[i].x, damageCirclePositions[i].y, displayNumber, timeToSpawn);
                                 }
-
-                                this.scrbp.warning_msg_t(self, other, i, "eff_colormatch", warnMsg, timeToSpawn);
-
                                 numCircles++;
-                                avgPos += (int) this.utils.RValueToLong(this.utils.GetPlayerVar(i, "distMovePrevX"));
+                                avgPos += damageCirclePositions[i].x;
+                            }
+
+                            // Create player rings
+                            for (int playerId = 0; playerId < this.utils.GetNumPlayers(); playerId++) {
+                                // skipping players not in the accumulated target list so that random players don't accidentally get a color
+                                if ((accumOrderBin & (1 << playerId)) > 0) {
+                                    this.scrbp.make_warning_colormatch_targ(self, other, playerId, radius, colorIds[i], timeToSpawn);
+                                    background = this.GetMostRecentObjectFromLayer("BattleWarningMid");
+
+                                    // Save first generated color background to set later. Rest don't matter since they're just black
+                                    if (i == 0) {
+                                        this.scrbp.sbsv(self, other, "player_" + playerId + "_bg", new RValue(background->Instance));
+                                    } else {
+                                        // BG radius to 0 on all but the first one, for clearer display of bg
+                                        var rad = this.rnsReloaded.FindValue(background->Instance, "radius");
+                                        rad->Real = 0;
+                                        rad->Type = RValueType.Real;
+                                    }
+
+                                    // Save ALL rings as we'll be setting their radius later on to make them appear/disappear
+                                    // We create multiple rings per player instead of changing the colors of one
+                                    // because I don't want to have to figure out the exact color values to set them to,
+                                    // which will change based off their color setting. Ew, just make it easy on me
+                                    ring = this.GetMostRecentObjectFromLayer("BattleEffect");
+                                    this.scrbp.sbsv(self, other, "player_" + playerId + "_ring_" + i, new RValue(ring->Instance));
+
+                                    // Since we create multiple circles per player, only count one when figuring out the sound x-coordinate
+                                    // and when adding the warning message
+                                    if (i == 0) {
+                                        numCircles++;
+                                        avgPos += (int) this.utils.RValueToLong(this.utils.GetPlayerVar(playerId, "distMovePrevX"));
+                                        this.scrbp.warning_msg_t(self, other, playerId, "eff_colormatch", warnMsg, timeToSpawn);
+
+                                    }
+                                }
                             }
                         }
 
+                        // This will almost always be true, but good to be safe just in case
                         if (numCircles > 0) {
                             this.scrbp.sound_x(self, other, avgPos / numCircles);
                             // Args taken from mino's code. I don't know what they mean.
@@ -240,68 +260,57 @@ namespace RnsReloaded.FuzzyMechanicPack {
                         }
                     }
                 }
-                // Update loop
-                if (this.scrbp.time_repeating(self, other, warningDelay + 100, 1000)) {
-                    this.scrbp.pattern_set_color_colormatch(self, other, 1);
 
-                    this.scrbp.warning_msg_pos(self, other, xPos, yPos + radius - 120, "Colors Swapping!", 1, 1000);
-                    int trgBinary2 = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "trgBinary2", new RValue(0)));
-                    for (int i = 0; i < this.utils.GetNumPlayers(); i++) {
-                        int playerX = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(i, "distMovePrevX"));
-                        int playerY = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(i, "distMovePrevY"));
+                // Update loop, called every frame
+                if (this.scrbp.time_repeating(self, other, warningDelay, 100)) {
+                    // Update each color
+                    for (int i = 0; i < numColors; i++) {
+                        // Update each player
+                        for (int playerId = 0; playerId < this.utils.GetNumPlayers(); playerId++) {
+                            // If player not targeted at all, skip this iteration
+                            if ((accumOrderBin & (1 << playerId)) == 0) {
+                                continue;
+                            }
+                            int playerX = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(playerId, "distMovePrevX"));
+                            int playerY = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(playerId, "distMovePrevY"));
+                            // Check if player is standing in this color change circle. If so, change their color
+                            if (Math.Pow(playerX - setCirclePositions[i].x, 2) + Math.Pow(playerY - setCirclePositions[i].y, 2) < Math.Pow(setRadius, 2)) {
+                                // Remove player from their current color
+                                for (int removeIndex = 0; removeIndex < numColors; removeIndex++) {
+                                    trgBinary[removeIndex] &= ~(1 << playerId);
+                                    this.scrbp.sbsv(self, other, "orderBin_" + removeIndex, new RValue(trgBinary[removeIndex]));
+                                }
+                                // Add them to the new color
+                                trgBinary[i] |= 1 << playerId;
+                                this.scrbp.sbsv(self, other, "orderBin_" + i, new RValue(trgBinary[i]));
+                            }
 
-                        // Update bg flashing
-                        var bg = this.scrbp.sbgv(self, other, "player_" + i + "_bg", new RValue(0));
-                        if (bg.Int64 != 0) {
-                            var color = this.rnsReloaded.FindValue(bg.Object, "color");
-                            color->Int64 = (this.utils.RValueToLong(color) * 10 + 7) % 0xFFFFFF;
-                            color->Type = RValueType.Int64;
-                        }
-
-                        // If player is inside fixed ring, swap their color
-                        if ((trgBinary & (1 << i)) > 0 && (Math.Pow(playerX - xPos, 2) + Math.Pow(playerY - yPos, 2) < Math.Pow(radius, 2))) {
-                            trgBinary2 ^= 1 << i;
-                            this.scrbp.sbsv(self, other, "trgBinary2", new RValue(trgBinary2));
-                        }
-
-                        for (int colorIndex = 0; colorIndex < numColors; colorIndex++) {
-                            var ring = this.scrbp.sbgv(self, other, "player_" + i + "_ring_" + colorIndex, new RValue(0));
+                            var ring = this.scrbp.sbgv(self, other, "player_" + playerId + "_ring_" + i, new RValue(0));
                             if (ring.Int64 != 0) {
                                 var rad = this.rnsReloaded.FindValue(ring.Object, "radius");
-                                bool isColorSwapped = (trgBinary2 & (1 << i)) > 0;
-                                if (colorIndex == 0) {
-                                    if (isColorSwapped) {
-                                        rad->Int64 = 19999;
-                                    } else {
-                                        rad->Int64 = radius;
-                                    }
+                                bool isColorActive = (trgBinary[i] & (1 << playerId)) > 0;
+                                if (isColorActive) {
+                                    rad->Int64 = radius;
                                 } else {
-                                    if (isColorSwapped) {
-                                        rad->Int64 = radius;
-                                    } else {
-                                        rad->Int64 = 19999;
-                                    }
+                                    // We can't entirely make it not drawn so we set the radius to ridiculously large
+                                    rad->Int64 = 20000;
                                 }
                                 rad->Type = RValueType.Int64;
-                            } else {
-                                CLayer* layer = this.FindLayer();
-                                CLayerElementBase* elem = layer->Elements.First;
-
-                                while (elem != null) {
-                                    CLayerInstanceElement* instance = (CLayerInstanceElement*) elem;
-                                    RValue* rad = this.rnsReloaded.FindValue(instance->Instance, "radius");
-                                    if (rad != null && this.utils.RValueToLong(rad) == 20000 + colorIndex * 10 + i) {
-                                        this.scrbp.sbsv(self, other, "player_" + i + "_ring_" + colorIndex, new RValue(instance->Instance));
-                                        rad->Int64 = radius;
-                                        rad->Type = RValueType.Int64;
-                                        break;
-                                    }
-                                    elem = elem->Next;
-                                }
+                            }
+                            // Update bg color
+                            var bg = this.scrbp.sbgv(self, other, "player_" + playerId + "_bg", new RValue(0));
+                            if (bg.Int64 != 0) {
+                                var color = this.rnsReloaded.FindValue(bg.Object, "color");
+                                int patternTime = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "patternExTime"));
+                                color->Int64 = this.GenerateShiftingColor(patternTime);
+                                color->Type = RValueType.Int64;
                             }
                         }
+
                     }
                 }
+
+                // Activate
                 if (this.scrbp.time(self, other, spawnDelay)) {
                     int avgPos = 0;
                     int numCircles = 0;
@@ -310,60 +319,64 @@ namespace RnsReloaded.FuzzyMechanicPack {
                     forceLocal->Real = 1.0;
                     forceLocal->Type = RValueType.Bool;
 
-                    int inverseTarget = 127 - trgBinary;
-
-                    for (int i = 0; i < this.utils.GetNumPlayers(); i++) {
-                        var addBurst = (int x, int y, int element) => {
-                            RValue posX = new RValue(0);
-                            RValue posY = new RValue(0);
-                            this.rnsReloaded.CreateString(&posX, "posX_" + numCircles);
-                            this.rnsReloaded.CreateString(&posY, "posY_" + numCircles);
-                            this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [posX, new RValue(x), posY, new RValue(y)]);
-
-                            this.scrbp.make_warning_colormatch_burst(self, other, x, y, radius, element);
-                            avgPos += x;
-                            numCircles++;
-                        };
-
-                        if ((trgBinary & (1 << i)) > 0) {
-                            int playerX = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(i, "distMovePrevX"));
-                            int playerY = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(i, "distMovePrevY"));
-
-                            addBurst(playerX, playerY, element);
-                        }
-
-                        if (hasFixed != 0 && false) {
-                            // TOOD: remove this for final version
-                            addBurst(xPos, yPos, 1);
-
-                            var ring = this.GetMostRecentObjectFromLayer("BattleWarningMid");
-                            var color = this.rnsReloaded.FindValue(ring->Instance, "color");
-                            color->Real = 0;
-                            color->Type = RValueType.Real;
-                        }
-
-                        if (numCircles > 0) {
-                            this.scrbp.sound_x(self, other, avgPos / numCircles);
-                            this.scrbp.sound(self, other, 1, 1);
-                        }
-
-                    }
-                    // TODO: make these call for each color, with the correct trgBinary values
-
-                    // Setup inverse trgBinary
+                    // Used later on when calling bpatt_var to damage players if needed
                     RValue trgBinName = new RValue(0);
                     RValue radiusName = new RValue(0);
                     RValue numPoints = new RValue(0);
                     this.rnsReloaded.CreateString(&trgBinName, "trgBinary");
                     this.rnsReloaded.CreateString(&radiusName, "radius");
                     this.rnsReloaded.CreateString(&numPoints, "numPoints");
-                    this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [trgBinName, new RValue(inverseTarget), radiusName, new RValue(radius), numPoints, new RValue(numCircles)]);
-                    
-                    this.rnsReloaded.ExecuteScript("bpatt_add", self, other, [new RValue(this.rnsReloaded.ScriptFindId("bp_colormatch_activate"))]);
 
-                    // Set new trgBinary
-                    this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [trgBinName, new RValue(trgBinary)]);
-                    this.rnsReloaded.ExecuteScript("bpatt_add", self, other, [new RValue(this.rnsReloaded.ScriptFindId("bp_colormatch_activate_donut"))]);
+                    // Each color is handled like an entirely separate colormatch, except for the sound
+                    for (int i = 0; i < numColors; i++) {
+                        this.scrbp.pattern_set_color_colormatch(self, other, colorIds[i]);
+
+                        int circlesThisColor = 0;
+
+                        var addBurst = (int x, int y) => {
+                            RValue posX = new RValue(0);
+                            RValue posY = new RValue(0);
+                            this.rnsReloaded.CreateString(&posX, "posX_" + circlesThisColor);
+                            this.rnsReloaded.CreateString(&posY, "posY_" + circlesThisColor);
+                            this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [posX, new RValue(x), posY, new RValue(y)]);
+
+                            this.scrbp.make_warning_colormatch_burst(self, other, x, y, radius, colorIds[i]);
+
+                            avgPos += x;
+                            numCircles++;
+                            circlesThisColor++;
+                        };
+
+                        // Add burst animations for players, if they have this color
+                        for (int playerId = 0; playerId < this.utils.GetNumPlayers(); playerId++) {
+                            if ((trgBinary[i] & (1 << playerId)) > 0) {
+                                int playerX = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(playerId, "distMovePrevX"));
+                                int playerY = (int) this.utils.RValueToLong(this.utils.GetPlayerVar(playerId, "distMovePrevY"));
+
+                                addBurst(playerX, playerY);
+                            }
+                        }
+                        // Add burst animation for damaging circle
+                        if (damageCirclePositions[i].x != -1 || damageCirclePositions[i].y != -1) {
+                            addBurst(damageCirclePositions[i].x, damageCirclePositions[i].y);
+                        }
+
+                        // Setup inverse trgBinary, radius, num circles
+                        this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [trgBinName, new RValue(127 - trgBinary[i]), radiusName, new RValue(radius), numPoints, new RValue(circlesThisColor)]);
+                        this.rnsReloaded.ExecuteScript("bpatt_add", self, other, [new RValue(this.rnsReloaded.ScriptFindId("bp_colormatch_activate"))]);
+
+                        // Set new trgBinary
+                        this.rnsReloaded.ExecuteScript("bpatt_var", self, other, [trgBinName, new RValue(trgBinary[i])]);
+                        this.rnsReloaded.ExecuteScript("bpatt_add", self, other, [new RValue(this.rnsReloaded.ScriptFindId("bp_colormatch_activate_donut"))]);
+                        // Reset vars for next color
+                        this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
+                    }
+
+                    if (numCircles > 0) {
+                        this.scrbp.sound_x(self, other, avgPos / numCircles);
+                        this.scrbp.sound(self, other, 1, 1);
+                    }
+
                     this.scrbp.end(self, other);
                 }
             } else {

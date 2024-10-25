@@ -2,14 +2,7 @@ using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace RnsReloaded.FuzzyMechanicPack {
     // Handles the mechanic that allows color match colors to be changed mid-mechanic
@@ -107,8 +100,9 @@ namespace RnsReloaded.FuzzyMechanicPack {
         private RValue* ColormatchDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             long type = this.utils.RValueToLong(this.scrbp.sbgv(self, other, "type", new RValue(0)));
 
-            if (type == 1 || true) {
+            if (type == 1) {
                 // API:
+                //   type: set this to 1 to enable this variant. 0 will always be default colormatch. Higher values may be used for future variants
                 //   number: number of colors (up to 4 supported)
                 //   warningDelay, spawnDelay, radius, warnMsg, displayNumber as normal (displayNumber displays on ALL circles, damage and set)
                 //   posX_<i>, posY_<i>: coordinates for circle to set color to i

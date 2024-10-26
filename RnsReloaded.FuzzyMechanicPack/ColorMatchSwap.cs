@@ -102,14 +102,16 @@ namespace RnsReloaded.FuzzyMechanicPack {
 
             if (type == 1) {
                 // API:
-                //   type: set this to 1 to enable this variant. 0 will always be default colormatch. Higher values may be used for future variants
-                //   number: number of colors (up to 4 supported)
-                //   warningDelay, spawnDelay, radius, warnMsg, displayNumber as normal (displayNumber displays on ALL circles, damage and set)
+                //   type: set this to 1 to enable this variant. 0 will always be default colormatch.
+                //         Higher values may be used for future variants
+                //   number: number of colors to use (up to 4 supported)
+                //   warningDelay, spawnDelay, radius, warnMsg, displayNumber as normal
+                //         (displayNumber displays on ALL circles, damage and set)
                 //   posX_<i>, posY_<i>: coordinates for circle to set color to i
                 //   offX_<i>, offY_<i>: coordinates for matching color i (set to -1, -1 to disable)
-                //   orderBin_<i>: target mask for color i
-                //   rot_<i>: color i (used as element, since there's no indexed element variable)
-                //   amount: radius of the circles that set your color
+                //   orderBin_<i>: target mask for color i. There should be no bits enabled in more than one of these
+                //   playerId_<i>: color i (used as element, since there's no indexed element variable)
+                //   amount: radius of the circles that set your color (since there's no radius2 variable)
 
                 int numColors = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "number", new RValue(2)));
 
@@ -126,13 +128,13 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 int[] colorIds = new int[numColors];
                 for (int i = 0; i < numColors; i++) {
                     trgBinary[i] = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "orderBin_" + i, new RValue(i == 0 ? 127 : 0)));
-                    setCirclePositions[i].x = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "posX_" + i, new RValue(1920/ (numColors + 2) * (i + 1))));
+                    setCirclePositions[i].x = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "posX_" + i, new RValue(1920/ (numColors + 1) * (i + 1))));
                     setCirclePositions[i].y = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "posY_" + i, new RValue(1080/2)));
 
                     damageCirclePositions[i].x = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "offX_" + i, new RValue(-1)));
                     damageCirclePositions[i].y = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "offY_" + i, new RValue(-1)));
 
-                    colorIds[i] = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "rot_" + i, new RValue(IBattlePatterns.COLORMATCH_PURPLE + i)));
+                    colorIds[i] = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "playerId_" + i, new RValue(IBattlePatterns.COLORMATCH_PURPLE + i)));
                 }
 
                 // Make sure that no target binaries overlap - each player can only be a single color at once
@@ -256,7 +258,7 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 }
 
                 // Update loop, called every frame
-                if (this.scrbp.time_repeating(self, other, warningDelay, 100)) {
+                if (this.scrbp.time_repeating(self, other, warningDelay, 1)) {
                     // Update each color
                     for (int i = 0; i < numColors; i++) {
                         // Update each player

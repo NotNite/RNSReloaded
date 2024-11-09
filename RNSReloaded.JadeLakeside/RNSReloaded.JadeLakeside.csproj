@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <OutputPath>$(RELOADEDIIMODS)/RNSReloaded.JadeLakeside</OutputPath>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <ReloadedILLink>false</ReloadedILLink>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ReloadedLinkRoots Include="RNSReloaded.JadeLakeside" />
+    </ItemGroup>
+
+    <Import Project="../Reloaded.Trimming.targets" />
+    <Import Project="../Reloaded.Checks.targets" />
+
+    <ItemGroup>
+        <None Remove="ItemMod\Items.csv" />
+        <None Remove="ItemMod\Items.ini" />
+        <None Remove="ItemMod\items.png" />
+        <None Remove="ItemMod\Items_Descriptions.csv" />
+        <None Remove="ItemMod\Items_Names.csv" />
+        <None Remove="ItemMod\SheetList.csv" />
+        <None Remove="ModConfig.json" />
+        <None Remove="Reloaded.Trimming.targets" />
+        <None Remove="Reloaded.Checks.targets" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="ItemMod\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="ModConfig.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Reloaded.Memory.SigScan.ReloadedII.Interfaces" Version="1.2.0" />
+        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj" />
+    </ItemGroup>
+</Project>

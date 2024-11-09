@@ -1,26 +1,29 @@
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
-using RnsReloaded.FuzzyMechanicPack;
+using RNSReloaded.FuzzyMechanicPack;
 using RNSReloaded.Interfaces;
 
-namespace RNSReloaded.FullmoonArsenal;
-
-public unsafe class Mod : IMod {
+public unsafe class Mod : IMod, IExports {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
     private ILoggerV1 logger = null!;
+    private IModLoaderV1 loader = null!;
 
-    private ColorMatchSwap? colorMatchSwap = null;
+    private FuzzyMechPack fuzzyMechPack = null!;
 
     public void Start(IModLoaderV1 loader) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
-        
+        this.loader = loader;
         this.logger = loader.GetLogger();
         
-        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded) && this.hooksRef.TryGetTarget(out var hooks)) {
             rnsReloaded.OnReady += this.Ready;
+            this.fuzzyMechPack = new FuzzyMechPack(rnsReloaded, this.logger, hooks);
+            this.loader.AddOrReplaceController<IFuzzyMechPack>(this, this.fuzzyMechPack);
+        } else {
+            this.logger.PrintMessage("Failed to register Fuzzy Mechanic Pack, was RNS Reloaded found?", this.logger.ColorRed);
         }
     }
 
@@ -32,7 +35,6 @@ public unsafe class Mod : IMod {
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
             rnsReloaded.LimitOnlinePlay();
-            this.colorMatchSwap = new ColorMatchSwap(rnsReloaded, this.logger, hooks);
         }
     }
 
@@ -46,6 +48,9 @@ public unsafe class Mod : IMod {
 
     public void Unload() { }
     public bool CanUnload() => false;
+
+    public Type[] GetTypes() => [typeof(IFuzzyMechPack)];
+
 
     public Action Disposing => () => { };
 }

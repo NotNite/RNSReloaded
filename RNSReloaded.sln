@@ -31,7 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.DoubleTime", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.Fullmetal", "RNSReloaded.Fullmetal\RNSReloaded.Fullmetal.csproj", "{04BF9DA0-9F3E-4E69-8D45-34C124F74F1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RnsReloaded.FuzzyMechanicPack", "RnsReloaded.FuzzyMechanicPack\RnsReloaded.FuzzyMechanicPack.csproj", "{5A5DDD5E-DFDA-42D0-BDA7-AC50C1629AB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.FuzzyMechanicPack", "RnsReloaded.FuzzyMechanicPack\RNSReloaded.FuzzyMechanicPack.csproj", "{5A5DDD5E-DFDA-42D0-BDA7-AC50C1629AB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.JadeLakeside", "RNSReloaded.JadeLakeside\RNSReloaded.JadeLakeside.csproj", "{0134C624-969E-42A9-8BC8-DB20CA838879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,10 @@ Global
 		{5A5DDD5E-DFDA-42D0-BDA7-AC50C1629AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A5DDD5E-DFDA-42D0-BDA7-AC50C1629AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A5DDD5E-DFDA-42D0-BDA7-AC50C1629AB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0134C624-969E-42A9-8BC8-DB20CA838879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0134C624-969E-42A9-8BC8-DB20CA838879}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0134C624-969E-42A9-8BC8-DB20CA838879}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0134C624-969E-42A9-8BC8-DB20CA838879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

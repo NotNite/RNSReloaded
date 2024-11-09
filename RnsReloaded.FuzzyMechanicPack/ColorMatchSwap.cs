@@ -1,20 +1,20 @@
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces.Internal;
+using RNSReloaded.FuzzyMechanicPack;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using System.Runtime.InteropServices;
 
 namespace RnsReloaded.FuzzyMechanicPack {
     // Handles the mechanic that allows color match colors to be changed mid-mechanic
-    internal unsafe class ColorMatchSwap {
+    internal unsafe class ColorMatchSwap : BpGenerator {
         private IRNSReloaded rnsReloaded;
         private ILoggerV1 logger;
         private IUtil utils;
         private IBattleScripts scrbp;
-
         private IHook<ScriptDelegate> colormatchHook;
 
-        public ColorMatchSwap(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) {
+        public ColorMatchSwap(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) : base(rnsReloaded) {
             this.rnsReloaded = rnsReloaded;
             this.logger = logger;
             this.utils = rnsReloaded.utils;
@@ -25,6 +25,48 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 hooks.CreateHook<ScriptDelegate>(this.ColormatchDetour, colormatchScript->Functions->Function);
             this.colormatchHook.Activate();
             this.colormatchHook.Enable();
+        }
+
+        public void Run(CInstance* self, CInstance* other,
+            int numColors = 2,
+            int? warningDelay = null,
+            int? spawnDelay = null,
+            int? matchRadius = null,
+            int? setRadius = null,
+            int? warnMsg = null,
+            int? displayNumber = null,
+            (int x, int y)?[]? setCircles = null,
+            (int x, int y)?[]? matchCircles = null,
+            int[]? targetMask = null,
+            int[]? colors = null
+        ) {
+            RValue[] args = [this.utils.CreateString("type")!.Value, new RValue(1)];
+            args = this.add_if_not_null(args, "number", numColors);
+            args = this.add_if_not_null(args, "warningDelay", warningDelay);
+            args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+            args = this.add_if_not_null(args, "radius", matchRadius);
+            args = this.add_if_not_null(args, "amount", setRadius);
+            args = this.add_if_not_null(args, "warnMsg", warnMsg);
+            args = this.add_if_not_null(args, "displayNumber", displayNumber);
+            for (int i = 0; i < numColors; i++) {
+                if (setCircles != null && setCircles.Length > i && setCircles[i] != null) {
+                    args = this.add_if_not_null(args, "posX_" + i, setCircles[i]!.Value.x);
+                    args = this.add_if_not_null(args, "posY_" + i, setCircles[i]!.Value.y);
+
+                }
+                if (matchCircles != null && matchCircles.Length > i && matchCircles[i] != null) {
+                    args = this.add_if_not_null(args, "offX_" + i, matchCircles[i]!.Value.x);
+                    args = this.add_if_not_null(args, "offY_" + i, matchCircles[i]!.Value.y);
+                }
+                if (targetMask != null && targetMask.Length > i) {
+                    args = this.add_if_not_null(args, "orderBin_" + i, targetMask[i]);
+                }
+                if (colors != null && colors.Length > i) {
+                    args = this.add_if_not_null(args, "playerId_" + i, colors[i]);
+                }
+            }
+
+            this.execute_pattern(self, other, "bp_colormatch", args);
         }
 
         private CLayer* FindLayer(string layerName = "") {
@@ -120,7 +162,7 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 int radius         = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "radius",        new RValue(400)));
                 int setRadius      = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "amount",        new RValue(radius / 2)));
                 int warnMsg        = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "warnMsg",       new RValue(0)));
-                int displayNumber  = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "displayNumber", new RValue(2)));
+                int displayNumber  = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "displayNumber", new RValue(0)));
 
                 int[] trgBinary = new int[numColors];
                 (int x, int y)[] setCirclePositions = new (int x, int y)[numColors];
@@ -258,7 +300,7 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 }
 
                 // Update loop, called every frame
-                if (this.scrbp.time_repeating(self, other, warningDelay, 1)) {
+                if (this.scrbp.time_repeating(self, other, warningDelay, 100)) {
                     // Update each color
                     for (int i = 0; i < numColors; i++) {
                         // Update each player

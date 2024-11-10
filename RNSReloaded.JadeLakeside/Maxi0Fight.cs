@@ -30,17 +30,14 @@ namespace RNSReloaded.JadeLakeside {
                     matchRadius: 300,
                     warnMsg: 1,
                     setCircles: [(-500, -500), (1750, 1080-200), (1750, 200)],
-                    matchCircles: [(200 + 1920/2, 1080/2), (350, 1080 / 4), (350, 1080 * 3 /4)],
+                    matchCircles: [(1920/2, 1080/2), (350, 1080 / 4), (350, 1080 * 3 /4)],
                     targetMask: [0b1111],
                     colors: [IBattlePatterns.COLORMATCH_RED, IBattlePatterns.COLORMATCH_GREEN, IBattlePatterns.COLORMATCH_BLUE]
                 );
-                // TODO: replace this with the frog bullet
-                this.bp.marching_bullet(self, other, spawnDelay: 0, timeBetween: 6300, scale: 350 / 180.0, positions: [
-                    (200 + 1920/2, -100),
-                    (200 + 1920/2, 1380),
-                ]);
+                bool ballDown = this.rng.Next(0, 2) == 1;
+                this.bp.water_moving_ball(self, other, spawnDelay: 0, scale: 350 / 180.0, speed: 3, position: (200 + 1920/2, ballDown ? -100 : 1180), angle: ballDown ? 90 : -90);
                 this.bp.fire_aoe(self, other, spawnDelay: 2000, eraseDelay: 9000, scale: 350 / 180.0, positions: [(200 + 1920 / 2, 1080 / 2)]);
-                this.bp.thorns_bin(self, other, spawnDelay: 9000, radius: 700, groupMasks: (group1, group2, 0, 0));
+                this.bp.thorns_bin(self, other, spawnDelay: 9000, radius: 600, groupMasks: (group1, group2, 0, 0));
             }
 
             if (this.scrbp.time(self, other, 45000)) {

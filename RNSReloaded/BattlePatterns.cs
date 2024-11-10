@@ -1237,4 +1237,22 @@ public unsafe class BattlePatterns : IBattlePatterns {
 
         this.execute_pattern(self, other, "bp_water2_line", args);
     }
+
+    public void water_moving_ball(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, Position? position = null, double? speed = null, double? scale = null, double? angle = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "spd", speed);
+        args = this.add_if_not_null(args, "scale", scale);
+        args = this.add_if_not_null(args, "angle", angle);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_water_moving_ball", args);
+    }
 }

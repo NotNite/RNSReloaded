@@ -1,5 +1,6 @@
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces.Internal;
+using RNSReloaded.FuzzyMechPackInterfaces;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 

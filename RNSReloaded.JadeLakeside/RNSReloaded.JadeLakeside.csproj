@@ -48,6 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\RNSReloaded.FuzzyMechPackInterfaces\RNSReloaded.FuzzyMechPackInterfaces.csproj" />
         <ProjectReference Include="..\RNSReloaded.Interfaces\RNSReloaded.Interfaces.csproj" />
     </ItemGroup>
 </Project>

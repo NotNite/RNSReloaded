@@ -1,6 +1,6 @@
 using RNSReloaded.Interfaces.Structs;
 
-namespace RNSReloaded.Interfaces;
+namespace RNSReloaded.FuzzyMechPackInterfaces;
 
 public unsafe interface IFuzzyMechPack {
     public event Action? OnReady;
@@ -21,4 +21,14 @@ public unsafe interface IFuzzyMechPack {
         int[]? targetMask = null,
         int[]? colors = null
     );
+
+    public void BuffOnHit(CInstance* self, CInstance* other,
+        string? hbsName = null,
+        int? hbsDuration = null,
+        int? hbsStrength = null,
+        int? targetMask = null,
+        int? eraseDelay = null,
+        int? timeBetweenBuffs = null
+    );
+
 }

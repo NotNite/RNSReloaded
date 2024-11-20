@@ -1,6 +1,7 @@
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
+using RNSReloaded.FuzzyMechPackInterfaces;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using System.Diagnostics.CodeAnalysis;
@@ -193,7 +194,7 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-        30, // ???
+        5, // ???
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
@@ -258,8 +259,8 @@ public unsafe class Mod : IMod {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
                 new Notch(NotchType.EndRun, "", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
-                new Notch(NotchType.Boss, "enc_frog_tinkerer2", 0, Notch.BOSS_FLAG)
+                //new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
+                //new Notch(NotchType.Boss, "enc_frog_tinkerer2", 0, Notch.BOSS_FLAG)
             }, self, rnsReloaded);
         }
         return returnValue;

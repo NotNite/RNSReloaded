@@ -1,5 +1,6 @@
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces.Internal;
+using RNSReloaded.FuzzyMechPackInterfaces;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 
@@ -30,7 +31,7 @@ namespace RNSReloaded.JadeLakeside {
                     matchRadius: 300,
                     warnMsg: 1,
                     setCircles: [(-500, -500), (1750, 1080-200), (1750, 200)],
-                    matchCircles: [(1920/2, 1080/2), (350, 1080 / 4), (350, 1080 * 3 /4)],
+                    matchCircles: [(200 + 1920/2, 1080/2), (350, 1080 / 4), (350, 1080 * 3 /4)],
                     targetMask: [0b1111],
                     colors: [IBattlePatterns.COLORMATCH_RED, IBattlePatterns.COLORMATCH_GREEN, IBattlePatterns.COLORMATCH_BLUE]
                 );

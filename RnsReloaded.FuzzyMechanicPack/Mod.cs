@@ -2,6 +2,7 @@ using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.FuzzyMechanicPack;
+using RNSReloaded.FuzzyMechPackInterfaces;
 using RNSReloaded.Interfaces;
 
 public unsafe class Mod : IMod, IExports {

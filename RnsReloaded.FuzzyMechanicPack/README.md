@@ -4,6 +4,22 @@
 
 A bunch of custom mechanics to use in fights.
 
+## Buff on Hit
+
+Whenever a player is hit by an attack from the enemy using this, they'll get a buff. 
+Attacks from other enemies will not buff the player. Can be used with custom buffs.
+
+Call this by using `bp_apply_hbs_synced` and passing in the following custom arguments:
+
+    type: set this to 1 to enable this variant. 0 will always be default colormatch.
+          Higher values may be used for future variants
+    hbsIndex: the index of the buff to add (string hbsName for Reloaded callers)
+    hbsDuration: the duration of the buff
+    hbsStrength: the strength of the buff
+    trgBinary: which players will get buffs
+    eraseDelay: how long until the pattern ends and players are no longer buffed
+    timeBetween: duration that must pass before a player can be re-buffed, to prevent spamming
+
 ## Colormatch Swap
 
 A colormatch, but with special rings that change the color of your ring when you stand in them.  

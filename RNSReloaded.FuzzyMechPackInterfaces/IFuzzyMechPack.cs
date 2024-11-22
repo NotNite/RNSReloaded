@@ -31,4 +31,14 @@ public unsafe interface IFuzzyMechPack {
         int? timeBetweenBuffs = null
     );
 
+    public void BulletDelete(CInstance* self, CInstance* other,
+        int? spawnDelay = null,
+        int? eraseDelay = null,
+        int? midX = null,
+        int? midY = null,
+        int? width = null,
+        int? height = null,
+        int? radius = null,
+        bool? inverted = null
+    );
 }

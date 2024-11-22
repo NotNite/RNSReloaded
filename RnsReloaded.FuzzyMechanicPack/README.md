@@ -20,6 +20,20 @@ Call this by using `bp_apply_hbs_synced` and passing in the following custom arg
     eraseDelay: how long until the pattern ends and players are no longer buffed
     timeBetween: duration that must pass before a player can be re-buffed, to prevent spamming
 
+## Bullet Delete
+
+Create your own custom bullet deletion zones, to make safe spaces during bullet spam patterns.
+
+Call this by using `bp_fieldlimit_rectangle` and passing in the following custom arguments:
+
+    type: set this to 1 to enable this variant. 0 will always be default fieldlimit_rectangle.
+          Higher values may be used for future variants
+    spawnDelay: how long until it starts erasing bullets
+    eraseDelay: how long until it stops erasing bullets. 0 (default) is permanent
+    x, y: Coordinates for the center of the field
+    width/height/radius: Either specify width and height for a rectangle, or radius for a circle field
+    stat: set to 1 if you want to invert the field (delete all bullets outside it instead of inside)
+
 ## Colormatch Swap
 
 A colormatch, but with special rings that change the color of your ring when you stand in them.  

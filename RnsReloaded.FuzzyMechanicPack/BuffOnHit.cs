@@ -13,6 +13,7 @@ namespace RnsReloaded.FuzzyMechanicPack {
         private IBattleScripts scrbp;
         private IHook<ScriptDelegate> buffHook;
         private IHook<ScriptDelegate> patternRemoveHook;
+        private IHook<ScriptDelegate> erasePatternHook;
         private IHook<ScriptDelegate> encounterHook;
         private IHook<ScriptDelegate> hitHook;
 
@@ -45,6 +46,12 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 hooks.CreateHook<ScriptDelegate>(this.OnHitDetour, hitScript->Functions->Function);
             this.hitHook.Activate();
             this.hitHook.Enable();
+
+            var erasePatternScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_enemy_erase_patterns") - 100000);
+            this.erasePatternHook =
+                hooks.CreateHook<ScriptDelegate>(this.ErasePatternDetour, erasePatternScript->Functions->Function);
+            this.erasePatternHook.Activate();
+            this.erasePatternHook.Enable();
         }
 
         public void Run(CInstance* self, CInstance* other,
@@ -170,15 +177,32 @@ namespace RnsReloaded.FuzzyMechanicPack {
             return this.hitHook.OriginalFunction(self, other, returnValue, argc, argv);
         }
 
+        // Clear at the start of each encounter just to be sure
         private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             this.trackingDict.Clear();
             return this.encounterHook.OriginalFunction(self, other, returnValue, argc, argv);
         }
 
+        // Called on phase change
         private RValue* PatternRemoveDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-            this.trackingDict.Clear();
+            int teamId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "teamId"));
+            int enemyId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId"));
+
+            if (teamId == 1) {
+                this.trackingDict.Remove(enemyId);
+            }
             return this.patternRemoveHook.OriginalFunction(self, other, returnValue, argc, argv);
         }
-    }
 
+        // Called on enemy death
+        private RValue* ErasePatternDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+            int teamId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "teamId"));
+            int enemyId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId"));
+
+            if (teamId == 1) {
+                this.trackingDict.Remove(enemyId);
+            }
+            return this.erasePatternHook.OriginalFunction(self, other, returnValue, argc, argv);
+        }
+    }
 }

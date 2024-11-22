@@ -12,6 +12,8 @@ namespace RNSReloaded.FuzzyMechanicPack {
 
         private ColorMatchSwap? colorMatchSwap;
         private BuffOnHit? buffOnHit;
+        private BulletDelete? bulletDelete;
+
         private IRNSReloaded rnsReloaded;
         private ILoggerV1 logger;
         private IReloadedHooks hooks;
@@ -33,6 +35,8 @@ namespace RNSReloaded.FuzzyMechanicPack {
         private void Ready() {
             this.colorMatchSwap = new ColorMatchSwap(this.rnsReloaded, this.logger, this.hooks);
             this.buffOnHit = new BuffOnHit(this.rnsReloaded, this.logger, this.hooks);
+            this.bulletDelete = new BulletDelete(this.rnsReloaded, this.logger, this.hooks);
+
             this.logger.PrintMessage("Fuzzy's Mechanic Pack set up!", this.logger.ColorGreen);
         }
 
@@ -61,6 +65,19 @@ namespace RNSReloaded.FuzzyMechanicPack {
             int? timeBetweenBuffs = null
         ) {
             this.buffOnHit?.Run(self, other, hbsName, hbsDuration, hbsStrength, targetMask, eraseDelay, timeBetweenBuffs);
+        }
+
+        public void BulletDelete(CInstance* self, CInstance* other,
+            int? spawnDelay = null,
+            int? eraseDelay = null,
+            int? midX = null,
+            int? midY = null,
+            int? width = null,
+            int? height = null,
+            int? radius = null,
+            bool? inverted = null
+        ) {
+            this.bulletDelete?.Run(self, other, spawnDelay, eraseDelay, midX, midY, width, height, radius, inverted);
         }
     }
 }

@@ -32,7 +32,6 @@ public unsafe class Mod : IMod {
         // Check if the source directory exists
         if (!dir.Exists)
             throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
-
         // Cache directories before we start copying
         DirectoryInfo[] dirs = dir.GetDirectories();
 
@@ -57,8 +56,14 @@ public unsafe class Mod : IMod {
     private void CopyItemMod() {
         // Copy over item mod to game folder
         // We assume that this environment variable is actually correct
-        DirectoryInfo sourceDir = new DirectoryInfo(Environment.ExpandEnvironmentVariables("%RELOADEDIIMODS%"));
+        string? expandedModLoc = Environment.GetEnvironmentVariable("RELOADEDIIMODS", EnvironmentVariableTarget.User);
+        if (expandedModLoc == null) {
+            throw new ApplicationException("Environment variable %RELOADEDIIMODS% not properly set");
+        }
+
+        DirectoryInfo sourceDir = new DirectoryInfo(expandedModLoc);
         string path = Path.Combine(sourceDir.FullName, @"RNSReloaded.FullmoonArsenal\ItemMod");
+
         CopyDirectory(path, @".\Mods\ArsenalHealItem", true);
         // Enable the item mod in save file
         string modSavePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"RabbitSteel\SaveFileNonSynced\modconfig.ini");

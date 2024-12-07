@@ -178,8 +178,6 @@ public unsafe class Mod : IMod {
     private RValue* HealDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
             int playerId = (int) rnsReloaded.utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
-            this.logger.PrintMessage("Player ID: " + playerId, this.logger.ColorGreen);
-
             var playerTrinket = rnsReloaded.utils.GetGlobalVar("playerTrinket");
             int trinketId = (int) rnsReloaded.utils.RValueToLong(playerTrinket->Get(playerId));
             // They have a floof equipped, so we want to suppress healing

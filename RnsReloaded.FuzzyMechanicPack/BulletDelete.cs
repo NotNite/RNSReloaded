@@ -3,7 +3,6 @@ using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.FuzzyMechanicPack;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
-using System.Xml.Linq;
 
 namespace RnsReloaded.FuzzyMechanicPack {
     // Handles the mechanic that allows players to be buffed whenever they're hit by a specific enemy

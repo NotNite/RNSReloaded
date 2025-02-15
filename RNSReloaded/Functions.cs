@@ -45,8 +45,12 @@ public unsafe class Functions {
             addr => { this.FindValue = Marshal.GetDelegateForFunctionPointer<FindValueDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 48 8B D8 EB 4F",
             addr => { this.ArrayGetEntry = Marshal.GetDelegateForFunctionPointer<ArrayGetEntryDelegate>(addr); });
+
         this.utils.Scan("E8 ?? ?? ?? ?? 48 89 45 87",
-            addr => { this.YYGetString = Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr); });
+            addr => {
+                // Temporarily nop this out due to issues with the scan.
+                this.YYGetString = (RValue* value, int unk) => null;//  Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr);
+            });
         this.utils.Scan("48 83 EC 38 48 89 74 24 ??",
             addr => { this.StructGetKeys = Marshal.GetDelegateForFunctionPointer<StructGetKeysDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 8B 7D 87",

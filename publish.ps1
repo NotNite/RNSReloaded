@@ -48,4 +48,4 @@ if (-not $env:CI) {
   Write-Host "aight no going back now"
 }
 
-dotnet nuget push -s "http://packages.sewer56.moe:5000/v3/index.json" -k $apiKey $nugetFile.FullName
+dotnet nuget push -s ReloadedRepo -k $apiKey $nugetFile.FullName

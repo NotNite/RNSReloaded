@@ -123,7 +123,7 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         if (value == null) return "nullptr";
         if (value->Type == RValueType.Unset) return "unset";
         var ptr = this.functions.YYGetString(value, 0);
-        return Marshal.PtrToStringAnsi((nint) ptr)!;
+        return Marshal.PtrToStringAnsi((nint) ptr) ?? "";
     }
 
     public CRoom* GetCurrentRoom() {

@@ -94,6 +94,8 @@ public unsafe interface IBattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? eraseDelay = null, double? scale = null, Position[]? positions = null
     );
 
+    public void dialog(CInstance* self, CInstance* other, int? time, int? dialogIndex0);
+
     // Display number maxes at 6
     public void displaynumbers(
         CInstance* self, CInstance* other, int? displayNumber = null, int? warningDelay = null, int? spawnDelay = null, Position[]? positions = null

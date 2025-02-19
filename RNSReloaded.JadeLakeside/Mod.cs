@@ -60,7 +60,7 @@ public unsafe class Mod : IMod {
         // Copy over item mod to game folder
         // We assume that this environment variable is actually correct
         DirectoryInfo sourceDir = new DirectoryInfo(Environment.ExpandEnvironmentVariables("%RELOADEDIIMODS%"));
-        string path = Path.Combine(sourceDir.FullName, @"RNSReloaded.FullmoonArsenal\ItemMod");
+        string path = Path.Combine(sourceDir.FullName, @"RNSReloaded.JadeLakeside\ItemMod");
         CopyDirectory(path, @".\Mods\ArsenalHealItem", true);
         // Enable the item mod in save file
         string modSavePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"RabbitSteel\SaveFileNonSynced\modconfig.ini");
@@ -115,6 +115,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.LimitOnlinePlay();
             this.fights = [
                 new Maxi0Fight(rnsReloaded, fzbp, this.logger, hooks),
+                new Maxi1Fight(rnsReloaded, fzbp, this.logger, hooks)
             ];
 
             var outskirtsScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwaygen_outskirts") - 100000);
@@ -192,7 +193,9 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-        5, // ???
+            9, // Testing
+        9, // Mav 0
+        20, // Mav 1
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
@@ -218,12 +221,8 @@ public unsafe class Mod : IMod {
             var enemyData = rnsReloaded.utils.GetGlobalVar("enemyData");
             for (var i = 0; i < rnsReloaded.ArrayGetLength(enemyData)!.Value.Real; i++) {
                 string enemyName = enemyData->Get(i)->Get(0)->ToString();
-                if (enemyName == "en_wolf_blackear") {
-                    enemyData->Get(i)->Get(9)->Real = 420;
-                } else if (enemyName == "en_wolf_greyeye") {
-                    enemyData->Get(i)->Get(9)->Real = 500;
-                } else if (enemyName == "en_wolf_snowfur") {
-                    enemyData->Get(i)->Get(9)->Real = 420;
+                if (enemyName == "en_frog_tinkerer") {
+                    enemyData->Get(i)->Get(9)->Real = 360;
                 }
             }
 
@@ -256,6 +255,9 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Boss fight
+
                 new Notch(NotchType.EndRun, "", 0, 0),
                 //new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
                 //new Notch(NotchType.Boss, "enc_frog_tinkerer2", 0, Notch.BOSS_FLAG)

@@ -421,6 +421,15 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_dark_targeted", args);
     }
 
+    public void dialog(CInstance* self, CInstance* other, int? time, int? dialogIndex0) {
+        RValue[] args = [];
+
+        args = this.add_if_not_null(args, "time", time);
+        args = this.add_if_not_null(args, "dialogInd0", dialogIndex0);
+
+        this.execute_pattern(self, other, "bp_dialog", args);
+    }
+
     // Display number maxes at 6
     public void displaynumbers(
         CInstance* self, CInstance* other, int? displayNumber = null, int? warningDelay = null, int? spawnDelay = null, Position[]? positions = null

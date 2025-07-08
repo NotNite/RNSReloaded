@@ -115,7 +115,8 @@ public unsafe class Mod : IMod {
             rnsReloaded.LimitOnlinePlay();
             this.fights = [
                 new Maxi0Fight(rnsReloaded, fzbp, this.logger, hooks),
-                new Maxi1Fight(rnsReloaded, fzbp, this.logger, hooks)
+                new Maxi1Fight(rnsReloaded, fzbp, this.logger, hooks),
+                new Maxi2Fight(rnsReloaded, fzbp, this.logger, hooks)
             ];
 
             var outskirtsScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwaygen_outskirts") - 100000);
@@ -254,9 +255,11 @@ public unsafe class Mod : IMod {
             // enc_frog_idol0 (boss)
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
+                                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0),
+
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Boss fight
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Boss fight, chains + color swap?
 
                 new Notch(NotchType.EndRun, "", 0, 0),
                 //new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
@@ -272,7 +275,7 @@ public unsafe class Mod : IMod {
         returnValue = this.lakesideHook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded)) {
             rnsReloaded.utils.setHallway(new List<Notch> {
-                new Notch(NotchType.Encounter, "enc_wolf_blackear2", 0, 0),
+                new Notch(NotchType.Encounter, "enc_wolf_blackear2", 0, 0), 
                 new Notch(NotchType.Encounter, "enc_wolf_greyeye0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
                 new Notch(NotchType.Boss, "enc_wolf_bluepaw1", 0, Notch.BOSS_FLAG)

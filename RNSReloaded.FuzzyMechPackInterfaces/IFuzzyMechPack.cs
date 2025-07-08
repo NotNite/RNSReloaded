@@ -28,7 +28,9 @@ public unsafe interface IFuzzyMechPack {
         int? hbsStrength = null,
         int? targetMask = null,
         int? eraseDelay = null,
-        int? timeBetweenBuffs = null
+        int? timeBetweenBuffs = null,
+        string patternMatch = "",
+        bool? shouldDamage = null
     );
 
     public void BulletDelete(CInstance* self, CInstance* other,

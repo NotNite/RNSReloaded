@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DearImguiSharp;
@@ -203,6 +203,36 @@ public unsafe class Mod : IMod {
                     if (ScriptHooks.TryGetValue(ScriptHookInput, out var hook)) {
                         hook.Disable();
                     }
+                }
+                if (ImGui.Button("Dump All to File", buttonSize)) {
+                    List<string> funcNames = [];
+                    // Grab all function names, along with func IDs
+                    for (int i = 0; i < 100000; i += 2) {
+                        CScript* data = rnsReloaded.GetScriptData(i);
+                        if (data != null) {
+                            string name = Marshal.PtrToStringAnsi((nint) data->Functions->Name)!;
+                            funcNames.Add(name.Replace("gml_Script_", "").Replace("gml_GlobalScript_", "") + " " + i);
+                        }
+                    }
+                    // Remove duplicates
+                    string prevName = "";
+                    funcNames = funcNames.Order().Where((string name) => {
+                        string simpleName = name.Split(" ")[0];
+                        if (prevName == simpleName) {
+                            return false;
+                        }
+                        prevName = simpleName;
+                        return true;
+                    }).ToList();
+
+                    // Dump to a file (appears in R&S folder)
+                    using (StreamWriter writer = File.CreateText("dump_sorted.txt")) {
+                        foreach (string name in funcNames) {
+
+                            writer.WriteLine(name);
+                        }
+                    }
+                    
                 }
 
                 ImGui.End();

@@ -62,9 +62,11 @@ namespace RNSReloaded.FuzzyMechanicPack {
             int? hbsStrength = null,
             int? targetMask = null,
             int? eraseDelay = null,
-            int? timeBetweenBuffs = null
+            int? timeBetweenBuffs = null,
+            string patternMatch = "",
+            bool? shouldDamage = null
         ) {
-            this.buffOnHit?.Run(self, other, hbsName, hbsDuration, hbsStrength, targetMask, eraseDelay, timeBetweenBuffs);
+            this.buffOnHit?.Run(self, other, hbsName, hbsDuration, hbsStrength, targetMask, eraseDelay, timeBetweenBuffs, patternMatch, shouldDamage);
         }
 
         public void BulletDelete(CInstance* self, CInstance* other,

@@ -11,7 +11,7 @@ Attacks from other enemies will not buff the player. Can be used with custom buf
 
 Call this by using `bp_apply_hbs_synced` and passing in the following custom arguments:
 
-    type: set this to 1 to enable this variant. 0 will always be default colormatch.
+    type: set this to 1 to enable this variant. 0 will always be default buff pattern.
           Higher values may be used for future variants
     hbsIndex: the index of the buff to add (string hbsName for Reloaded callers)
     hbsDuration: the duration of the buff
@@ -19,6 +19,9 @@ Call this by using `bp_apply_hbs_synced` and passing in the following custom arg
     trgBinary: which players will get buffs
     eraseDelay: how long until the pattern ends and players are no longer buffed
     timeBetween: duration that must pass before a player can be re-buffed, to prevent spamming
+    element: put the damaging pattern name here, for example colormatch_activate to filter
+          only hits by that pattern. Not sure how this works with projectiles...
+    extraHit: set to false to disable damage by affected collisions
 
 ## Bullet Delete
 

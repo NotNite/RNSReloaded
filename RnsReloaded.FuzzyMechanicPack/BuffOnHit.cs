@@ -16,6 +16,7 @@ namespace RnsReloaded.FuzzyMechanicPack {
         private IHook<ScriptDelegate> erasePatternHook;
         private IHook<ScriptDelegate> encounterHook;
         private IHook<ScriptDelegate> hitHook;
+        private IHook<ScriptDelegate> varEvalHook;
 
         public BuffOnHit(IRNSReloaded rnsReloaded, ILoggerV1 logger, IReloadedHooks hooks) : base(rnsReloaded) {
             this.rnsReloaded = rnsReloaded;
@@ -52,6 +53,12 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 hooks.CreateHook<ScriptDelegate>(this.ErasePatternDetour, erasePatternScript->Functions->Function);
             this.erasePatternHook.Activate();
             this.erasePatternHook.Enable();
+
+            var varEvalScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_patteval_vareval") - 100000);
+            this.varEvalHook =
+                hooks.CreateHook<ScriptDelegate>(this.VarEvalDetour, varEvalScript->Functions->Function);
+            this.varEvalHook.Activate();
+            this.varEvalHook.Enable();
         }
 
         public void Run(CInstance* self, CInstance* other,
@@ -60,7 +67,9 @@ namespace RnsReloaded.FuzzyMechanicPack {
             int? hbsStrength = null,
             int? targetMask = null,
             int? eraseDelay = null,
-            int? timeBetweenBuffs = null
+            int? timeBetweenBuffs = null,
+            string patternMatch = "",
+            bool? shouldDamage = null
         ) {
             var hbsInfo = this.utils.GetGlobalVar("hbsInfo");
             for (var i = 0; i < this.rnsReloaded.ArrayGetLength(hbsInfo)!.Value.Real; i++) {
@@ -72,6 +81,14 @@ namespace RnsReloaded.FuzzyMechanicPack {
                     args = this.add_if_not_null(args, "trgBinary", targetMask);
                     args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
                     args = this.add_if_not_null(args, "timeBetween", timeBetweenBuffs);
+                    args = this.add_if_not_null(args, "extraHit", shouldDamage);
+
+                    if (patternMatch != "") {
+                        var scriptId = this.rnsReloaded.ScriptFindId("bp_" + patternMatch) - 100000;
+                        if (scriptId > 0) {
+                            args = this.add_if_not_null(args, "element", scriptId);
+                        }
+                    }
 
                     this.execute_pattern(self, other, "bp_apply_hbs_synced", args);
                     break;
@@ -79,8 +96,20 @@ namespace RnsReloaded.FuzzyMechanicPack {
             }
         }
 
-        // Dictionary from: enemyId -> trackingId -> array of if players are hit or not
-        private Dictionary<int, Dictionary<int, bool[]>> trackingDict = new Dictionary<int, Dictionary<int, bool[]>>();
+        // Dictionary from: enemyId -> trackingId -> tracking info (player hit status + info to know if we should care)
+        private struct TrackingInfo {
+            public bool[] playersHit;
+            public int patternId;
+            public bool damagePlayer;
+
+            public TrackingInfo(int numPlayers, int patId, bool damagePlayer) {
+                this.playersHit = new bool[numPlayers];
+                this.patternId = patId;
+                this.damagePlayer = damagePlayer;
+            }
+
+        }
+        private Dictionary<int, Dictionary<int, TrackingInfo>> trackingDict = new Dictionary<int, Dictionary<int, TrackingInfo>>();
         private int globalTrackId = 0;
         private RValue* BuffDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
             long type = this.utils.RValueToLong(this.scrbp.sbgv(self, other, "type", new RValue(0)));
@@ -102,6 +131,8 @@ namespace RnsReloaded.FuzzyMechanicPack {
                 int trgBinary = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "trgBinary", new RValue(127)));
                 int eraseDelay = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "eraseDelay", new RValue(0)));
                 int timeBetweenBuffs = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "timeBetween", new RValue(1000)));
+                int patternId = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "element", new RValue(0)));
+                bool shouldDamage = this.utils.RValueToLong(this.scrbp.sbgv(self, other, "extraHit", new RValue(true))) > 0.5;
 
                 int trackingId = (int) this.utils.RValueToLong(this.scrbp.sbgv(self, other, "trackingId", new RValue(0)));
                 List<int> lastBuffTimes = new List<int>();
@@ -119,9 +150,9 @@ namespace RnsReloaded.FuzzyMechanicPack {
                     this.scrbp.sbsv(self, other, "trackingId", new RValue(trackingId));
 
                     if (!this.trackingDict.ContainsKey(enemyId)) {
-                        this.trackingDict.Add(enemyId, new Dictionary<int, bool[]>());
+                        this.trackingDict.Add(enemyId, new Dictionary<int, TrackingInfo>());
                     }
-                    this.trackingDict[enemyId].Add(trackingId, new bool[this.utils.GetNumPlayers()]);
+                    this.trackingDict[enemyId].Add(trackingId, new TrackingInfo(this.utils.GetNumPlayers(), patternId, shouldDamage));
                 }
 
                 // Update loop, called every frame
@@ -132,8 +163,8 @@ namespace RnsReloaded.FuzzyMechanicPack {
                         if ((trgBinary & (1 << i)) == 0) {
                             continue;
                         }
-                        if (this.trackingDict[enemyId][trackingId][i]) {
-                            this.trackingDict[enemyId][trackingId][i] = false;
+                        if (this.trackingDict[enemyId][trackingId].playersHit[i]) {
+                            this.trackingDict[enemyId][trackingId].playersHit[i] = false;
                             // Don't constantly spam rebuffs
                             if (lastBuffTimes[i] <= patternTime - timeBetweenBuffs) {
                                 this.rnsReloaded.battlePatterns.apply_hbs_synced(self, other,
@@ -166,15 +197,31 @@ namespace RnsReloaded.FuzzyMechanicPack {
             // argv[0]: playerId
             // argv[1]: always 0? No idea
             // returnValue: 0/1 depending if hit or not
-            // self.playerId: which mob spawned the bullet
+            // self.playerId: which mob spawned the attack
             int enemyId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId"));
             int playerId = (int) this.utils.RValueToLong(argv[0]);
+            int patternId = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "actionScript")) - 100000;
+
+            bool dmgPlayer = true;
             if (this.trackingDict.ContainsKey(enemyId)) {
+                // Go over all buff on hit entries...
                 foreach (var dictEntry in this.trackingDict[enemyId].AsEnumerable()) {
-                    dictEntry.Value[playerId] = true;
+                    // Set player to have been hit if the pattern matches
+                    // We check 1 after due to gmlGlobalScript vs gmlScript prefixes, both refer to
+                    // the same pattern and we can't easily standardize
+                    // (and 0 is for unset)
+                    if (dictEntry.Value.patternId == 0 || patternId == dictEntry.Value.patternId || patternId == dictEntry.Value.patternId + 1) {
+                        dictEntry.Value.playersHit[playerId] = true;
+                        dmgPlayer = dmgPlayer && dictEntry.Value.damagePlayer;
+                    }
                 }
             }
-            return this.hitHook.OriginalFunction(self, other, returnValue, argc, argv);
+
+            if (dmgPlayer) {
+                return this.hitHook.OriginalFunction(self, other, returnValue, argc, argv);
+            } else {
+                return returnValue;
+            }
         }
 
         // Clear at the start of each encounter just to be sure
@@ -204,5 +251,19 @@ namespace RnsReloaded.FuzzyMechanicPack {
             }
             return this.erasePatternHook.OriginalFunction(self, other, returnValue, argc, argv);
         }
+
+        // Replace pattern names with their script IDs. Might be fragile cross-platform? Reloaded is
+        // windows-only anyways, and mino already requires people to play on same build.
+        private RValue* VarEvalDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+            var scriptId = this.rnsReloaded.ScriptFindId("bp_" + argv[0]->ToString()) - 100000;
+            if (scriptId > 0) {
+                returnValue->Int64 = scriptId;
+                returnValue->Type = RValueType.Int64;
+            } else {
+                returnValue = this.varEvalHook.OriginalFunction(self, other, returnValue, argc, argv);
+            }
+            return returnValue;
+        }
     }
+
 }

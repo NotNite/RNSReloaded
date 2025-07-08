@@ -14,7 +14,9 @@ namespace RNSReloaded.JadeLakeside {
         protected IFuzzyMechPack fzbp;
 
         private IHook<ScriptDelegate> scriptHook;
+        private IHook<ScriptDelegate> scriptHookSingle;
         private IHook<ScriptDelegate>? scriptAltHook;
+        private IHook<ScriptDelegate>? scriptAltHookSingle;
 
         protected Random rng;
         public CustomFight(IRNSReloaded rnsReloaded, IFuzzyMechPack fzbp, ILoggerV1 logger, IReloadedHooks hooks, string fightName, string fightAltName = "") {
@@ -31,12 +33,27 @@ namespace RNSReloaded.JadeLakeside {
             this.scriptHook.Activate();
             this.scriptHook.Enable();
 
+            var scriptSingle = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(fightName + "_s") - 100000);
+            if (scriptSingle != null) {
+                this.scriptHookSingle = hooks.CreateHook<ScriptDelegate>(this.FightDetour, scriptSingle->Functions->Function);
+                this.scriptHookSingle.Activate();
+                this.scriptHookSingle.Enable();
+            }
+
             if (fightAltName != "") {
                 var scriptAlt = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(fightAltName) - 100000);
                 this.scriptAltHook =
                     hooks.CreateHook<ScriptDelegate>(this.FightAltDetour, scriptAlt->Functions->Function);
                 this.scriptAltHook.Activate();
                 this.scriptAltHook.Enable();
+
+                var scriptAltSingle = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId(fightAltName + "_s") - 100000);
+                if (scriptAltSingle != null) {
+                    this.scriptAltHookSingle =
+                        hooks.CreateHook<ScriptDelegate>(this.FightAltDetour, scriptAltSingle->Functions->Function);
+                    this.scriptAltHookSingle.Activate();
+                    this.scriptAltHookSingle.Enable();
+                }
             }
 
             this.rng = new Random();

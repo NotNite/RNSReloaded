@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Reloaded.Hooks.Definitions;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;

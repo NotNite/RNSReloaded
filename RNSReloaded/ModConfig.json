@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded",
   "ModName": "RNSReloaded",
   "ModAuthor": "NotNite",
-  "ModVersion": "1.1.13",
+  "ModVersion": "1.1.14",
   "ModDescription": "Helper library for Rabbit and Steel. Can be adapted to general GameMaker.",
   "ModDll": "RNSReloaded.dll",
   "ModIcon": "",

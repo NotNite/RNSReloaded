@@ -181,11 +181,8 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         var id = this.CodeFunctionFind(name);
         if (id == null) return null;
 
-        var funcRef = this.GetTheFunction(id.Value);
-        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
-        if (func == null) return null;
         RValue result;
-        func(&result, self, other, argc, argv);
+        this.functions.callScriptFunction(self, other, &result, argc, id.Value, argv, 0, 0);
         return result;
     }
 

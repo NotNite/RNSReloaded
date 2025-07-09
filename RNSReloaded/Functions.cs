@@ -15,6 +15,7 @@ public unsafe class Functions {
     public delegate char* YYGetStringDelegate(RValue* value, int unk);
     public delegate int StructGetKeysDelegate(RValue* value, char** keys, int* count);
     public delegate int YYCreateStringDelegate(RValue* value, char* str);
+    public delegate RValue* CallScriptFunctionDelegate(CInstance* self, CInstance* other, RValue* result, int num_args, int id, RValue** args, long _, long __);
 
     public ScriptFindIdDelegate ScriptFindId = null!;
     public ScriptDataDelegate ScriptData = null!;
@@ -25,6 +26,7 @@ public unsafe class Functions {
     public YYGetStringDelegate YYGetString = null!;
     public StructGetKeysDelegate StructGetKeys = null!;
     public YYCreateStringDelegate YYCreateString = null!;
+    public CallScriptFunctionDelegate callScriptFunction = null!;
 
     private ScanUtils utils;
     private WeakReference<IStartupScanner> scannerRef;
@@ -51,5 +53,7 @@ public unsafe class Functions {
             addr => { this.StructGetKeys = Marshal.GetDelegateForFunctionPointer<StructGetKeysDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 8B 7D 87",
             addr => { this.YYCreateString = Marshal.GetDelegateForFunctionPointer<YYCreateStringDelegate>(addr); });
+        this.utils.Scan("40 55 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8D 6C 24 ?? 48 89 5D ?? 48 89 75 ?? 48 89 7D ?? 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 45 ?? 48 63 45", addr => {
+            this.callScriptFunction = Marshal.GetDelegateForFunctionPointer<CallScriptFunctionDelegate>(addr); });
     }
 }

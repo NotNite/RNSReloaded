@@ -17,8 +17,10 @@ namespace RNSReloaded.JadeLakeside {
             this.bulletHook =
                 hooks.CreateHook<ScriptDelegate>((CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
                     RValue* projectiles = this.rnsReloaded.FindValue(self, "projectiles");
+                    Console.WriteLine("About to call, " + projectiles->Real + " " + projectiles->Int64);
                     RValue numProjectiles = this.rnsReloaded.ExecuteCodeFunction("ds_list_size", self, other, [*projectiles])!.Value;
                     Console.WriteLine("Num projectiles: " + numProjectiles.ToString() + numProjectiles.Type);
+                    
                     if (rnsReloaded.utils.RValueToLong(numProjectiles) > 0) {
                         RValue? projectile = this.rnsReloaded.ExecuteCodeFunction("ds_list_find_value", self, other, [
                             *projectiles,
@@ -32,6 +34,8 @@ namespace RNSReloaded.JadeLakeside {
                 }, bulletScript->Functions->Function);
             this.bulletHook.Activate();
             this.bulletHook.Enable();
+
+            
         }
 
         public override RValue* FightDetour(
@@ -56,7 +60,7 @@ namespace RNSReloaded.JadeLakeside {
 
             }
             if (this.scrbp.time(self, other, 90000)) {
-                this.bp.enrage(self, other, 0);
+                //this.bp.enrage(self, other, 0);
             }
             
             return returnValue;

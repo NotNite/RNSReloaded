@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded.Nightcore",
   "ModName": "Nightcore",
   "ModAuthor": "glass",
-  "ModVersion": "1.0.0",
+  "ModVersion": "1.0.1",
   "ModDescription": "To be used with DoubleTime. Changes music speed along with the battle.",
   "ModDll": "RNSReloaded.Nightcore.dll",
   "ModIcon": "",

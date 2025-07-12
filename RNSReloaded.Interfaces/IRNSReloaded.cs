@@ -29,6 +29,6 @@ public unsafe interface IRNSReloaded {
 
     public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, int argc, RValue** argv);
     public RValue? ExecuteScript(string name, CInstance* self, CInstance* other, RValue[] arguments);
-    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue** argv);
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue* argv);
     public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, RValue[] arguments);
 }

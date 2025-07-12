@@ -138,11 +138,11 @@ public unsafe class Mod : IMod {
             RValue[] calmArgv = [calm, pitch];
 
             fixed (RValue* ptr = actionArgv) {
-                rnsReloaded.ExecuteCodeFunction("audio_sound_pitch", null, null, 2, (RValue**) ptr);
+                rnsReloaded.ExecuteCodeFunction("audio_sound_pitch", null, null, 2, ptr);
             }
 
             fixed (RValue* ptr = calmArgv) {
-                rnsReloaded.ExecuteCodeFunction("audio_sound_pitch", null, null, 2, (RValue**) ptr);
+                rnsReloaded.ExecuteCodeFunction("audio_sound_pitch", null, null, 2, ptr);
             }
         }
     }

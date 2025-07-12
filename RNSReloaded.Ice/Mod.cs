@@ -119,7 +119,7 @@ public unsafe class Mod : IMod {
         RValue* returnValue, int argc, RValue** argv
     );
 
-    private void MvDetour(RValue* returnValue, CInstance* self, CInstance* other, int argc, RValue** argv
+    private void MvDetour(RValue* returnValue, CInstance* self, CInstance* other, int argc, RValue* argv
     ) {
         // Unsure what this function(MvFunctionPtr) is for. seems quite generic as it is called often by many scripts
         // But it is called by scr_player_update_control and it writes new values to the player obj such as moveX and moveY

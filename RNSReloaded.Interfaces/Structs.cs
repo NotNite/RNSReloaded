@@ -8,7 +8,7 @@ public unsafe delegate RValue* ScriptDelegate(
 );
 
 public unsafe delegate void RoutineDelegate(
-    RValue* returnValue, CInstance* self, CInstance* other, int argc, RValue** argv
+    RValue* returnValue, CInstance* self, CInstance* other, int argc, RValue* argv
 );
 
 [StructLayout(LayoutKind.Explicit, Pack = 1)]

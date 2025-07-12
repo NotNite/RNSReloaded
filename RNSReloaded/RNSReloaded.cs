@@ -116,7 +116,7 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     }
 
     public RValue? ArrayGetLength(RValue* array) {
-        return this.ExecuteCodeFunction("array_length", null, null, 1, (RValue**) array);
+        return this.ExecuteCodeFunction("array_length", null, null, 1, array);
     }
 
     public string GetString(RValue* value) {
@@ -177,24 +177,23 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         }
     }
 
-    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue** argv) {
+    public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, int argc, RValue* argv) {
         var id = this.CodeFunctionFind(name);
         if (id == null) return null;
-
+        var funcRef = this.GetTheFunction(id.Value);
+        var func = Marshal.GetDelegateForFunctionPointer<RoutineDelegate>((nint) funcRef.Routine);
+        if (func == null) return null;
         RValue result;
-        this.functions.callScriptFunction(self, other, &result, argc, id.Value, argv, 0, 0);
+        func(&result, self, other, argc, argv);
         return result;
     }
 
     public RValue? ExecuteCodeFunction(string name, CInstance* self, CInstance* other, RValue[] arguments) {
         fixed (RValue* ptr = arguments) {
-            var ptrs = new RValue*[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++) ptrs[i] = &ptr[i];
-            fixed (RValue** argv = ptrs) {
-                return this.ExecuteCodeFunction(name, self, other, arguments.Length, argv);
-            }
+            return this.ExecuteCodeFunction(name, self, other, arguments.Length, ptr);
         }
     }
+
 
     public void OnExecuteItWrapper(ExecuteItArguments obj) {
         OnExecuteIt?.Invoke(obj);

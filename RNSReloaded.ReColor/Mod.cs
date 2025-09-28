@@ -43,7 +43,7 @@ public unsafe class Mod : IMod {
     private Dictionary<string, FuncData> funcLookup = new Dictionary<string, FuncData>() {
         { "scrbp_make_warning_colormatch", new FuncData() { layer = "BattleWarningOver", colorIndex = 3} },
         { "scrbp_make_warning_colormatch_targ", new FuncData() { layer = "BattleEffect", colorIndex = 2} },
-        { "scrbp_make_warning_colormatch2_targ", new FuncData() { layer = "BattleEffect", colorIndex = 2} },
+        { "scrbp_make_warning_colormatch2_targ", new FuncData() { layer = "BattleWarningUnder", colorIndex = 2} },
         { "scrbp_make_warning_colormatch3", new FuncData() { layer = "BattleWarningOver", colorIndex = 3} },
         { "scrbp_make_warning_colormatch3_targ", new FuncData() { layer = "BattleEffect", colorIndex = 2} }
     };
@@ -133,15 +133,20 @@ public unsafe class Mod : IMod {
         string name, CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
         var hook = ScriptHooks[name];
-        hook.OriginalFunction(self, other, returnValue, argc, argv);
+        returnValue = hook.OriginalFunction(self, other, returnValue, argc, argv);
         
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
-            var ring = this.GetMostRecentObjectFromLayer(this.funcLookup[name].layer);
+            CLayerInstanceElement* ring = this.GetMostRecentObjectFromLayer(this.funcLookup[name].layer);
             if (ring != null) {
-                var color = rnsReloaded.FindValue(ring->Instance, "color");
-                color->Type = RValueType.Real;
+                RValue* color = rnsReloaded.FindValue(ring->Instance, "color");
+                if (color == null) {
+                    this.logger.PrintMessage("Color is null", this.logger.ColorRedLight);
+                    return returnValue;
+                }
                 double colorToUse = rnsReloaded.utils.RValueToDouble(color);
-                switch (rnsReloaded.utils.RValueToLong(argv[this.funcLookup[name].colorIndex])) {
+                RValue* colorIdPtr = this.funcLookup[name].colorIndex < argc ? argv[this.funcLookup[name].colorIndex] : null;
+                long colorId = colorIdPtr == null ? -1 : rnsReloaded.utils.RValueToLong(colorIdPtr);
+                switch (colorId) {
                     case IBattlePatterns.COLORMATCH_RED:
                         colorToUse = this.config.RedColor;
                         break;
@@ -165,8 +170,21 @@ public unsafe class Mod : IMod {
                         this.logger.PrintMessage("Couldn't figure out what color to use. Args: " + string.Join(", ", args), this.logger.ColorRed);
                         break;
                 }
-                
-                color->Real = colorToUse;
+                if (color->Type == RValueType.Real || color->Type == RValueType.Int32 || color->Type == RValueType.Int64) {
+                    color->Type = RValueType.Real;
+                    color->Real = colorToUse;
+                } else if (color->Type == RValueType.Array) {
+                    color->Get(0)->Type = RValueType.Real;
+                    color->Get(0)->Real = colorToUse;
+                } else {
+                    string[] args = new string[argc];
+                    for (int i = 0; i < argc; i++) {
+                        args[i] = argv[i]->ToString();
+                    }
+                    this.logger.PrintMessage("Color type: " + color->Type + ", value: " + color->ToString(), this.logger.ColorRed);
+                    this.logger.PrintMessage("Pattern replace: " + name + ", args: " + string.Join(", ", args), this.logger.ColorRed);
+                }
+
             }
         }
         return returnValue;

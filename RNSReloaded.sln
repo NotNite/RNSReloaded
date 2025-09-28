@@ -35,7 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.FuzzyMechanicPa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.JadeLakeside", "RNSReloaded.JadeLakeside\RNSReloaded.JadeLakeside.csproj", "{0134C624-969E-42A9-8BC8-DB20CA838879}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.FuzzyMechPackInterfaces", "RNSReloaded.FuzzyMechPackInterfaces\RNSReloaded.FuzzyMechPackInterfaces.csproj", "{EC1E607C-2C06-44DF-84A4-77D8DEBF1D3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNSReloaded.FuzzyMechPackInterfaces", "RNSReloaded.FuzzyMechPackInterfaces\RNSReloaded.FuzzyMechPackInterfaces.csproj", "{EC1E607C-2C06-44DF-84A4-77D8DEBF1D3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.ReColor", "RNSReloaded.ReColor\RNSReloaded.ReColor.csproj", "{F4526A84-B4AA-4631-81A0-39EDBF3207F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +113,10 @@ Global
 		{EC1E607C-2C06-44DF-84A4-77D8DEBF1D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1E607C-2C06-44DF-84A4-77D8DEBF1D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1E607C-2C06-44DF-84A4-77D8DEBF1D3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4526A84-B4AA-4631-81A0-39EDBF3207F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4526A84-B4AA-4631-81A0-39EDBF3207F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4526A84-B4AA-4631-81A0-39EDBF3207F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4526A84-B4AA-4631-81A0-39EDBF3207F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

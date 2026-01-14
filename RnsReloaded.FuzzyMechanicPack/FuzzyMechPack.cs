@@ -13,6 +13,7 @@ namespace RNSReloaded.FuzzyMechanicPack {
         private ColorMatchSwap? colorMatchSwap;
         private BuffOnHit? buffOnHit;
         private BulletDelete? bulletDelete;
+        private Towers? towers;
 
         private IRNSReloaded rnsReloaded;
         private ILoggerV1 logger;
@@ -36,6 +37,7 @@ namespace RNSReloaded.FuzzyMechanicPack {
             this.colorMatchSwap = new ColorMatchSwap(this.rnsReloaded, this.logger, this.hooks);
             this.buffOnHit = new BuffOnHit(this.rnsReloaded, this.logger, this.hooks);
             this.bulletDelete = new BulletDelete(this.rnsReloaded, this.logger, this.hooks);
+            this.towers = new Towers(this.rnsReloaded, this.logger, this.hooks);
 
             this.logger.PrintMessage("Fuzzy's Mechanic Pack set up!", this.logger.ColorGreen);
         }
@@ -80,6 +82,19 @@ namespace RNSReloaded.FuzzyMechanicPack {
             bool? inverted = null
         ) {
             this.bulletDelete?.Run(self, other, spawnDelay, eraseDelay, midX, midY, width, height, radius, inverted);
+        }
+
+        public void Towers(CInstance* self, CInstance* other,
+            int playersRequired = 1,
+            int? warningDelay = null,
+            int? spawnDelay = null,
+            int? radius = null,
+            int? warnMsg = null,
+            int? displayNumber = null,
+            int? x = null,
+            int? y = null
+        ) {
+            this.towers?.Run(self, other, playersRequired, warningDelay, spawnDelay, radius, warnMsg, displayNumber, x, y);
         }
     }
 }

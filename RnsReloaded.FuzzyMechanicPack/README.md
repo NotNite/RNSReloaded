@@ -54,3 +54,15 @@ Call this by using `bp_colormatch` and passing in the following custom arguments
     orderBin_<i>: Which players start with color i. There should be no bits enabled in more than one of these (disjoint)
     playerId_<i>: color i (used as element_<i>, since there's no indexed element variable)
     amount: radius of the circles that set your color (since there's no radius2 variable)
+    
+## Towers
+
+Towers, from FFXIV! A circle that at least X number of people must be in by the time it ends, otherwise everyone takes damage
+
+Call this by using `bp_colormatch` and passing in the following custom arguments:
+
+    type: set this to 2 to enable this variant. 0 will always be default colormatch.
+          Higher values may be used for future variants
+    amount: Number of people required
+    warningDelay, spawnDelay, radius, warnMsg, displayNumber as normal
+    x, y: Coordinates of circle

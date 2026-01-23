@@ -12,16 +12,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ReloadedLinkRoots Include="RNSReloaded.Steelheart"/>
+        <ReloadedLinkRoots Include="RNSReloaded.Steelheart" />
     </ItemGroup>
 
-    <Import Project="../Reloaded.Trimming.targets"/>
-    <Import Project="../Reloaded.Checks.targets"/>
+    <Import Project="../Reloaded.Trimming.targets" />
+    <Import Project="../Reloaded.Checks.targets" />
 
     <ItemGroup>
-        <None Remove="ModConfig.json"/>
-        <None Remove="Reloaded.Trimming.targets"/>
-        <None Remove="Reloaded.Checks.targets"/>
+        <None Remove="ModConfig.json" />
+        <None Remove="Reloaded.Trimming.targets" />
+        <None Remove="Reloaded.Checks.targets" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,8 +31,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Reloaded.Memory.SigScan.ReloadedII.Interfaces" Version="1.2.0"/>
-        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime"/>
+        <PackageReference Include="Reloaded.Memory.SigScan.ReloadedII.Interfaces" Version="1.2.0" />
+        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,8 +3,9 @@ using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
+using RNSReloaded.Steelheart.Config;
 
-namespace RNSReloaded.PermanentWinds;
+namespace RNSReloaded.Steelheart;
 
 public unsafe class Mod : IMod {
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
@@ -44,7 +45,11 @@ public unsafe class Mod : IMod {
     // called twice per time she attacks. So 1/2 = first attack, 3/4 = 2nd, 5/6 = 3rd
     private int shiraSteelCount = 0;
 
-    public void Start(IModLoaderV1 loader) {
+
+    private bool forceEnrage;
+    private bool disableInvuln;
+
+    public void StartEx(IModLoaderV1 loader,IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
         
@@ -53,6 +58,13 @@ public unsafe class Mod : IMod {
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             rnsReloaded.OnReady += this.Ready;
         }
+
+        var configurator = new Configurator(((IModLoader) loader).GetModConfigDirectory(modConfig.ModId));
+        var config = configurator.GetConfiguration<Config.Config>(0);
+
+        this.forceEnrage = config.ForceEnrage;
+        this.disableInvuln = config.DisableInvuln;
+        this.logger.PrintMessage("Set up Steelheart. Force enrage: " + this.forceEnrage.ToString() + ", Disable Invuln: " + this.disableInvuln.ToString(), this.logger.ColorGreen);
     }
 
     public void Ready() {
@@ -142,7 +154,7 @@ public unsafe class Mod : IMod {
     private RValue* InvulnDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         // Change invuln to a very negative number so extra invuln effects don't work.
         // Note that this still procs on invuln effects
-        if (!this.isTakingDamage) {
+        if (this.disableInvuln && !this.isTakingDamage) {
             argv[0]->Real = -30000;
         }
         returnValue = this.invulnHook!.OriginalFunction(self, other, returnValue, argc, argv);
@@ -191,6 +203,10 @@ public unsafe class Mod : IMod {
     private RValue* EnemyDamageDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
+        if (!this.forceEnrage) {
+            return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        }
+
         // If enraged, pale keep mobs, or matti mice summons, then skip the HP locking
         // (pale keep mobs never enrage, and matti mice need to be killable to get to enrage)
         if (!this.enraged &&

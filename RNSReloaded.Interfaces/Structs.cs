@@ -183,7 +183,6 @@ public unsafe struct CRoom {
     public byte Persistent;
     public uint Color;
     public byte ShowColor;
-    public fixed long Backgrounds[8]; // CBackGM*
     public byte EnableViews;
     public byte ClearScreen;
     public byte ClearDisplayBuffer;

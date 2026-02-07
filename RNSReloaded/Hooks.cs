@@ -50,7 +50,7 @@ public unsafe class Hooks : IDisposable {
                 this.runStartHook.Activate();
             });
 
-            this.utils.Scan("48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 33 D2 48 8B 4C 24", addr => {
+            this.utils.Scan("48 8B 15 ?? ?? ?? ?? 48 85 D2 41 0F 95 C6", addr => {
                 var offset = Marshal.ReadInt32(addr + 3);
                 this.CurrentRoom = (CRoom**) (addr + 7 + offset);
             });

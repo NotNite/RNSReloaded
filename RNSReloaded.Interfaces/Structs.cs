@@ -183,6 +183,9 @@ public unsafe struct CRoom {
     public byte Persistent;
     public uint Color;
     public byte ShowColor;
+    private fixed byte _padding[3];
+    // The below fields are probably in a substruct in GML,
+    // which changes the alignment to 4-byte (instead of 1-byte) for the first fields
     public byte EnableViews;
     public byte ClearScreen;
     public byte ClearDisplayBuffer;

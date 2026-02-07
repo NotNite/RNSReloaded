@@ -112,7 +112,10 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
 
     public RValue* ArrayGetEntry(RValue* array, int index) {
         if (array->Type != RValueType.Array) return null;
-        return this.functions.ArrayGetEntry(array->Pointer, index);
+        unsafe {
+            var result = (RValue*)(*(nint*)(*(nint*)array->Pointer + 8) + 16 * index);
+            return result;
+        }
     }
 
     public RValue? ArrayGetLength(RValue* array) {

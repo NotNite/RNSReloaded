@@ -35,23 +35,21 @@ public unsafe class Functions {
         this.utils = utils;
         this.scannerRef = scannerRef;
 
-        this.utils.Scan("E8 ?? ?? ?? ?? 83 F8 FF 0F 84 ?? ?? ?? ?? 33 F6",
+        this.utils.Scan("E8 ?? ?? ?? ?? 83 F8 ?? 0F 84 ?? ?? ?? ?? 33 FF",
             addr => { this.ScriptFindId = Marshal.GetDelegateForFunctionPointer<ScriptFindIdDelegate>(addr); });
-        this.utils.Scan("E8 ?? ?? ?? ?? EB 39 8B C8",
+        this.utils.Scan("E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 ?? 48 8B 78",
             addr => { this.ScriptData = Marshal.GetDelegateForFunctionPointer<ScriptDataDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 44 8B 45 7F",
             addr => { this.CodeFunctionFind = Marshal.GetDelegateForFunctionPointer<CodeFunctionFindDelegate>(addr); });
         this.utils.Scan("3B 0D ?? ?? ?? ?? 7F 3F",
             addr => { this.GetTheFunction = Marshal.GetDelegateForFunctionPointer<GetTheFunctionDelegate>(addr); });
-        this.utils.Scan("E8 ?? ?? ?? ?? 48 85 C0 74 9B",
+        this.utils.Scan("E8 ?? ?? ?? ?? 48 85 C0 74 ?? 83 78 ?? ?? 75 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 4D 8B C7",
             addr => { this.FindValue = Marshal.GetDelegateForFunctionPointer<FindValueDelegate>(addr); });
-        this.utils.Scan("E8 ?? ?? ?? ?? 48 8B D8 EB 4F",
-            addr => { this.ArrayGetEntry = Marshal.GetDelegateForFunctionPointer<ArrayGetEntryDelegate>(addr); });
-        this.utils.Scan("48 89 5C 24 20 57 48 83 EC 20 48 63 FA",
+        this.utils.Scan("40 53 56 48 83 EC ?? 48 63 F2",
             addr => { this.YYGetString = Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr); });
         this.utils.Scan("48 83 EC 38 48 89 74 24 ??",
             addr => { this.StructGetKeys = Marshal.GetDelegateForFunctionPointer<StructGetKeysDelegate>(addr); });
-        this.utils.Scan("E8 ?? ?? ?? ?? 8B 7D 87",
+        this.utils.Scan("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 48 83 C4 ?? 5F C3 4C 3B 05",
             addr => { this.YYCreateString = Marshal.GetDelegateForFunctionPointer<YYCreateStringDelegate>(addr); });
         this.utils.Scan("40 55 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8D 6C 24 ?? 48 89 5D ?? 48 89 75 ?? 48 89 7D ?? 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 45 ?? 48 63 45", addr => {
             this.callScriptFunction = Marshal.GetDelegateForFunctionPointer<CallScriptFunctionDelegate>(addr); });

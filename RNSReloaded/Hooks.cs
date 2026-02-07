@@ -44,13 +44,13 @@ public unsafe class Hooks : IDisposable {
                 this.initLLVMHook.Activate();
             });
 
-            this.utils.Scan("48 83 EC 28 80 3D ?? ?? ?? ?? ?? 75 0C", addr => {
+            this.utils.Scan("48 83 EC ?? 80 3D ?? ?? ?? ?? ?? 75 ?? 33 C9", addr => {
                 this.runStartHook = hooks.CreateHook<RunStartDelegate>(this.RunStartDetour, addr);
                 this.runStartHook.Enable();
                 this.runStartHook.Activate();
             });
 
-            this.utils.Scan("48 8B 15 ?? ?? ?? ?? 48 85 D2 41 0F 95 C4", addr => {
+            this.utils.Scan("48 8B 15 ?? ?? ?? ?? 48 85 D2 41 0F 95 C6", addr => {
                 var offset = Marshal.ReadInt32(addr + 3);
                 this.CurrentRoom = (CRoom**) (addr + 7 + offset);
             });

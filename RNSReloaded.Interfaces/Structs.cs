@@ -262,10 +262,13 @@ public unsafe struct CLayerElementBase {
     public LayerElementType Type;
     public int ID;
     public byte RuntimeDataInitialized;
+    public byte Unknown; // Unsure what this is but it's set to 1 so probably a byte
     public char* Name;
     public CLayer* Layer;
+    public fixed long Padding[2]; // Both seem null
     public CLayerElementBase* Next;
     public CLayerElementBase* Previous;
+    // Random 3 bytes of data, then 5 of pack, then another pointer. Who knows what that is though.
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]

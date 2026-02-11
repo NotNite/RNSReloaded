@@ -2,7 +2,7 @@
   "ModId": "RNSReloaded.ReColor",
   "ModName": "ReColor",
   "ModAuthor": "fuzzything44",
-  "ModVersion": "1.0.1",
+  "ModVersion": "1.0.2",
   "ModDescription": "Allows recoloring of color match rings. Maybe other attacks in the future.",
   "ModDll": "RNSReloaded.ReColor.dll",
   "ModIcon": "",

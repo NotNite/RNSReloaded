@@ -181,15 +181,10 @@ public unsafe struct CRoom {
     public int Width;
     public int Height;
     public byte Persistent;
-    public uint Color;
-    public byte ShowColor;
-    private fixed byte _padding[3];
-    // The below fields are probably in a substruct in GML,
-    // which changes the alignment to 4-byte (instead of 1-byte) for the first fields
     public byte EnableViews;
     public byte ClearScreen;
     public byte ClearDisplayBuffer;
-    public fixed long Views[8]; // CView*
+    public fixed long Views[8];
     public char* LegacyCode;
     public CCode* CodeObject;
     public byte HasPhysicsWorld;
@@ -203,14 +198,16 @@ public unsafe struct CRoom {
     public int* CreationOrderList;
     public int CreationOrderListSize;
     public YYRoom* WadRoom;
-    public nint WadBaseAddress;
+    // These 4 commented fields probably aren't the correct ones that were removed
+    // But also IDK what the right ones are and this causes Name and Layers to align properly sooooo
+    //public nint WadBaseAddress;
     public CPhysicsWorld* PhysicsWorld;
     public int TileCount;
     public CArrayStructure<RTile> Tiles;
-    public YYRoomTiles* WadTiles;
-    public YYRoomInstances* WadInstances;
+    //public YYRoomTiles* WadTiles;
+    //public YYRoomInstances* WadInstances;
     public char* Name;
-    public byte IsDuplicate;
+    //public byte IsDuplicate;
     public LinkedList<CLayer> Layers;
     public CHashMap<int, CLayer> LayerLookup;
     public CHashMap<int, CLayerElementBase> LayerElementLookup;
@@ -235,6 +232,12 @@ public unsafe struct CLayer {
     public byte Visible;
     public byte Deleting;
     public byte Dynamic;
+
+    // Not sure 100% sure where this should be added or what it's used for, but this causes Name to align properly
+    // And the previous bytes seem accurate too, so it's most likely here.
+    // They also seem to be mostly null with the occasional int32 1 thrown in (nullptr x3, int32 0, int32 1, int32 1, int32 0)
+    public fixed long Padding[5];
+
     public char* Name;
     public RValue BeginScript;
     public RValue EndScript;
@@ -243,6 +246,7 @@ public unsafe struct CLayer {
     public RValue Effect;
     public CLayerEffectInfo* InitialEffectInfo;
     public int ShaderID;
+
     public LinkedList<CLayerElementBase> Elements;
     public CLayer* Next;
     public CLayer* Previous;
@@ -258,10 +262,13 @@ public unsafe struct CLayerElementBase {
     public LayerElementType Type;
     public int ID;
     public byte RuntimeDataInitialized;
+    public byte Unknown; // Unsure what this is but it's set to 1 so probably a byte
     public char* Name;
     public CLayer* Layer;
+    public fixed long Padding[2]; // Both seem null
     public CLayerElementBase* Next;
     public CLayerElementBase* Previous;
+    // Random 3 bytes of data, then 5 of pack, then another pointer. Who knows what that is though.
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 8)]

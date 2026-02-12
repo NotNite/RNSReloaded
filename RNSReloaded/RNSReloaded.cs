@@ -111,10 +111,14 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     }
 
     public RValue* ArrayGetEntry(RValue* array, int index) {
+        if (array == null) return null;
         if (array->Type != RValueType.Array) return null;
         unsafe {
-            var result = (RValue*)(*(nint*)(*(nint*)array->Pointer + 8) + 16 * index);
-            return result;
+            // Dereference the pointer field, then add size_t to get a pointer to the data array
+            var arrPtr = array->Pointer + 8;
+            var arr = *(nint*)arrPtr;
+            // Then it's just a pure array of RValues so we calculate size and return a pointer to the correct index
+            return (RValue*) (arr + index * sizeof(RValue));
         }
     }
 

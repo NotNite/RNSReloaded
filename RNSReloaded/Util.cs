@@ -16,6 +16,9 @@ public unsafe class Util : IUtil {
     }
 
     public long RValueToLong(RValue* arg) {
+        if (arg == null) {
+            return 0;
+        }
         RValueType type = arg->Type;
         return type switch {
             RValueType.Real => (long) arg->Real,

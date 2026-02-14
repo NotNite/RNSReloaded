@@ -75,7 +75,7 @@ public unsafe interface IBattlePatterns {
     );
 
     public void colormatch2(
-        CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? warnMsg = null, int ? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null, int? ringNum = null, int? displayNumber = null, Position? position = null
+        CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null, int? ringNum = null, int? displayNumber = null, Position? position = null
     );
 
     public void cone_direction(
@@ -287,4 +287,15 @@ public unsafe interface IBattlePatterns {
     public void water_moving_ball(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, Position? position = null, double? speed = null, double? scale = null, double? angle = null
     );
+
+    public void angel_circle(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? displayNumber = null, int? number = null, int? radius = null, Position? position = null);
+
+    public void angel_circle_follow(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? number = null, int? radius = null, int? targetId = null);
+
+    public void angel_circle_follow_bin(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? number = null, int? trgBinary = null, int? warnMsg = null, int? radius = null);
+
+    public void angel_circle_follow_enemy(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? number = null, int? radius = null);
+
+    public void angel_circle_mult(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? displayNumber = null, int? number = null, int? radius = null, Position[]? points = null);
+
 }

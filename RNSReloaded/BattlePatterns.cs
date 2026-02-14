@@ -1264,4 +1264,82 @@ public unsafe class BattlePatterns : IBattlePatterns {
 
         this.execute_pattern(self, other, "bp_water_moving_ball", args);
     }
+
+    // Towers.
+    public void angel_circle(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? displayNumber = null, int? number = null, int? radius = null, Position? position = null) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "number", number);
+        args = this.add_if_not_null(args, "radius", radius);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
+
+        this.execute_pattern(self, other, "bp_angel_circle", args);
+    }
+
+    public void angel_circle_follow(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? number = null, int? radius = null, int? targetId = null) {
+        RValue[] args = [];
+
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "number", number);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "targetId", targetId);
+
+        this.execute_pattern(self, other, "bp_angel_circle_follow", args);
+    }
+
+    public void angel_circle_follow_bin(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null,  int? number = null, int? trgBinary = null, int? warnMsg = null, int? radius = null) {
+        RValue[] args = [];
+
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "number", number);
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", trgBinary);
+
+        this.execute_pattern(self, other, "bp_angel_circle_follow_bin", args);
+    }
+
+    public void angel_circle_follow_enemy(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? number = null, int? radius = null) {
+        RValue[] args = [];
+
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "number", number);
+        args = this.add_if_not_null(args, "radius", radius);
+
+        this.execute_pattern(self, other, "bp_angel_circle_follow_enemy", args);
+    }
+
+    public void angel_circle_mult(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? warnMsg = null, int? displayNumber = null, int? number = null, int? radius = null, Position[]? points = null) {
+        RValue[] args = [];
+
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "warnMsg", warnMsg);
+        args = this.add_if_not_null(args, "displayNumber", displayNumber);
+        args = this.add_if_not_null(args, "number", number);
+        args = this.add_if_not_null(args, "radius", radius);
+
+        if (points != null) {
+            args = args.Concat([this.utils.CreateString("numPoints")!.Value, new RValue(points.Length)]).ToArray();
+            for (int i = 0; i < points.Length; i++) {
+                args = args.Concat([
+                    this.utils.CreateString($"posX_{i}")!.Value, new RValue(points[i].x),
+                    this.utils.CreateString($"posY_{i}")!.Value, new RValue(points[i].y),
+                ]).ToArray();
+            }
+        }
+        this.execute_pattern(self, other, "bp_angel_circle_mult", args);
+    }
 }

@@ -194,9 +194,10 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-            9, // Testing
-        9, // Mav 0
-        20, // Mav 1
+            20, // Testing
+        9, // Maxi 0
+        20, // Maxi 1
+        20, // Maxi 2
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
@@ -259,7 +260,7 @@ public unsafe class Mod : IMod {
 
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Boss fight, chains + color swap?
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Oops this isn't a boss, will need to reorder
 
                 new Notch(NotchType.EndRun, "", 0, 0),
                 //new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),

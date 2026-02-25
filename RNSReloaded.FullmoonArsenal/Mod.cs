@@ -294,7 +294,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 // Cutscene needed for music to play, sadly. Kind of awkward just adding it though
                 new Notch(NotchType.PinnacleCutscene, "", 0, 0),
-                new Notch(NotchType.FinalBoss, "enc_wolf_snowfur0", 0, NotchFlag.FINAL_BOSS),
+                new Notch(NotchType.FinalBoss, "enc_wolf_snowfur0", 0, NotchFlag.FINAL_BOSS + NotchFlag.BOSS),
                 new Notch(NotchType.EndRun, "", 0, 0)
             }, self, rnsReloaded);
         }

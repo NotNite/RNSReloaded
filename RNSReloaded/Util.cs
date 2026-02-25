@@ -121,7 +121,7 @@ public unsafe class Util : IUtil {
             notch_seed->Real = hallway[i].Seed;
             notch_seed->Type = RValueType.Real;
 
-            notch_flags->Real = (double) hallway[i].Flags;
+            notch_flags->Real = hallway[i].Flags;
             notch_flags->Type = RValueType.Real;
         }
         var notchNum = rnsReloaded.FindValue(self, "notchNumber");

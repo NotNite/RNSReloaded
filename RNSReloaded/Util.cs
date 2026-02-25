@@ -114,13 +114,19 @@ public unsafe class Util : IUtil {
             var notch_seed = rnsReloaded.ArrayGetEntry(notch, 2);
             var notch_flags = rnsReloaded.ArrayGetEntry(notch, 3);
 
-            notch_type->Int32 = (int) hallway[i].Type;
+            notch_type->Int64 = (int) hallway[i].Type;
+            notch_type->Type = RValueType.Int64;
+
             rnsReloaded.CreateString(notch_enemy, hallway[i].Encounter);
             notch_seed->Real = hallway[i].Seed;
-            notch_flags->Real = hallway[i].Flags;
+            notch_seed->Type = RValueType.Real;
+
+            notch_flags->Real = (double) hallway[i].Flags;
+            notch_flags->Type = RValueType.Real;
         }
         var notchNum = rnsReloaded.FindValue(self, "notchNumber");
         notchNum->Real = hallway.Count;
+        notchNum->Type = RValueType.Real;
     }
 
 }

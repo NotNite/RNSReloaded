@@ -14,16 +14,25 @@ public enum NotchType {
     EndRun = 12
 }
 
-public readonly struct Notch {
-    public const double BOSS_FLAG = 1;
-    public const double FINAL_BOSS_FLAG = 3;
+public enum NotchFlag {
+    BOSS = 1,           // Regular area boss
+    FINAL_BOSS = 2,     // Final boss
+    TOXBOX_BOSS = 4,    // Toybox boss
+    SHOPKEEP_CAT = 8,   // Asha shop
+    SHOPKEEP_WOLF = 16, // Tassha rich wolf!
+    SHOPKEEP_BIRD = 32, // Saya shop
+    FLOWER_FIGHT = 64,  // Spawns vine deco/background change
+    FINALSONG = 128,    // For the credits, play the last CS song
+    MUSICFADE = 256     // For the credits, fade out the music instead after notch
+}
 
+public readonly struct Notch {
     public readonly NotchType Type;
     public readonly string Encounter;
     public readonly double Seed;
-    public readonly double Flags;
+    public readonly NotchFlag Flags;
 
-    public Notch(NotchType type, string enc, double seed, double flags) {
+    public Notch(NotchType type, string enc, double seed, NotchFlag flags) {
         this.Type = type;
         this.Encounter = enc;
         this.Seed = seed;

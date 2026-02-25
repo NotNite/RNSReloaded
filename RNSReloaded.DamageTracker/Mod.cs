@@ -348,15 +348,7 @@ public unsafe class Mod : IMod {
                         if (adjustedKey > 0) {
                             adjustedKey -= this.selectedPlayer * 14;
                         }
-                        string hbName = this.hbIdNameOverrides.GetValueOrDefault(adjustedKey, "");
-
-                        /* This is wrong, it's going from hbId -> itemIdString, needs to go hbId -> itemId -> itemName
-
-                        if (hbName == "") {
-                            var dataMap = rnsReloaded.utils.GetGlobalVar("itemData");
-                            hbName = dataMap->Get((int) key)->Get(0)->Get(0)->ToString();
-                        }
-                        */
+                        string hbName = this.hbIdNameOverrides.GetValueOrDefault(adjustedKey, "");                        
 
                         if (hbName == "") {
                             if (adjustedKey < 0) {
@@ -389,11 +381,9 @@ public unsafe class Mod : IMod {
     }
 
     public void Suspend() {
-        this.damageHook?.Disable();
     }
 
     public void Resume() {
-        this.damageHook?.Enable();
     }
 
     public bool CanSuspend() => false; // Add suspend/resume code and set to true once ready

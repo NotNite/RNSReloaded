@@ -179,14 +179,14 @@ public unsafe class Mod : IMod {
             new(NotchType.Encounter, hallEnc[0][3], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[0][4], this.getRandInt(), 0),
             new(NotchType.Chest, "", this.getRandInt(), 0),
-            new(NotchType.Boss, hallEnc[0][5], 0, Notch.BOSS_FLAG),
+            new(NotchType.Boss, hallEnc[0][5], 0, NotchFlag.BOSS),
             new(NotchType.Shop, "", 0, 0),
             new(NotchType.Encounter, hallEnc[1][0], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[1][1], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[1][2], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[1][3], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[1][4], this.getRandInt(), 0),
-            new(NotchType.Boss, hallEnc[1][5], this.getRandInt(), Notch.BOSS_FLAG)
+            new(NotchType.Boss, hallEnc[1][5], this.getRandInt(), NotchFlag.BOSS)
         ];
         List<Notch> notches1 = [ // third and fourth area (second hall)
             new(NotchType.Shop, "", this.getRandInt(), 0),
@@ -196,14 +196,14 @@ public unsafe class Mod : IMod {
             new(NotchType.Encounter, hallEnc[2][3], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[2][4], this.getRandInt(), 0),
             new(NotchType.Chest, "", this.getRandInt(), 0),
-            new(NotchType.Boss, hallEnc[2][5], this.getRandInt(), Notch.BOSS_FLAG),
+            new(NotchType.Boss, hallEnc[2][5], this.getRandInt(), NotchFlag.BOSS),
             new(NotchType.Shop, "", this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[3][0], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[3][1], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[3][2], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[3][3], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[3][4], this.getRandInt(), 0),
-            new(NotchType.Boss, hallEnc[3][5], this.getRandInt(), Notch.BOSS_FLAG)
+            new(NotchType.Boss, hallEnc[3][5], this.getRandInt(), NotchFlag.BOSS)
         ];
         List<Notch> notches2 = [ // fifth area (third hall)
             new(NotchType.Shop, "", this.getRandInt(), 0),
@@ -213,7 +213,7 @@ public unsafe class Mod : IMod {
             new(NotchType.Encounter, hallEnc[4][3], this.getRandInt(), 0),
             new(NotchType.Encounter, hallEnc[4][4], this.getRandInt(), 0),
             new(NotchType.Chest, "", this.getRandInt(), 0),
-            new(NotchType.Boss, hallEnc[4][5], this.getRandInt(), Notch.BOSS_FLAG)
+            new(NotchType.Boss, hallEnc[4][5], this.getRandInt(), NotchFlag.BOSS)
         ];
 
         return [notches0, notches1, notches2];

@@ -39,9 +39,13 @@ public unsafe class Mod : IMod {
         { "enc_frog_idol0", 0.4 },
         { "enc_mouse_paladin0", 0.4 },
         { "enc_wolf_steeltooth0", 0.4 },
+        { "enc_aurum_blackcat0", 0.4},
+        { "enc_depths_hound0", 0.4},
+        { "enc_sanct_owl0", 0.4},
+
     };
 
-    // Counts how many times Shira has used her steel yourself attack. Note that the script is 
+    // Counts how many times Shira has used her steel yourself attack. Note that the script is
     // called twice per time she attacks. So 1/2 = first attack, 3/4 = 2nd, 5/6 = 3rd
     private int shiraSteelCount = 0;
 
@@ -52,7 +56,7 @@ public unsafe class Mod : IMod {
     public void StartEx(IModLoaderV1 loader,IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
-        
+
         this.logger = loader.GetLogger();
 
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
@@ -140,7 +144,7 @@ public unsafe class Mod : IMod {
         return returnValue;
     }
 
-    // Normally I'd just call the real invuln hook here instead of setting a flag as a hidden 
+    // Normally I'd just call the real invuln hook here instead of setting a flag as a hidden
     // parameter to the invuln detour, but for whatever reason when I try to call it, despite
     // having NO string arguments, scr_player_invuln complains about an invalid STRING argument
     private bool isTakingDamage = false;
@@ -207,11 +211,17 @@ public unsafe class Mod : IMod {
             return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
         }
 
+        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+            var enemyId = rnsReloaded.utils.RValueToLong(argv[1]);
+        }
+
+
         // If enraged, pale keep mobs, or matti mice summons, then skip the HP locking
         // (pale keep mobs never enrage, and matti mice need to be killable to get to enrage)
+        // darkhall never enrage.
         if (!this.enraged &&
             !(this.currentEncounter == "enc_mouse_paladin1" && argv[1]->Real > 0) &&
-            !this.currentEncounter.StartsWith("enc_queens"))
+            !this.currentEncounter.StartsWith("enc_queens") && !this.currentEncounter.StartsWith("enc_darkhall"))
         {
             double enemyHp = this.GetEnemyHP(argv[1]->Real);
             double enemyMaxHp = this.GetEnemyMaxHP(argv[1]->Real);
@@ -223,7 +233,9 @@ public unsafe class Mod : IMod {
                 }
             } else if (enemyHp - argv[2]->Real < 1) {
                 // Non bosses (and boss phase 2s) can go to 1 HP before waiting on enrage to be killable
-                argv[2]->Real = Math.Max(enemyHp - 1, 0);
+                // in sanct, kill enemy is a part of mech.
+                if (!this.currentEncounter.StartsWith("enc_sanct") && !this.currentEncounter.StartsWith("enc_geode_butterfly"))
+                    argv[2]->Real = Math.Max(enemyHp - 1, 0);
             }
         }
 

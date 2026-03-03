@@ -20,6 +20,13 @@ public unsafe class Mod : IMod {
     // For Shira unavoidable steel yourself attacks
     private IHook<ScriptDelegate>? steelHook;
     private IHook<ScriptDelegate>? steelActivateHook;
+    // Heart Witch (extra mode final boss) has same as shira but diff names
+    private IHook<ScriptDelegate>? steelHookExtra;
+    private IHook<ScriptDelegate>? steelActivateHookExtra;
+
+    private IHook<ScriptDelegate>? mellProgressHook;
+    private IHook<ScriptDelegate>? mellProgressHookSingle;
+
     // To disable general invulnerability
     private IHook<ScriptDelegate>? invulnHook;
     private IHook<ScriptDelegate>? playerDmgHook;
@@ -39,6 +46,11 @@ public unsafe class Mod : IMod {
         { "enc_frog_idol0", 0.4 },
         { "enc_mouse_paladin0", 0.4 },
         { "enc_wolf_steeltooth0", 0.4 },
+        // Extra mode
+        { "enc_aurum_blackcat0", 0.4 },
+        { "enc_depths_hound0", 0.4 },
+        { "enc_sanct_owl0", 0.4 },
+        { "enc_heart_witch0", 0.3 }
     };
 
     // Counts how many times Shira has used her steel yourself attack. Note that the script is 
@@ -112,6 +124,18 @@ public unsafe class Mod : IMod {
             this.steelActivateHook.Activate();
             this.steelActivateHook.Enable();
 
+            var steelScriptExtra = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_heart_witch1_magnus") - 100000);
+            this.steelHookExtra =
+                hooks.CreateHook<ScriptDelegate>(this.SteelDetourExtra, steelScriptExtra->Functions->Function);
+            this.steelHookExtra.Activate();
+            this.steelHookExtra.Enable();
+
+            var steelAScriptExtra = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_heart_witch1_magnus_activate") - 100000);
+            this.steelActivateHookExtra =
+                hooks.CreateHook<ScriptDelegate>(this.SteelActivateDetourExtra, steelAScriptExtra->Functions->Function);
+            this.steelActivateHookExtra.Activate();
+            this.steelActivateHookExtra.Enable();
+
             var invulnScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_player_invuln") - 100000);
             this.invulnHook =
                 hooks.CreateHook<ScriptDelegate>(this.InvulnDetour, invulnScript->Functions->Function);
@@ -129,6 +153,18 @@ public unsafe class Mod : IMod {
                 hooks.CreateHook<ScriptDelegate>(this.AddHbsFlagCheckDetour, buffFlagScript->Functions->Function);
             this.buffFlagCheckHook.Activate();
             this.buffFlagCheckHook.Enable();
+
+            var mellProgressScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_sanct_owl0_pt5") - 100000);
+            this.mellProgressHook =
+                hooks.CreateHook<ScriptDelegate>(this.MellProgressDetour, mellProgressScript->Functions->Function);
+            this.mellProgressHook.Activate();
+            this.mellProgressHook.Enable();
+
+            var mellProgressScriptSingle = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("bp_sanct_owl0_pt5_s") - 100000);
+            this.mellProgressHookSingle =
+                hooks.CreateHook<ScriptDelegate>(this.MellProgressDetourSingle, mellProgressScriptSingle->Functions->Function);
+            this.mellProgressHookSingle.Activate();
+            this.mellProgressHookSingle.Enable();
         }
     }
 
@@ -200,18 +236,56 @@ public unsafe class Mod : IMod {
         }
     }
 
+    private bool shouldLimitEnemyHp(RValue* mobId) {
+        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+            var enemyId = rnsReloaded.utils.RValueToLong(mobId);
+            var thisEnemy = this.GetEnemy(enemyId);
+            // ID in the enemy definiton list
+            var enemyRealId = rnsReloaded.utils.RValueToLong(rnsReloaded.FindValue(thisEnemy->Object, "enemyId"));
+            var enemyName = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyData")->Get((int) enemyRealId)->Get(0)->ToString();
+
+            if (this.enraged) {
+                return false;
+            }
+            // Matti mice need to be killable
+            if (this.currentEncounter == "enc_mouse_paladin1" && enemyId > 0) {
+                return false;
+            }
+            // Queens weapons never enrage
+            if (this.currentEncounter.StartsWith("enc_queens")) {
+                return false;
+            }
+            // Spell manifest phases, generally just padding so okay to allow DPS skips here.
+            if (this.currentEncounter == "enc_aurum_ghost0") {
+                return false;
+            }
+            // Looping hallway enemies never enrage
+            if (this.currentEncounter.StartsWith("enc_darkhall")) {
+                return false;
+            }
+            // index 0 is key. We use this instead of index 2 (name w/o title) because it's always in english and CN/JP chars don't display in ImGui
+
+            // Fish enemies are always killable
+            if (enemyName.StartsWith("en_spawn_fishpool")) {
+                return false;
+            }
+
+            // Jellycats need to be killed in p1 owl fight, otherwise they shouldn't be killed
+            if (enemyName.StartsWith("en_spawn_jellycat") && this.currentEncounter == "enc_sanct_owl0") {
+                return false;
+            }
+        }
+        return true;
+    }
     private RValue* EnemyDamageDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
+        argv[2]->Real *= 10;
         if (!this.forceEnrage) {
             return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
         }
 
-        // If enraged, pale keep mobs, or matti mice summons, then skip the HP locking
-        // (pale keep mobs never enrage, and matti mice need to be killable to get to enrage)
-        if (!this.enraged &&
-            !(this.currentEncounter == "enc_mouse_paladin1" && argv[1]->Real > 0) &&
-            !this.currentEncounter.StartsWith("enc_queens"))
+        if (this.shouldLimitEnemyHp(argv[1]))
         {
             double enemyHp = this.GetEnemyHP(argv[1]->Real);
             double enemyMaxHp = this.GetEnemyMaxHP(argv[1]->Real);
@@ -234,7 +308,11 @@ public unsafe class Mod : IMod {
     private RValue* EnrageDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        this.enraged = true;
+        // Mobs in mell enrage but we don't want it to count. Not like this matters as if they enrage people are likely
+        // already dead but...
+        if (this.currentEncounter != "enc_sanct_owl0") {
+            this.enraged = true;
+        }
         returnValue = this.enrageHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
@@ -275,6 +353,35 @@ public unsafe class Mod : IMod {
             this.enraged = true;
         }
         returnValue = this.steelHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
+
+    // Extra mode uses this more than shira and doesn't soft enrage
+    private RValue* SteelActivateDetourExtra(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        this.shiraSteelCount++;
+        if (this.shiraSteelCount >= 5 && this.shiraSteelCount % 2 == 1) {
+            return returnValue;
+        }
+        returnValue = this.steelActivateHookExtra!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
+
+    private RValue* SteelDetourExtra(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        returnValue = this.steelHookExtra!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
+
+    // Mell doesn't actually enrage, it's assumed that either her mobs enrage or you naturally deal damage through them
+    // Since we limit damage, we hook her last mechanic and say she enrages after it. 
+    private RValue* MellProgressDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        this.enraged = true;
+        returnValue = this.mellProgressHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
+    // Same but for singleplayer
+    private RValue* MellProgressDetourSingle(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        this.enraged = true;
+        returnValue = this.mellProgressHookSingle!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 

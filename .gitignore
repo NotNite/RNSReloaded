@@ -3,6 +3,7 @@
 bin/
 obj/
 *.user
+*.sln
 
 /temp
 /local

@@ -1,9 +1,10 @@
-﻿using Reloaded.Hooks.Definitions;
+using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
 using RNSReloaded.SteelYourself.Config;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RNSReloaded.SteelYourself;
 
@@ -15,7 +16,8 @@ public unsafe class Mod : IMod {
     private Configurator configurator = null!;
     private Config.Config config = null!;
 
-    private IHook<ScriptDelegate>? encounterHook;
+    private Dictionary<string, IHook<ScriptDelegate>> hookMap = new Dictionary<string, IHook<ScriptDelegate>>();
+    private IHook<ScriptDelegate> outskirtsHook;
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -35,6 +37,18 @@ public unsafe class Mod : IMod {
         this.config = (Config.Config) newConfig;
     }
 
+    private void createAndSetHook(IRNSReloaded rnsReloaded, IReloadedHooks hooks, string scriptName, ScriptDelegate detour) {
+        var id = rnsReloaded.ScriptFindId(scriptName);
+        var script = rnsReloaded.GetScriptData(id - 100000);
+        if (script == null) {
+            this.logger.PrintMessage("Script " + scriptName + " not found. Hook not created.", this.logger.ColorRed);
+            return;
+        }
+        this.hookMap[scriptName] = hooks.CreateHook<ScriptDelegate>(detour, script->Functions->Function);
+        this.hookMap[scriptName].Activate();
+        this.hookMap[scriptName].Enable();
+    }
+
     public void Ready() {
         if (
             this.rnsReloadedRef != null
@@ -44,31 +58,65 @@ public unsafe class Mod : IMod {
         ) {
             rnsReloaded.LimitOnlinePlay();
 
-            var id = rnsReloaded.ScriptFindId("scrdt_encounter");
-            var script = rnsReloaded.GetScriptData(id - 100000);
-
-            this.encounterHook =
-                hooks.CreateHook<ScriptDelegate>(this.EncounterDetour, script->Functions->Function);
-            this.encounterHook.Activate();
-            this.encounterHook.Enable();
+            this.createAndSetHook(rnsReloaded, hooks, "scr_hallwaygen_outskirts", this.OutskirtsDetour);
+            this.createAndSetHook(rnsReloaded, hooks, "scr_hallwaygen_outskirts_n", this.OutskirtsDetour);
+            this.createAndSetHook(rnsReloaded, hooks, "scr_hallwaygen_geode", this.GeodeDetour);
+            this.createAndSetHook(rnsReloaded, hooks, "scr_hallwaygen_toybox", this.ToyboxDetour);
         }
     }
 
-    private RValue* EncounterDetour(
+    private RValue* OutskirtsDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
+        returnValue = this.hookMap["scr_hallwaygen_outskirts"]!.OriginalFunction(self, other, returnValue, argc, argv);
+
         if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             var encounterName = Enum.GetName(this.config.ForcedEncounter);
-            rnsReloaded.CreateString(argv[0], encounterName!);
+            rnsReloaded.utils.setHallway(new List<Notch> {
+                new Notch(NotchType.IntroRoom, "", 0, 0),
+                new Notch(NotchType.Encounter, encounterName != null ? encounterName : "enc_bird_student0", 0, 0),
+                new Notch(NotchType.EndRun, "", 0, 0)
+            }, self, rnsReloaded);
         }
-
-        returnValue = this.encounterHook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
 
-    public void Suspend() => this.encounterHook?.Disable();
-    public void Resume() => this.encounterHook?.Enable();
-    public bool CanSuspend() => true;
+    private RValue* GeodeDetour(
+        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
+        returnValue = this.hookMap["scr_hallwaygen_geode"]!.OriginalFunction(self, other, returnValue, argc, argv);
+
+        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+            var encounterName = Enum.GetName(this.config.ForcedEncounter);
+            rnsReloaded.utils.setHallway(new List<Notch> {
+                new Notch(NotchType.IntroRoom, "", 0, 0),
+                new Notch(NotchType.Encounter, encounterName != null ? encounterName : "enc_bird_student0", 0, 0),
+                new Notch(NotchType.EndRun, "", 0, 0)
+            }, self, rnsReloaded);
+        }
+        return returnValue;
+    }
+
+    private RValue* ToyboxDetour(
+        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
+        returnValue = this.hookMap["scr_hallwaygen_toybox"]!.OriginalFunction(self, other, returnValue, argc, argv);
+
+        if (this.rnsReloadedRef != null && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+            var encounterName = Enum.GetName(this.config.ForcedEncounter);
+
+            rnsReloaded.utils.setHallway(new List<Notch> {
+                new Notch(NotchType.ToyboxIntro, "", 0, 0),
+                new Notch(NotchType.Encounter, encounterName != null ? encounterName : "enc_bird_student0", 0, 0),
+                new Notch(NotchType.EndRun, "", 0, 0)
+            }, self, rnsReloaded);
+        }
+        return returnValue;
+    }
+
+    public void Suspend() {}
+    public void Resume() { }
+    public bool CanSuspend() => false;
 
     public void Unload() { }
     public bool CanUnload() => false;

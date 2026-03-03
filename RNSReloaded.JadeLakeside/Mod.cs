@@ -116,7 +116,8 @@ public unsafe class Mod : IMod {
             this.fights = [
                 new Maxi0Fight(rnsReloaded, fzbp, this.logger, hooks),
                 new Maxi1Fight(rnsReloaded, fzbp, this.logger, hooks),
-                new Maxi2Fight(rnsReloaded, fzbp, this.logger, hooks)
+                new Maxi2Fight(rnsReloaded, fzbp, this.logger, hooks),
+                new Mav0Fight(rnsReloaded, fzbp, this.logger, hooks)
             ];
 
             var outskirtsScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwaygen_outskirts") - 100000);
@@ -256,15 +257,13 @@ public unsafe class Mod : IMod {
             // enc_frog_idol0 (boss)
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
-                                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0),
+                                new Notch(NotchType.Boss, "enc_frog_seamstress0", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0), // Oops this isn't a boss, will need to reorder
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0),
+                new Notch(NotchType.Boss, "enc_frog_seamstress0", 0, NotchFlag.BOSS),
 
-                new Notch(NotchType.EndRun, "", 0, 0),
-                //new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
-                //new Notch(NotchType.Boss, "enc_frog_tinkerer2", 0, Notch.BOSS_FLAG)
+                new Notch(NotchType.EndRun, "", 0, 0)
             }, self, rnsReloaded);
         }
         return returnValue;

@@ -280,7 +280,6 @@ public unsafe class Mod : IMod {
     private RValue* EnemyDamageDetour(
         CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
     ) {
-        argv[2]->Real *= 10;
         if (!this.forceEnrage) {
             return this.damageHook!.OriginalFunction(self, other, returnValue, argc, argv);
         }

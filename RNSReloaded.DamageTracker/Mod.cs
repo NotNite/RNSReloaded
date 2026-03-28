@@ -15,6 +15,7 @@ public unsafe class Mod : IMod {
     private ILoggerV1 logger = null!;
 
     private LogProducer? logProducer = null;
+    private ImGuiConsumer? logConsumer = null;
 
     public void StartEx(IModLoaderV1 loader,IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
@@ -24,6 +25,14 @@ public unsafe class Mod : IMod {
 
         if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
             rnsReloaded.OnReady += this.Ready;
+        }
+
+        if (this.hooksRef != null && this.hooksRef.TryGetTarget(out var hooks)) {
+            SDK.Init(hooks);
+            ImguiHook.Create(this.Draw, new ImguiHookOptions() {
+                Implementations = [new ImguiHookDx11(), new ImguiHookOpenGL3()],
+                EnableViewports = true
+            });
         }
 
         this.logger.PrintMessage("Set up discount ACT", this.logger.ColorGreen);
@@ -38,7 +47,7 @@ public unsafe class Mod : IMod {
         ) {
             this.logProducer = new LogProducer(rnsReloaded, hooks, this.logger);
 
-            var imguiConsumer = new ImGuiConsumer(this.logProducer, rnsReloaded, hooks);
+            this.logConsumer = new ImGuiConsumer(this.logProducer, rnsReloaded);
             
             // Player applying debuffs or buffs: (note: called even for buffs that already exist)
             // args[0] = player/enemyID
@@ -52,7 +61,13 @@ public unsafe class Mod : IMod {
             // scrbp_phase_pattern_remove
         }
     }
-    
+
+    public void Draw() {
+        if (this.logConsumer != null) {
+            this.logConsumer.Draw();
+        }
+    }
+
     public void Suspend() {
     }
 

@@ -44,15 +44,9 @@ namespace RNSReloaded.DamageTracker {
             { 3, "Special" },
             { 4, "Defensive" }
         };
-        public ImGuiConsumer(ILogProducer producer, IRNSReloaded rnsReloaded, IReloadedHooks hooks) {
+        public ImGuiConsumer(ILogProducer producer, IRNSReloaded rnsReloaded) {
             this.rnsReloaded = rnsReloaded;
             this.Reset();
-
-            SDK.Init(hooks);
-            ImguiHook.Create(this.Draw, new ImguiHookOptions() {
-                Implementations = [new ImguiHookDx11(), new ImguiHookOpenGL3()],
-                EnableViewports = true
-            });
 
             producer.SubscribeAll(
                 this.ConsumeDamage,

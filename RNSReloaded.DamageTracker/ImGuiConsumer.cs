@@ -48,14 +48,12 @@ namespace RNSReloaded.DamageTracker {
             this.rnsReloaded = rnsReloaded;
             this.Reset();
 
-            producer.SubscribeAll(
-                this.ConsumeDamage,
-                this.ConsumeDebuffDamage,
-                this.ConsumeNewEnemy,
-                this.ConsumeNewFight,
-                this.ConsumeHallwayMove,
-                this.ConsumeChooseHalls
-            );
+            producer.Subscribe(this.ConsumeDamage);
+            producer.Subscribe(this.ConsumeDebuffDamage);
+            producer.Subscribe(this.ConsumeNewEnemy);
+            producer.Subscribe(this.ConsumeNewFight);
+            producer.Subscribe(this.ConsumeHallwayMove);
+            producer.Subscribe(this.ConsumeChooseHalls);
         }
 
         private DamageInfo getDamageInfo(long playerId, long enemyId, long hbId) {
@@ -124,24 +122,24 @@ namespace RNSReloaded.DamageTracker {
             }
         }
 
-        private void ConsumeChooseHalls(LogChooseHallsElement element) {
+        private void ConsumeChooseHalls(LogElementChooseHalls element) {
             this.Reset();
             this.AddEnemy("Target Dummy", 0);
         }
 
-        private void ConsumeHallwayMove(LogHallwayMoveElement element) {
+        private void ConsumeHallwayMove(LogElementHallwayMove element) {
             this.isTreasuresphere = element.type == NotchType.Chest;
         }
 
-        private void ConsumeNewFight(LogNewFightElement element) {
+        private void ConsumeNewFight(LogElementNewFight element) {
             this.Reset();
         }
 
-        private void ConsumeNewEnemy(LogNewEnemyElement element) {
+        private void ConsumeNewEnemy(LogElementNewEnemy element) {
             this.AddEnemy(element.enemyKey, element.enemyId);
         }
 
-        private void ConsumeDamage(LogDamageElement element) {
+        private void ConsumeDamage(LogElementDamage element) {
             if (!this.isTreasuresphere) {
                 
                 // Find nonzero painshare ratio on first enemy and cache it for if it changes to 0 later
@@ -153,24 +151,24 @@ namespace RNSReloaded.DamageTracker {
 
                 var dmgInfo = this.getDamageInfo(element.playerId, element.enemyId, element.hbId);
                 dmgInfo.count++;
-                dmgInfo.damage += element.damageAmount;
+                dmgInfo.damage += element.damage;
                 this.setDamageInfo(element.playerId, element.enemyId, element.hbId, dmgInfo);
 
                 if (this.initialPainshare == 0 || this.enemyIdLookup[element.enemyId] == this.initialEnemy) {
                     dmgInfo = this.damageAmounts[element.playerId][DEFAULT_ENEMY].GetValueOrDefault(element.hbId, new DamageInfo() { count = 0, damage = 0 });
                     dmgInfo.count++;
-                    dmgInfo.damage += element.damageAmount;
+                    dmgInfo.damage += element.damage;
                     this.damageAmounts[element.playerId][DEFAULT_ENEMY][element.hbId] = dmgInfo;
                 }
             }
         }
 
-        private void ConsumeDebuffDamage(LogDebuffDamageElement element) {
-            this.ConsumeDamage(new LogDamageElement() {
+        private void ConsumeDebuffDamage(LogElementDebuffDamage element) {
+            this.ConsumeDamage(new LogElementDamage() {
                 playerId = element.playerId,
                 enemyId = element.enemyId,
                 hbId = -element.debuffId,
-                damageAmount = element.damageAmount,
+                damage = element.damage,
                 painShare = element.painShare,
                 gameTime = element.gameTime,
             });

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace RNSReloaded.DamageTracker {
     unsafe class LogProducer : ILogProducer {
@@ -19,6 +21,7 @@ namespace RNSReloaded.DamageTracker {
         private IHook<ScriptDelegate> addEnemyHook;
         private IHook<ScriptDelegate> hallwayMoveHook;
         private IHook<ScriptDelegate> chooseHallsHook;
+        private IHook<ScriptDelegate> triggerCallHook;
 
         public LogProducer(IRNSReloaded rnsReloaded, IReloadedHooks hooks, ILoggerV1 reloadedLogger) {
             this.rnsReloaded = rnsReloaded;
@@ -54,32 +57,51 @@ namespace RNSReloaded.DamageTracker {
                 hooks.CreateHook<ScriptDelegate>(this.ChooseHallsDetour, chooseHallsScript->Functions->Function);
             this.chooseHallsHook.Activate();
             this.chooseHallsHook.Enable();
+
+            var triggerCallScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_trigger_call") - 100000);
+            this.triggerCallHook =
+                hooks.CreateHook<ScriptDelegate>(this.TriggerCallDetour, triggerCallScript->Functions->Function);
+            this.triggerCallHook.Activate();
+            this.triggerCallHook.Enable();
         }
 
-        private List<Action<LogDamageElement>> consumersDamage = new List<Action<LogDamageElement>>();
-        private List<Action<LogNewEnemyElement>> consumersNewEnemy = new List<Action<LogNewEnemyElement>>();
-        private List<Action<LogDebuffDamageElement>> consumersDebuffDmg = new List<Action<LogDebuffDamageElement>>();
-        private List<Action<LogNewFightElement>> consumersNewFight = new List<Action<LogNewFightElement>>();
-        private List<Action<LogHallwayMoveElement>> consumersHallwayMove = new List<Action<LogHallwayMoveElement>>();
-        private List<Action<LogChooseHallsElement>> consumersChooseHalls = new List<Action<LogChooseHallsElement>>();
+        private List<Action<LogElementDamage>> consumersDamage = new List<Action<LogElementDamage>>();
+        private List<Action<LogElementNewEnemy>> consumersNewEnemy = new List<Action<LogElementNewEnemy>>();
+        private List<Action<LogElementDebuffDamage>> consumersDebuffDmg = new List<Action<LogElementDebuffDamage>>();
+        private List<Action<LogElementNewFight>> consumersNewFight = new List<Action<LogElementNewFight>>();
+        private List<Action<LogElementHallwayMove>> consumersHallwayMove = new List<Action<LogElementHallwayMove>>();
+        private List<Action<LogElementChooseHalls>> consumersChooseHalls = new List<Action<LogElementChooseHalls>>();
+        private List<Action<LogElementAddBuff>> consumersAddBuff = new List<Action<LogElementAddBuff>>();
+        private List<Action<LogElementRemoveBuff>> consumersRemoveBuff = new List<Action<LogElementRemoveBuff>>();
 
-        public void Subscribe(Action<LogDamageElement> consumer) {
+
+        public void Subscribe(Action<LogElementDamage> consumer) {
             this.consumersDamage.Add(consumer);
         }
-        public void Subscribe(Action<LogNewEnemyElement> consumer) {
+        public void Subscribe(Action<LogElementNewEnemy> consumer) {
             this.consumersNewEnemy.Add(consumer);
         }
-        public void Subscribe(Action<LogDebuffDamageElement> consumer) {
+        public void Subscribe(Action<LogElementDebuffDamage> consumer) {
             this.consumersDebuffDmg.Add(consumer);
         }
-        public void Subscribe(Action<LogNewFightElement> consumer) {
+        public void Subscribe(Action<LogElementNewFight> consumer) {
             this.consumersNewFight.Add(consumer);
         }
-        public void Subscribe(Action<LogHallwayMoveElement> consumer) {
+        public void Subscribe(Action<LogElementHallwayMove> consumer) {
             this.consumersHallwayMove.Add(consumer);
         }
-        public void Subscribe(Action<LogChooseHallsElement> consumer) {
+        public void Subscribe(Action<LogElementChooseHalls> consumer) {
             this.consumersChooseHalls.Add(consumer);
+        }
+        public void Subscribe(Action<LogElementAddBuff> consumer) {
+            this.consumersAddBuff.Add(consumer);
+        }
+        public void Subscribe(Action<LogElementRemoveBuff> consumer) {
+            this.consumersRemoveBuff.Add(consumer);
+        }
+
+        private long gameTime() {
+            return this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "gametime"));
         }
 
         private RValue* EnemyDamageDetour(
@@ -94,22 +116,22 @@ namespace RNSReloaded.DamageTracker {
 
             // hbId of -1 means it's a debuff
             if (hbId != -1) {
-                LogDamageElement elem = new LogDamageElement() {
+                LogElementDamage elem = new LogElementDamage() {
                     playerId = (int) playerId,
                     enemyId = (int) enemyId,
                     hbId = (int) hbId,
-                    damageAmount = (int) damage,
+                    damage = (int) damage,
                     painShare = painShare,
                     gameTime = gameTime
                 };
                 this.consumersDamage.ForEach(consumer => consumer.Invoke(elem));
             } else {
                 var debuffId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "statusId"));
-                LogDebuffDamageElement elem = new LogDebuffDamageElement() {
+                LogElementDebuffDamage elem = new LogElementDebuffDamage() {
                     playerId = (int) playerId,
                     enemyId = (int) enemyId,
                     debuffId = (int) debuffId,
-                    damageAmount = (int) damage,
+                    damage = (int) damage,
                     painShare = painShare,
                     gameTime = gameTime
                 };
@@ -123,10 +145,9 @@ namespace RNSReloaded.DamageTracker {
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
             // TODO: fill this out
-            var gameTime = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "gametime"));
 
-            LogNewFightElement elem = new LogNewFightElement() {
-                gameTime = gameTime,
+            LogElementNewFight elem = new LogElementNewFight() {
+                gameTime = this.gameTime(),
             };
             this.consumersNewFight.ForEach(consumer => consumer.Invoke(elem));
 
@@ -137,16 +158,15 @@ namespace RNSReloaded.DamageTracker {
         private RValue* AddEnemyDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
-            var gameTime = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "gametime"));
             var enemyRealId = this.rnsReloaded.utils.RValueToLong(argv[0]);
             // index 0 is key. We use this instead of index 2 (name w/o title) because it's always in english and CN/JP chars don't display in ImGui
             var enemyName = this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "enemyData")->Get((int) enemyRealId)->Get(0)->ToString();
             var enemyListId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId"));
 
-            LogNewEnemyElement elem = new LogNewEnemyElement() {
+            LogElementNewEnemy elem = new LogElementNewEnemy() {
                 enemyKey = enemyName,
                 enemyId = (int) enemyListId,
-                gameTime = gameTime,
+                gameTime = this.gameTime(),
             };
             this.consumersNewEnemy.ForEach(consumer => consumer.Invoke(elem));
 
@@ -157,15 +177,13 @@ namespace RNSReloaded.DamageTracker {
         private RValue* HallwayMoveDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
-            var gameTime = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "gametime"));
-
             var currentPos = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "currentPos")) + 1;
             NotchType thisNotchType = (NotchType) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "notches")->Get((int) currentPos)->Get(0));
 
-            LogHallwayMoveElement elem = new LogHallwayMoveElement() {
+            LogElementHallwayMove elem = new LogElementHallwayMove() {
                 notchPos = (int) currentPos,
                 type = thisNotchType,
-                gameTime = gameTime,
+                gameTime = this.gameTime(),
             };
             this.consumersHallwayMove.ForEach(consumer => consumer.Invoke(elem));
 
@@ -177,14 +195,49 @@ namespace RNSReloaded.DamageTracker {
         private RValue* ChooseHallsDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
-            var gameTime = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "gametime"));
-
-            LogChooseHallsElement elem = new LogChooseHallsElement() {
-                gameTime = gameTime,
+            LogElementChooseHalls elem = new LogElementChooseHalls() {
+                gameTime = this.gameTime(),
             };
             this.consumersChooseHalls.ForEach(consumer => consumer.Invoke(elem));
 
             returnValue = this.chooseHallsHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            return returnValue;
+        }
+
+        private const long HBS_CREATED = 33, HBS_DESTROYED = 36;
+        private RValue* TriggerCallDetour(
+            CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+        ) {
+            var triggerType = argc > 0 ? this.rnsReloaded.utils.RValueToLong(argv[0]) : 0;
+            long teamId() => this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "teamId"));
+
+            // Filter by team id being 0 as we don't care about debuffs enemies apply
+            if (triggerType == HBS_CREATED && teamId() == 0) {
+                // Called when refreshed
+                var statusId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "statusId"));
+                var hbName = this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "hbsInfo")->Get((int) statusId)->Get(0)->ToString();
+
+                LogElementAddBuff elem = new LogElementAddBuff() {
+                    uniqueId = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "hbsUniqueId")), // Increments with each new hbs applied
+                    buffId = (int) statusId,
+                    buffName = hbName,
+                    sourceId = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId")),
+                    targetId = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "aflPlayerId")),
+                    targetsEnemy = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "aflTeamId")) == 1, // (0 for player, 1 for enemy)
+                    sourceHbId = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "originHbId")),
+                    duration = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "initLength")),
+                    strength = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "strength")),
+                    gameTime = this.gameTime()
+                };
+                this.consumersAddBuff.ForEach(consumer => consumer.Invoke(elem));
+            } else if (triggerType == HBS_DESTROYED && teamId() == 0) {
+                LogElementRemoveBuff elem = new LogElementRemoveBuff() {
+                    uniqueId = (int) this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "hbsUniqueId")), // Increments with each new hbs applied
+                    gameTime = this.gameTime()
+                };
+                this.consumersRemoveBuff.ForEach(consumer => consumer.Invoke(elem));
+            }
+            returnValue = this.triggerCallHook!.OriginalFunction(self, other, returnValue, argc, argv);
             return returnValue;
         }
     }

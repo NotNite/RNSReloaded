@@ -7,6 +7,8 @@ using Reloaded.Imgui.Hook;
 using Reloaded.Imgui.Hook.Direct3D11;
 using DearImguiSharp;
 using Reloaded.Imgui.Hook.Implementations;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using RNSReloaded.DamageTracker.Config;
 namespace RNSReloaded.DamageTracker;
 
 public unsafe class Mod : IMod {
@@ -15,7 +17,11 @@ public unsafe class Mod : IMod {
     private ILoggerV1 logger = null!;
 
     private LogProducer? logProducer = null;
-    private ImGuiConsumer? logConsumer = null;
+    private ImGuiConsumer? imGuiConsumer = null;
+    private FileLogConsumer? fileLogConsumer = null;
+
+    private bool useImGuiConsumer = false;
+    private bool useFileConsumer = false;
 
     public void StartEx(IModLoaderV1 loader,IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>();
@@ -35,6 +41,12 @@ public unsafe class Mod : IMod {
             });
         }
 
+        var configurator = new Configurator(((IModLoader) loader).GetModConfigDirectory(modConfig.ModId));
+        var config = configurator.GetConfiguration<Config.Config>(0);
+
+        this.useImGuiConsumer = config.ImGuiDisplay;
+        this.useFileConsumer = config.WriteLogs;
+
         this.logger.PrintMessage("Set up discount ACT", this.logger.ColorGreen);
     }
 
@@ -45,10 +57,18 @@ public unsafe class Mod : IMod {
             && this.hooksRef != null
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
+
+
             this.logProducer = new LogProducer(rnsReloaded, hooks, this.logger);
 
-            this.logConsumer = new ImGuiConsumer(this.logProducer, rnsReloaded);
-            
+            if (this.useImGuiConsumer) {
+                this.logger.PrintMessage("Using ImGui Log Consumer", this.logger.ColorGreen);
+                this.imGuiConsumer = new ImGuiConsumer(this.logProducer, rnsReloaded);
+            }
+            if (this.useFileConsumer) {
+                this.logger.PrintMessage("Using File Log Consumer", this.logger.ColorGreen);
+                this.fileLogConsumer = new FileLogConsumer(this.logProducer, rnsReloaded, hooks, "./logs");
+            }
             // Player applying debuffs or buffs: (note: called even for buffs that already exist)
             // args[0] = player/enemyID
             // args[1] = always 1?
@@ -63,8 +83,8 @@ public unsafe class Mod : IMod {
     }
 
     public void Draw() {
-        if (this.logConsumer != null) {
-            this.logConsumer.Draw();
+        if (this.imGuiConsumer != null) {
+            this.imGuiConsumer.Draw();
         }
     }
 

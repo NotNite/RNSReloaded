@@ -22,6 +22,8 @@ namespace RNSReloaded.DamageTracker {
         private IHook<ScriptDelegate> hallwayMoveHook;
         private IHook<ScriptDelegate> chooseHallsHook;
         private IHook<ScriptDelegate> triggerCallHook;
+        private IHook<ScriptDelegate> gameOverHook;
+        private IHook<ScriptDelegate> finishedFightHook;
 
         public LogProducer(IRNSReloaded rnsReloaded, IReloadedHooks hooks, ILoggerV1 reloadedLogger) {
             this.rnsReloaded = rnsReloaded;
@@ -63,6 +65,18 @@ namespace RNSReloaded.DamageTracker {
                 hooks.CreateHook<ScriptDelegate>(this.TriggerCallDetour, triggerCallScript->Functions->Function);
             this.triggerCallHook.Activate();
             this.triggerCallHook.Enable();
+
+            var gameOverScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_gamecontrol_do_gameover") - 100000);
+            this.gameOverHook =
+                hooks.CreateHook<ScriptDelegate>(this.GameOverDetour, gameOverScript->Functions->Function);
+            this.gameOverHook.Activate();
+            this.gameOverHook.Enable();
+
+            var finishedFightScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_battlecontroller_end_round") - 100000);
+            this.finishedFightHook =
+                hooks.CreateHook<ScriptDelegate>(this.FinishedFightDetour, finishedFightScript->Functions->Function);
+            this.finishedFightHook.Activate();
+            this.finishedFightHook.Enable();
         }
 
         private List<Action<LogElementDamage>> consumersDamage = new List<Action<LogElementDamage>>();
@@ -73,6 +87,7 @@ namespace RNSReloaded.DamageTracker {
         private List<Action<LogElementChooseHalls>> consumersChooseHalls = new List<Action<LogElementChooseHalls>>();
         private List<Action<LogElementAddBuff>> consumersAddBuff = new List<Action<LogElementAddBuff>>();
         private List<Action<LogElementRemoveBuff>> consumersRemoveBuff = new List<Action<LogElementRemoveBuff>>();
+        private List<Action<LogElementEndFight>> consumersEndFight = new List<Action<LogElementEndFight>>();
 
 
         public void Subscribe(Action<LogElementDamage> consumer) {
@@ -98,6 +113,9 @@ namespace RNSReloaded.DamageTracker {
         }
         public void Subscribe(Action<LogElementRemoveBuff> consumer) {
             this.consumersRemoveBuff.Add(consumer);
+        }
+        public void Subscribe(Action<LogElementEndFight> consumer) {
+            this.consumersEndFight.Add(consumer);
         }
 
         private long gameTime() {
@@ -204,6 +222,27 @@ namespace RNSReloaded.DamageTracker {
             return returnValue;
         }
 
+        private RValue* GameOverDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+            LogElementEndFight elem = new LogElementEndFight() {
+                victory = false,
+                gameTime = this.gameTime()
+            };
+            this.consumersEndFight.ForEach(consumer => consumer.Invoke(elem));
+
+            returnValue = this.gameOverHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            return returnValue;
+        }
+
+        private RValue* FinishedFightDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+            LogElementEndFight elem = new LogElementEndFight() {
+                victory = true,
+                gameTime = this.gameTime()
+            };
+            this.consumersEndFight.ForEach(consumer => consumer.Invoke(elem));
+            returnValue = this.finishedFightHook!.OriginalFunction(self, other, returnValue, argc, argv);
+            return returnValue;
+        }
+
         private const long HBS_CREATED = 33, HBS_DESTROYED = 36;
         private RValue* TriggerCallDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
@@ -237,6 +276,7 @@ namespace RNSReloaded.DamageTracker {
                 };
                 this.consumersRemoveBuff.ForEach(consumer => consumer.Invoke(elem));
             }
+
             returnValue = this.triggerCallHook!.OriginalFunction(self, other, returnValue, argc, argv);
             return returnValue;
         }

@@ -18,9 +18,12 @@ public unsafe class Mod : IMod {
 
     private LogProducer? logProducer = null;
     private ImGuiConsumer? imGuiConsumer = null;
+    private ImGuiBuffConsumer? imGuiBuffConsumer = null;
     private FileLogConsumer? fileLogConsumer = null;
 
+
     private bool useImGuiConsumer = false;
+    private bool useImGuiBuffConsumer = false;
     private bool useFileConsumer = false;
 
     public void StartEx(IModLoaderV1 loader,IModConfigV1 modConfig) {
@@ -45,6 +48,7 @@ public unsafe class Mod : IMod {
         var config = configurator.GetConfiguration<Config.Config>(0);
 
         this.useImGuiConsumer = config.ImGuiDisplay;
+        this.useImGuiBuffConsumer = config.ImGuiBuffDisplay;
         this.useFileConsumer = config.WriteLogs;
 
         this.logger.PrintMessage("Set up discount ACT", this.logger.ColorGreen);
@@ -64,6 +68,9 @@ public unsafe class Mod : IMod {
             if (this.useImGuiConsumer) {
                 this.logger.PrintMessage("Using ImGui Log Consumer", this.logger.ColorGreen);
                 this.imGuiConsumer = new ImGuiConsumer(this.logProducer, rnsReloaded);
+            }
+            if (this.useImGuiBuffConsumer) {
+                this.imGuiBuffConsumer = new ImGuiBuffConsumer(this.logProducer, rnsReloaded);
             }
             if (this.useFileConsumer) {
                 this.logger.PrintMessage("Using File Log Consumer", this.logger.ColorGreen);
@@ -85,6 +92,9 @@ public unsafe class Mod : IMod {
     public void Draw() {
         if (this.imGuiConsumer != null) {
             this.imGuiConsumer.Draw();
+        }
+        if (this.imGuiBuffConsumer != null) {
+            this.imGuiBuffConsumer.Draw();
         }
     }
 

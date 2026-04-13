@@ -63,7 +63,7 @@ namespace RNSReloaded.DamageTracker {
         private void ConsumeNewFight(LogElementNewFight elem) {
             this.Reset();
             // There's just under 2s of load time before you can start hitting
-            this.fightStartTime = elem.gameTime + 1900;
+            this.fightStartTime = elem.gameTime + 1833;
             this.fightEndTime = 0;
         }
 

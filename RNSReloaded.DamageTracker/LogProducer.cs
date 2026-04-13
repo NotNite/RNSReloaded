@@ -88,6 +88,7 @@ namespace RNSReloaded.DamageTracker {
         private List<Action<LogElementAddBuff>> consumersAddBuff = new List<Action<LogElementAddBuff>>();
         private List<Action<LogElementRemoveBuff>> consumersRemoveBuff = new List<Action<LogElementRemoveBuff>>();
         private List<Action<LogElementEndFight>> consumersEndFight = new List<Action<LogElementEndFight>>();
+        private List<Action<LogElementUseMove>> consumersUseMove = new List<Action<LogElementUseMove>>();
 
 
         public void Subscribe(Action<LogElementDamage> consumer) {
@@ -116,6 +117,10 @@ namespace RNSReloaded.DamageTracker {
         }
         public void Subscribe(Action<LogElementEndFight> consumer) {
             this.consumersEndFight.Add(consumer);
+        }
+
+        public void Subscribe(Action<LogElementUseMove> consumer) {
+            this.consumersUseMove.Add(consumer);
         }
 
         private long gameTime() {
@@ -243,7 +248,7 @@ namespace RNSReloaded.DamageTracker {
             return returnValue;
         }
 
-        private const long HBS_CREATED = 33, HBS_DESTROYED = 36;
+        private const long HBS_CREATED = 33, HBS_DESTROYED = 36, HOTBAR_USED = 44;
         private RValue* TriggerCallDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
@@ -275,6 +280,25 @@ namespace RNSReloaded.DamageTracker {
                     gameTime = this.gameTime()
                 };
                 this.consumersRemoveBuff.ForEach(consumer => consumer.Invoke(elem));
+            } else if (triggerType == HOTBAR_USED) {
+                var gcd = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "gcdSecLeft"));
+                // hbId, slotId seems to be 0-indexed and both first ability (primary) and first item are slotId 0
+                var slotId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "uniqueId"));
+                var playerId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "playerId"));
+                var stock = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "stock"));
+
+                var dataId = this.rnsReloaded.utils.RValueToLong(this.rnsReloaded.FindValue(self, "dataId"));
+                var itemName = this.rnsReloaded.FindValue(this.rnsReloaded.GetGlobalInstance(), "itemData")->Get((int) dataId)->Get(0)->Get(0)->ToString();
+
+                LogElementUseMove elem = new LogElementUseMove() {
+                    gcd = (int) gcd,
+                    hbId = (int) slotId,
+                    itemName = itemName,
+                    playerId = (int) playerId,
+                    stock = (int) stock,
+                    gameTime = this.gameTime()
+                };
+                this.consumersUseMove.ForEach(item => item.Invoke(elem));
             }
 
             returnValue = this.triggerCallHook!.OriginalFunction(self, other, returnValue, argc, argv);

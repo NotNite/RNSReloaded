@@ -21,7 +21,8 @@ namespace RNSReloaded.DamageTracker {
                 this.ChooseHallsHandler,
                 this.log,
                 this.log,
-                this.EndFightHandler
+                this.EndFightHandler,
+                this.log
             );
 
             Directory.CreateDirectory(logFolder);
@@ -37,6 +38,9 @@ namespace RNSReloaded.DamageTracker {
             // As in, this probably saves something close to 10% of the total file size
             if (dict.ContainsKey("painShare") && dict["painShare"].ToString() == "0") {
                 dict.Remove("painShare");
+            }
+            if (dict.ContainsKey("stock") && dict["stock"].ToString() == "0") {
+                dict.Remove("stock");
             }
             dict.Add("event", data.GetType().Name.Replace("LogElement", ""));
             this.logWriter.WriteLine(JsonSerializer.Serialize(dict));

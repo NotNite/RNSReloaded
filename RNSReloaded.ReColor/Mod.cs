@@ -40,6 +40,8 @@ public unsafe class Mod : IMod {
         public int colorIndex;
     }
 
+    // scrbp_make_warning_colormatch_mirror
+    // Might be adding multiple things in one call?
     private Dictionary<string, FuncData> funcLookup = new Dictionary<string, FuncData>() {
         { "scrbp_make_warning_colormatch", new FuncData() { layer = "BattleWarningOver", colorIndex = 3} },
         { "scrbp_make_warning_colormatch_targ", new FuncData() { layer = "BattleEffect", colorIndex = 2} },

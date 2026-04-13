@@ -16,6 +16,7 @@ namespace RNSReloaded.DamageTracker {
     public struct LogElementAddBuff { public int uniqueId; public int buffId; public string buffName; public int sourceId; public int targetId; public bool targetsEnemy; public int duration; public int strength; public int sourceHbId; public long gameTime; }
     public struct LogElementRemoveBuff { public int uniqueId; public long gameTime; }
     public struct LogElementEndFight { public bool victory; public long gameTime; }
+    public struct LogElementUseMove { public int gcd; public int hbId; public string itemName; public int stock; public int playerId; public long gameTime; }
 
     public interface ILogProducer {
         public void Subscribe(Action<LogElementDamage> action);
@@ -27,6 +28,7 @@ namespace RNSReloaded.DamageTracker {
         public void Subscribe(Action<LogElementAddBuff> action);
         public void Subscribe(Action<LogElementRemoveBuff> action);
         public void Subscribe(Action<LogElementEndFight> action);
+        public void Subscribe(Action<LogElementUseMove> action);
 
         public void SubscribeAll(
             Action<LogElementDamage> damage,
@@ -37,7 +39,8 @@ namespace RNSReloaded.DamageTracker {
             Action<LogElementChooseHalls> chooseHalls,
             Action<LogElementAddBuff> addBuff,
             Action<LogElementRemoveBuff> removeBuff,
-            Action<LogElementEndFight> endFight
+            Action<LogElementEndFight> endFight,
+            Action<LogElementUseMove> useMove
         ) {
             this.Subscribe(damage);
             this.Subscribe(debuff);
@@ -48,6 +51,7 @@ namespace RNSReloaded.DamageTracker {
             this.Subscribe(addBuff);
             this.Subscribe(removeBuff);
             this.Subscribe(endFight);
+            this.Subscribe(useMove);
         }
     }
 }

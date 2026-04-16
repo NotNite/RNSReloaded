@@ -145,6 +145,10 @@ namespace RNSReloaded.DamageTracker {
 
         private void ConsumeNewFight(LogElementNewFight element) {
             this.Reset();
+            // You can only start attacking 1833ms after fight start event. Rarely this will trigger a frame early
+            // Causing fight start to be 16 ms before this, but it's very minor and overall 1 frame diff on GCD track
+            // doesn't really matter
+            // Some boss fights also start later but this is the best I have currently.
             this.fightStartTime = element.gameTime + 1833;
             this.fightEndTime = 0;
         }
@@ -253,7 +257,7 @@ namespace RNSReloaded.DamageTracker {
                     ImGui.TreePop();
                 }
 
-                var seconds = Math.Round(fightDuration / 1000f, 1);
+                var seconds = fightDuration / 1000f;
                 if (seconds < 60) {
                     ImGui.Text($"Fight Time: {seconds.ToString("0.0")}s");
                 } else {
@@ -268,7 +272,10 @@ namespace RNSReloaded.DamageTracker {
                 }
                 // Don't include full GCD if it hasn't finished yet
                 if (this.lastMoveUsed > 0 && this.lastMoveTime + this.lastMoveUsed > currentFightEnd) {
-                    totalGCD -= (this.lastMoveUsed + this.lastMoveTime) - currentFightEnd;
+                    // Remove the move's GCD
+                    totalGCD -= this.lastMoveTime;
+                    // Comp the progress through GCD
+                    totalGCD += currentFightEnd - this.lastMoveUsed;
                 }
 
                 var gcdSeconds = Math.Round(totalGCD / 1000f, 1);

@@ -195,10 +195,11 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-            20, // Testing
+            40, // Testing
         9, // Maxi 0
-        20, // Maxi 1
         20, // Maxi 2
+        20, // Mav 0
+        20, // Maxi 1
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
@@ -275,10 +276,10 @@ public unsafe class Mod : IMod {
         returnValue = this.lakesideHook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded)) {
             rnsReloaded.utils.setHallway(new List<Notch> {
-                new Notch(NotchType.Encounter, "enc_wolf_blackear2", 0, 0), 
-                new Notch(NotchType.Encounter, "enc_wolf_greyeye0", 0, 0),
-                new Notch(NotchType.Encounter, "enc_wolf_greyeye1", 0, 0),
-                new Notch(NotchType.Boss, "enc_wolf_bluepaw1", 0, NotchFlag.BOSS)
+                new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
+                new Notch(NotchType.Encounter, "enc_frog_seamstress1", 0, 0),
+                new Notch(NotchType.Encounter, "enc_frog_musician0", 0, 0),
+                new Notch(NotchType.Boss, "enc_frog_painter0", 0, NotchFlag.BOSS)
             }, self, rnsReloaded);
         }
         return returnValue;
@@ -292,7 +293,7 @@ public unsafe class Mod : IMod {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 // Cutscene needed for music to play, sadly. Kind of awkward just adding it though
                 new Notch(NotchType.PinnacleCutscene, "", 0, 0),
-                new Notch(NotchType.FinalBoss, "enc_wolf_snowfur0", 0, NotchFlag.FINAL_BOSS),
+                new Notch(NotchType.FinalBoss, "enc_frog_idol0", 0, NotchFlag.FINAL_BOSS),
                 new Notch(NotchType.EndRun, "", 0, 0)
             }, self, rnsReloaded);
         }

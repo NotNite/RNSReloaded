@@ -263,7 +263,10 @@ namespace RnsReloaded.FuzzyMechanicPack {
 
                                     // Save first generated color background to set later. Rest don't matter since they're just black
                                     if (i == 0) {
-                                        this.scrbp.sbsv(self, other, "player_" + playerId + "_bg", new RValue(background->Instance));
+                                        var playerIdSaveName = "player_" + playerId + "_bg";
+                                        var playerIdSaveRVal = new RValue(0);
+                                        this.rnsReloaded.CreateString(&playerIdSaveRVal, playerIdSaveName);
+                                        this.rnsReloaded.ExecuteCodeFunction("variable_instance_set", self, other, [new RValue(self), playerIdSaveRVal, new RValue(background->Instance)]);
                                     } else {
                                         // BG radius to 0 on all but the first one, for clearer display of bg
                                         var rad = this.rnsReloaded.FindValue(background->Instance, "radius");
@@ -276,7 +279,10 @@ namespace RnsReloaded.FuzzyMechanicPack {
                                     // because I don't want to have to figure out the exact color values to set them to,
                                     // which will change based off their color setting. Ew, just make it easy on me
                                     ring = this.GetMostRecentObjectFromLayer("BattleEffect");
-                                    this.scrbp.sbsv(self, other, "player_" + playerId + "_ring_" + i, new RValue(ring->Instance));
+                                    var varName = "player_" + playerId + "_ring_" + i;
+                                    var nameRval = new RValue(0);
+                                    this.rnsReloaded.CreateString(&nameRval, varName);
+                                    this.rnsReloaded.ExecuteCodeFunction("variable_instance_set", self, other, [new RValue(self), nameRval, new RValue(ring->Instance)]);
 
                                     // Since we create multiple circles per player, only count one when figuring out the sound x-coordinate
                                     // and when adding the warning message
@@ -320,12 +326,13 @@ namespace RnsReloaded.FuzzyMechanicPack {
                                 }
                                 // Add them to the new color
                                 trgBinary[i] |= 1 << playerId;
+
                                 this.scrbp.sbsv(self, other, "orderBin_" + i, new RValue(trgBinary[i]));
                             }
 
-                            var ring = this.scrbp.sbgv(self, other, "player_" + playerId + "_ring_" + i, new RValue(0));
-                            if (ring.Int64 != 0) {
-                                var rad = this.rnsReloaded.FindValue(ring.Object, "radius");
+                            var ring = this.rnsReloaded.FindValue(self, "player_" + playerId + "_ring_" + i);
+                            if (ring->Int64 != 0) {
+                                var rad = this.rnsReloaded.FindValue(ring->Object, "radius");
                                 bool isColorActive = (trgBinary[i] & (1 << playerId)) > 0;
                                 if (isColorActive) {
                                     rad->Int64 = radius;
@@ -336,9 +343,9 @@ namespace RnsReloaded.FuzzyMechanicPack {
                                 rad->Type = RValueType.Int64;
                             }
                             // Update bg color
-                            var bg = this.scrbp.sbgv(self, other, "player_" + playerId + "_bg", new RValue(0));
-                            if (bg.Int64 != 0) {
-                                var color = this.rnsReloaded.FindValue(bg.Object, "color");
+                            var bg = this.rnsReloaded.FindValue(self, "player_" + playerId + "_bg");
+                            if (bg->Int64 != 0) {
+                                var color = this.rnsReloaded.FindValue(bg->Object, "color");
                                 int patternTime = (int) this.utils.RValueToLong(this.rnsReloaded.FindValue(self, "patternExTime"));
                                 color->Int64 = this.GenerateShiftingColor(patternTime);
                                 color->Type = RValueType.Int64;

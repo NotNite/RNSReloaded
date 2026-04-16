@@ -338,6 +338,32 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_colormatch2", args);
     }
 
+    public void colormatch3(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, int? timeExtra = null, int? color = null, int? radius = null, int? targetMask = null, Position[]? positions = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "warningDelay", warningDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "timeBetween", timeBetween);
+        args = this.add_if_not_null(args, "timeExtra", timeExtra);
+
+        args = this.add_if_not_null(args, "element", color);
+
+        args = this.add_if_not_null(args, "radius", radius);
+        args = this.add_if_not_null(args, "trgBinary", targetMask);
+
+        if (positions != null) {
+            args = this.add_if_not_null(args, "numPoints", positions.Length);
+            for (int i = 0; i < positions.Length; i++) {
+                var position = positions[i];
+                args = args.Concat([this.utils.CreateString("posX_" + i)!.Value, new RValue(position.x)]).ToArray();
+                args = args.Concat([this.utils.CreateString("posY_" + i)!.Value, new RValue(position.y)]).ToArray();
+            }
+        }
+
+        this.execute_pattern(self, other, "bp_colormatch3", args);
+    }
+
     public void cone_direction(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? fanAngle = null, Position? position = null, double[]? rots = null
     ) {

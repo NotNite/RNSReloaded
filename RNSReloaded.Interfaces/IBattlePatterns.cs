@@ -78,6 +78,10 @@ public unsafe interface IBattlePatterns {
         CInstance* self, CInstance* other, int? warningDelay = null, int? warningDelay2 = null, int? warnMsg = null, int? spawnDelay = null, int? radius = null, int? targetMask = null, int? color = null, int? ringNum = null, int? displayNumber = null, Position? position = null
     );
 
+    public void colormatch3(
+        CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? timeBetween = null, int? timeExtra = null, int? color = null, int? radius = null, int? targetMask = null, Position[]? positions = null
+    );
+
     public void cone_direction(
         CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null, int? fanAngle = null, Position? position = null, double[]? rots = null
     );

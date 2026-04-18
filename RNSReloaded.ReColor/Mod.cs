@@ -78,6 +78,11 @@ public unsafe class Mod : IMod {
             var hookMirror = hooks.CreateHook<ScriptDelegate>(this.ColormatchWarnMirrorDetour, scriptMirror->Functions->Function)!;
             hookMirror.Activate().Enable();
             ScriptHooks["scrbp_make_warning_colormatch_mirror"] = hookMirror;
+
+            var scriptSprite = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_cddisp_add_spr_pl") - 100000);
+            var hookSprite = hooks.CreateHook<ScriptDelegate>(this.SpriteDetour, scriptSprite->Functions->Function)!;
+            hookSprite.Activate().Enable();
+            ScriptHooks["scr_cddisp_add_spr_pl"] = hookSprite;
         }
     }
 
@@ -247,6 +252,19 @@ public unsafe class Mod : IMod {
         return returnValue;
     }
 
+    private RValue* SpriteDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        // scr_cddisp_add_spr_pl(player, "eff_colormatch", 2, ref sprite <whatever>, <sprite ID?>, 0.8, <value>, <same_value>, duration, undefinied, undefined)
+        if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)) {
+            string effType = argv[1]->ToString();
+            if (effType == "eff_colormatch") {
+                RValue* spriteId = argv[4];
+                RValue* color = argv[7];
+                this.RecolorRValue(color, rnsReloaded.utils.RValueToLong(spriteId) + 2);
+            }
+        }
+        returnValue = ScriptHooks["scr_cddisp_add_spr_pl"].OriginalFunction(self, other, returnValue, argc, argv);
+        return returnValue;
+    }
     public void Suspend() {
     }
 

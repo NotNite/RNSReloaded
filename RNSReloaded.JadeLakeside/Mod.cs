@@ -117,7 +117,8 @@ public unsafe class Mod : IMod {
                 new Maxi0Fight(rnsReloaded, fzbp, this.logger, hooks),
                 new Maxi1Fight(rnsReloaded, fzbp, this.logger, hooks),
                 new Maxi2Fight(rnsReloaded, fzbp, this.logger, hooks),
-                new Mav0Fight(rnsReloaded, fzbp, this.logger, hooks)
+                new Mav0Fight(rnsReloaded, fzbp, this.logger, hooks),
+                new JayLette0Fight(rnsReloaded, fzbp, this.logger, hooks)
             ];
 
             var outskirtsScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_hallwaygen_outskirts") - 100000);
@@ -195,11 +196,12 @@ public unsafe class Mod : IMod {
 
     private readonly static int[] ENEMY_LEVELS = [
         0, // Target dummy
-            40, // Testing
+            16, // Testing
         9, // Maxi 0
         20, // Maxi 2
         20, // Mav 0
         20, // Maxi 1
+        16, // Jay Lette 0
     ];
     private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         if (this.IsReady(out var rnsReloaded)) {
@@ -252,13 +254,13 @@ public unsafe class Mod : IMod {
             // enc_frog_tinkerer2
             // enc_frog_seamstress0
             // enc_frog_seamstress1
-            // enc_frog_songstress0 (duo?)
-            // enc_frog_songstress1 (duo?)
+            // enc_frog_songstress0 (duo)
+            // enc_frog_songstress1 (duo)
             // enc_frog_painter0
             // enc_frog_idol0 (boss)
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.IntroRoom, "", 0, 0),
-                                new Notch(NotchType.Boss, "enc_frog_seamstress0", 0, 0),
+                                new Notch(NotchType.Encounter, "enc_frog_songstress0", 0, 0),
 
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer0", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer2", 0, 0),
@@ -271,14 +273,14 @@ public unsafe class Mod : IMod {
     }
 
     private RValue* LakesideDetour(
-    CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
-) {
+        CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
+    ) {
         returnValue = this.lakesideHook!.OriginalFunction(self, other, returnValue, argc, argv);
         if (this.IsReady(out var rnsReloaded)) {
             rnsReloaded.utils.setHallway(new List<Notch> {
                 new Notch(NotchType.Encounter, "enc_frog_tinkerer1", 0, 0),
                 new Notch(NotchType.Encounter, "enc_frog_seamstress1", 0, 0),
-                new Notch(NotchType.Encounter, "enc_frog_musician0", 0, 0),
+                new Notch(NotchType.Encounter, "enc_frog_songstress0", 0, 0),
                 new Notch(NotchType.Boss, "enc_frog_painter0", 0, NotchFlag.BOSS)
             }, self, rnsReloaded);
         }

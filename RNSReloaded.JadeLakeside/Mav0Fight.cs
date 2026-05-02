@@ -255,37 +255,6 @@ namespace RNSReloaded.JadeLakeside {
             return 24000 + 4000;
         }
 
-
-        void execute_pattern(CInstance* self, CInstance* other, string pattern, RValue[] args, bool resetVars = true) {
-            this.rnsReloaded.ExecuteScript("bpatt_var", self, other, args);
-            args = [new RValue(this.rnsReloaded.ScriptFindId(pattern))];
-            this.rnsReloaded.ExecuteScript("bpatt_add", self, other, args);
-            if (resetVars) {
-                this.rnsReloaded.ExecuteScript("bpatt_var_reset", self, other, []);
-            }
-        }
-
-        private RValue[] add_if_not_null(RValue[] args, string fieldName, int? value) {
-            if (value != null) {
-                return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
-            }
-            return args;
-        }
-
-        private RValue[] add_if_not_null(RValue[] args, string fieldName, bool? value) {
-            if (value != null) {
-                return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
-            }
-            return args;
-        }
-
-        private RValue[] add_if_not_null(RValue[] args, string fieldName, double? value) {
-            if (value != null) {
-                return args.Concat([this.utils.CreateString(fieldName)!.Value, new RValue(value.Value)]).ToArray();
-            }
-            return args;
-        }
-
         public override RValue* FightDetour(
             CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv
         ) {
@@ -312,7 +281,6 @@ namespace RNSReloaded.JadeLakeside {
             if (this.scrbp.time(self, other, time)) {
                 this.bp.enrage(self, other, spawnDelay: 3000, timeBetween: 500);
             }
-            time += this.OsuMech(self, other, time);
             time += this.OsuMech(self, other, time);
 
             return returnValue;

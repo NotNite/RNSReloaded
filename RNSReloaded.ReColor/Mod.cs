@@ -245,8 +245,6 @@ public unsafe class Mod : IMod {
                     this.logger.PrintMessage("Ring is null at ring " + i, this.logger.ColorRedLight);
                 }
             }
-
-
         }
 
         return returnValue;

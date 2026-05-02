@@ -1,12 +1,3 @@
-using Reloaded.Hooks.Definitions;
-using Reloaded.Imgui.Hook.Direct3D11;
-using Reloaded.Imgui.Hook.Implementations;
-using Reloaded.Imgui.Hook;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DearImguiSharp;
 using RNSReloaded.Interfaces;
 
@@ -195,6 +186,7 @@ namespace RNSReloaded.DamageTracker {
             });
         }
 
+        // Note: this only seems to fire for local characters in multiplayer, not networked players
         private void ConsumeUseMove(LogElementUseMove element) {
             if (!this.isTreasuresphere) {
                 var dmgInfo = this.damageAmounts[element.playerId][DEFAULT_ENEMY].GetValueOrDefault(element.hbId, new DamageInfo() { count = 0, damage = 0, uses = 0, totalGcd = 0 });
@@ -202,6 +194,9 @@ namespace RNSReloaded.DamageTracker {
                 dmgInfo.totalGcd += element.gcd;
                 this.damageAmounts[element.playerId][DEFAULT_ENEMY][element.hbId] = dmgInfo;
                 if (element.gcd > 0) {
+                    // Technically these should be split by player, but in practice it only
+                    // matters in local multiplayer and will make a difference of like... 1 second at max
+                    // (they were initially added in to prevent rapid changing of the GCD % display and that's a very minor QoL feature)
                     this.lastMoveTime = element.gcd;
                     this.lastMoveUsed = element.gameTime;
                 }
@@ -266,8 +261,8 @@ namespace RNSReloaded.DamageTracker {
                 long totalGCD = 0;
                 for (int i = 1; i <= 4; i++) {
                     var dict = this.getHbDamageDict(this.selectedPlayer, DEFAULT_ENEMY);
-                    if (dict.ContainsKey(i)) {
-                        totalGCD += this.getHbDamageDict(this.selectedPlayer, DEFAULT_ENEMY)[i].totalGcd;
+                    if (dict.ContainsKey(i + 14 * this.selectedPlayer)) {
+                        totalGCD += this.getHbDamageDict(this.selectedPlayer, DEFAULT_ENEMY)[i + 14 * this.selectedPlayer].totalGcd;
                     }
                 }
                 // Don't include full GCD if it hasn't finished yet

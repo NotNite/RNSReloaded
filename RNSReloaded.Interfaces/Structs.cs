@@ -223,7 +223,7 @@ public unsafe struct RValue {
         };
     }
 
-    public Span<RValue> AsSpan() {
+    public Span<RValue> IterateArray() {
         if (this.Type != RValueType.Array) return Span<RValue>.Empty;
         var length = this.ArrayLength();
         unsafe {
@@ -235,7 +235,7 @@ public unsafe struct RValue {
 
     public RValue[] ToArray() {
         if (this.Type != RValueType.Array) return [];
-        return this.AsSpan().ToArray();
+        return this.IterateArray().ToArray();
     }
 
     // Constructors
@@ -290,6 +290,7 @@ public unsafe struct RValue {
     public static implicit operator RValue(double value) => new(value);
     public static implicit operator RValue(bool value) => new(value);
     public static implicit operator RValue(RValue[] value) => new(value);
+    public static implicit operator RValue(string value) => new(value);
 
     public static explicit operator int(RValue value) => value.ToInt();
     public static explicit operator long(RValue value) => value.ToLong();

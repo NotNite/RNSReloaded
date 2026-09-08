@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Drawing;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
@@ -23,6 +25,9 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
     public IUtil utils { get; private set; }
     public IBattleScripts battleScripts { get; private set; }
     public IBattlePatterns battlePatterns { get; private set; }
+
+    private List<string> fakeVanillaMods = [];
+    private IHook<ScriptDelegate>? readsheetExternalHook;
 
     public RNSReloaded(
         WeakReference<IReloadedHooks> hooksRef,
@@ -57,10 +62,59 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
 
     private void OnRunStart() {
         this.OnReady?.Invoke();
+        if (!this.addScriptHook("scr_readsheet_external", this.ReadsheetExternalDetour, out this.readsheetExternalHook)) {
+            this.logger.PrintMessage("RNSReloaded: Failed to hook readsheet_external", Color.Red);
+        }
     }
 
     public void LimitOnlinePlay() {
         this.hooks.LimitOnlinePlay = true;
+    }
+
+    // Forces game to behave as if a workshop mod is active
+    // Thus turns off unlocks and marks lobby as modded
+    // TODO: maybe put the mod in the mods list ingame as well?
+    public void registerVanillaMod(string name) {
+        this.fakeVanillaMods.Add(name);
+    }
+
+    public bool addScriptHook(string name, ScriptDelegate detour, [NotNullWhen(true)] out IHook<ScriptDelegate>? hook) {
+        hook = null;
+        var script = this.GetScriptData(this.ScriptFindId(name) - 100000);
+        if (script == null) return false;
+        if (this.hooksRef.TryGetTarget(out var hooks)) {
+            hook = hooks.CreateHook<ScriptDelegate>(detour, script->Functions->Function)!;
+            hook.Activate();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public bool addRoutineHook(string name, RoutineDelegate detour, [NotNullWhen(true)] out IHook<RoutineDelegate>? hook) {
+        hook = null;
+        var func = this.CodeFunctionFind(name);
+        if (func == null) return false;
+        var routine = this.GetTheFunction(func!.Value);
+        if (this.hooksRef.TryGetTarget(out var hooks)) {
+            hook = hooks.CreateHook<RoutineDelegate>(detour, (nint)routine.Routine)!;
+            hook.Activate();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private RValue* ReadsheetExternalDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        returnValue = this.readsheetExternalHook!.OriginalFunction(self, other, returnValue, argc, argv);
+        // Console.WriteLine($"RR: registering {this.fakeVanillaMods.Count} fake mods");
+        if (this.fakeVanillaMods.Count == 0) return returnValue;
+        var unlockEnabled = this.FindGlobalValue("modUnlockEnabled");
+        unlockEnabled->Type = RValueType.Bool;
+        unlockEnabled->Real = 0.0;
+        var multiActiveCount = this.FindGlobalValue("modsMultiplayerActive");
+        multiActiveCount->Real += (double)this.fakeVanillaMods.Count;
+        return returnValue;
     }
 
     public CScript* GetScriptData(int id) {
@@ -148,7 +202,7 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         RValue[] args = [value->Object];
         RValue arr = IRNSReloaded.Instance.ExecuteCodeFunction("variable_instance_get_names", null, null, args) ?? new RValue([]);
         List<string> ret = [];
-        foreach (var key in arr.AsSpan()) {
+        foreach (var key in arr.IterateArray()) {
             ret.Add(key.ToString());
         }
         return ret;
@@ -201,6 +255,9 @@ public unsafe class RNSReloaded : IRNSReloaded, IDisposable {
         }
     }
 
+    public RValue? ExecuteCodeFunction(string name, RValue[] arguments) {
+        return this.ExecuteCodeFunction(name, null, null, arguments);
+    }
 
     public void OnExecuteItWrapper(ExecuteItArguments obj) {
         OnExecuteIt?.Invoke(obj);

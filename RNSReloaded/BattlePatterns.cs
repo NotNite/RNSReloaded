@@ -500,6 +500,10 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_enrage_deco", args);
     }
 
+    public void erase_patterns_network(CInstance* self, CInstance* other) {
+        this.execute_pattern(self, other, "bp_erase_patterns_network", []);
+    }
+
     // (x, y) refers to the center of the field. Element is which color (purple, yellow, red, blue)
     public void fieldlimit_rectangle(
         CInstance* self, CInstance* other, Position? position = null, int? width = null, int? height = null, int? color = null, int? targetMask = null
@@ -614,10 +618,15 @@ public unsafe class BattlePatterns : IBattlePatterns {
     }
 
     public void gravity_pull(
-        CInstance* self, CInstance* other, double? mult = null
+        CInstance* self, CInstance* other, double? mult = null, Position? position = null
     ) {
         RValue[] args = [];
         args = this.add_if_not_null(args, "mult", mult);
+
+        if (position != null) {
+            args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
+            args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
+        }
 
         this.execute_pattern(self, other, "bp_gravity_pull", args);
     }
@@ -1080,6 +1089,22 @@ public unsafe class BattlePatterns : IBattlePatterns {
         this.execute_pattern(self, other, "bp_setgamespeed", args);
     }
 
+    public void setgamespeed_temp(CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? timeMult = null) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "timeMult", timeMult);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+
+        this.execute_pattern(self, other, "bp_setgamespeed_temp", args);
+    }
+
+    public void setzoom(CInstance* self, CInstance* other, double? zoom = null) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "scale", zoom);
+
+        this.execute_pattern(self, other, "bp_setzoom", args);
+    }
+
     public void showgroups(
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, (int, int, int, int)? groupMasks = null
     ) {
@@ -1093,7 +1118,6 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("orderBin_2")!.Value, new RValue(groupMasks.Value.Item3)]).ToArray();
             args = args.Concat([this.utils.CreateString("orderBin_3")!.Value, new RValue(groupMasks.Value.Item4)]).ToArray();
         }
-        
 
         this.execute_pattern(self, other, "bp_showgroups", args);
     }
@@ -1113,23 +1137,53 @@ public unsafe class BattlePatterns : IBattlePatterns {
             args = args.Concat([this.utils.CreateString("orderBin_3")!.Value, new RValue(orderMasks.Value.Item4)]).ToArray();
         }
 
-
         this.execute_pattern(self, other, "bp_showorder", args);
     }
 
     public void tailwind(
-        CInstance* self, CInstance* other, int? eraseDelay = null
+        CInstance* self, CInstance* other, int? eraseDelay = null, int? spawnDelay = null, int? trgBinary = null, double? mult = null
     ) {
         RValue[] args = [];
         args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "trgBinary", trgBinary);
+        args = this.add_if_not_null(args, "mult", mult);
+
         this.execute_pattern(self, other, "bp_tailwind", args);
     }
 
     public void tailwind_permanent(
-        CInstance* self, CInstance* other
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? trgBinary = null, double? mult = null
     ) {
         RValue[] args = [];
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "trgBinary", trgBinary);
+        args = this.add_if_not_null(args, "mult", mult);
+
         this.execute_pattern(self, other, "bp_tailwind_permanent", args);
+    }
+
+    public void teleport_dist(
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, int? type = null, Position[]? offsets = null
+    ) {
+        RValue[] args = [];
+        args = this.add_if_not_null(args, "spawnDelay", spawnDelay);
+        args = this.add_if_not_null(args, "eraseDelay", eraseDelay);
+        args = this.add_if_not_null(args, "type", type);
+
+        if (offsets == null) {
+            this.execute_pattern(self, other, "bp_teleport_dist", args);
+            return;
+        }
+
+        var i = 0;
+        foreach (var pos in offsets) {
+            args = this.add_if_not_null(args, "offX_" + i, pos.x);
+            args = this.add_if_not_null(args, "offY_" + i, pos.y);
+            i += 1;
+        }
+
+        this.execute_pattern(self, other, "bp_teleport_dist", args);
     }
 
     public void tether(
@@ -1268,7 +1322,7 @@ public unsafe class BattlePatterns : IBattlePatterns {
         if (position != null) {
             args = args.Concat([this.utils.CreateString("x")!.Value, new RValue(position.Value.x)]).ToArray();
             args = args.Concat([this.utils.CreateString("y")!.Value, new RValue(position.Value.y)]).ToArray();
-        }        
+        }
 
         this.execute_pattern(self, other, "bp_water2_line", args);
     }

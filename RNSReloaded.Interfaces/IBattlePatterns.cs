@@ -109,6 +109,8 @@ public unsafe interface IBattlePatterns {
 
     public void enrage_deco(CInstance* self, CInstance* other, int? warningDelay = null, int? spawnDelay = null);
 
+    public void erase_patterns_network(CInstance* self, CInstance* other);
+
     // (x, y) refers to the center of the field. Element is which color (purple, yellow, red, blue)
     public void fieldlimit_rectangle(
         CInstance* self, CInstance* other, Position? position = null, int? width = null, int? height = null, int? color = null, int? targetMask = null
@@ -136,7 +138,7 @@ public unsafe interface IBattlePatterns {
     );
 
     public void gravity_pull(
-        CInstance* self, CInstance* other, double? mult = null
+        CInstance* self, CInstance* other, double? mult = null, Position? position = null
     );
 
     public void gravity_pull_temporary(
@@ -243,6 +245,10 @@ public unsafe interface IBattlePatterns {
 
     public void setgamespeed(CInstance* self, CInstance* other, int? spawnDelay = null, double? timeMult = null);
 
+    public void setgamespeed_temp(CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, double? timeMult = null);
+
+    public void setzoom(CInstance* self, CInstance* other, double? zoom = null);
+
     public void showgroups(
         CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, (int, int, int, int)? groupMasks = null
     );
@@ -252,11 +258,15 @@ public unsafe interface IBattlePatterns {
     );
 
     public void tailwind(
-        CInstance* self, CInstance* other, int? eraseDelay = null
+        CInstance* self, CInstance* other, int? eraseDelay = null, int? spawnDelay = null, int? trgBinary = null, double? mult = null
     );
 
     public void tailwind_permanent(
-        CInstance* self, CInstance* other
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? trgBinary = null, double? mult = null
+    );
+
+    public void teleport_dist(
+        CInstance* self, CInstance* other, int? spawnDelay = null, int? eraseDelay = null, int? type = null, Position[]? offsets = null
     );
 
     public void tether(

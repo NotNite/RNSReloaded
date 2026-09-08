@@ -13,7 +13,6 @@ public unsafe class Functions {
     public delegate RValue* FindValueDelegate(CInstance* instance, char* name);
     public delegate RValue* ArrayGetEntryDelegate(nint array, int index);
     public delegate char* YYGetStringDelegate(RValue* value, int unk);
-    public delegate int StructGetKeysDelegate(RValue* value, char** keys, int* count);
     public delegate int YYCreateStringDelegate(RValue* value, char* str);
     public delegate RValue* CallScriptFunctionDelegate(CInstance* self, CInstance* other, RValue* result, int num_args, int id, RValue** args, long _, long __);
 
@@ -24,7 +23,6 @@ public unsafe class Functions {
     public FindValueDelegate FindValue = null!;
     public ArrayGetEntryDelegate ArrayGetEntry = null!;
     public YYGetStringDelegate YYGetString = null!;
-    public StructGetKeysDelegate StructGetKeys = null!;
     public YYCreateStringDelegate YYCreateString = null!;
     public CallScriptFunctionDelegate callScriptFunction = null!;
 
@@ -47,8 +45,6 @@ public unsafe class Functions {
             addr => { this.FindValue = Marshal.GetDelegateForFunctionPointer<FindValueDelegate>(addr); });
         this.utils.Scan("40 53 56 48 83 EC ?? 48 63 F2",
             addr => { this.YYGetString = Marshal.GetDelegateForFunctionPointer<YYGetStringDelegate>(addr); });
-        this.utils.Scan("48 83 EC 38 48 89 74 24 ??",
-            addr => { this.StructGetKeys = Marshal.GetDelegateForFunctionPointer<StructGetKeysDelegate>(addr); });
         this.utils.Scan("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 48 83 C4 ?? 5F C3 4C 3B 05",
             addr => { this.YYCreateString = Marshal.GetDelegateForFunctionPointer<YYCreateStringDelegate>(addr); });
         this.utils.Scan("40 55 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8D 6C 24 ?? 48 89 5D ?? 48 89 75 ?? 48 89 7D ?? 48 8B 05 ?? ?? ?? ?? 48 33 C5 48 89 45 ?? 48 63 45", addr => {

@@ -7,12 +7,12 @@ using System.Diagnostics.CodeAnalysis;
 using RNSReloaded.BigFish.Config;
 
 /*
-    🐀   🐀
-🐀           🐀
+    🐟   🐟
+🐟           🐟
   "TO ME, MY ALLIES!"
-      🎷🐁
-🐀           🐀
-      🐀
+    🎷🐠🦈🐡
+🐟           🐟
+      🐟
 */
 
 namespace RNSReloaded.BigFish;

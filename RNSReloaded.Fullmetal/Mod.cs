@@ -301,18 +301,6 @@ public unsafe class Mod : IMod {
         return encChaotic;
     }
 
-    private static class NotchFlag {
-        public const int BOSS = 1;           // Regular area boss
-        public const int FINAL_BOSS = 2;     // Final boss
-        public const int TOXBOX_BOSS = 4;    // Toybox boss
-        public const int SHOPKEEP_CAT = 8;   // Asha shop
-        public const int SHOPKEEP_WOLF = 16; // Tassha rich wolf!
-        public const int SHOPKEEP_BIRD = 32; // Saya shop
-        public const int FLOWER_FIGHT = 64;  // Spawns vine deco/background change
-        public const int FINALSONG = 128;    // For the credits, play the last CS song
-        public const int MUSICFADE = 256;    // For the credits, fade out the music instead after notch
-    }
-
     private static string RouteConfigToHallkey (Config.Config.RouteConfig routeConfig) {
         return routeConfig switch {
             // base

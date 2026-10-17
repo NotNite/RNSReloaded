@@ -342,7 +342,60 @@ public unsafe class Mod : IMod {
 
         // structure each hall based on route type (since they have different amount of notches)
         string[][] enc = [];
-        if (this.routeType == 0) { // BASE GAME / KINGDOM
+        if (true) { // DEBUG
+            // get encounters
+            string[] mainAreas = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
+            this.hallRand.Shuffle(mainAreas);
+            // choose route
+            string start = RouteConfigToHallkey(this.config.Route);
+            if (start != "") {
+                int index = Array.IndexOf(this.hallkeys, start);
+                if (index > 0) {
+                    // Swap the first element with the element at the found index
+                    string temp = this.hallkeys[0];
+                    this.hallkeys[0] = this.hallkeys[index];
+                    this.hallkeys[index] = temp;
+                }
+            }
+            // set encounters
+            enc = [this.getEncFromHallkey("hw_outskirts")];
+            foreach (var area in mainAreas) {
+                enc = [.. enc, this.getEncFromHallkey(area)];
+            }
+            enc = [.. enc, this.getEncFromHallkey("hw_keep")];
+            enc = [.. enc, this.getEncFromHallkey("hw_pinnacle")];
+            // set hallkeys
+            this.route = ["hw_outskirts", .. mainAreas, "hw_keep", "hw_pinnacle"];
+            this.hallkeys = ["hw_outskirts", mainAreas[0], mainAreas[2], mainAreas[4], "hw_keep", "hw_pinnacle"];
+
+            // create notches
+            hall[0] = [
+                new(NotchType.IntroRoom, "", this.getRandInt(), 0),
+                new(NotchType.Encounter, enc[0][0], this.getRandInt(), 0),
+            ];
+            hall[1] = [ // first and second area (first hall)
+                new(NotchType.Shop, "", this.getRandInt(), 0),
+                new(NotchType.Encounter, enc[1][2], this.getRandInt(), 0),
+            ];
+            hall[2] = [ // third and fourth area (second hall)
+                new(NotchType.Shop, "", this.getRandInt(), 0),
+                new(NotchType.Encounter, enc[3][2], this.getRandInt(), 0),
+            ];
+            hall[3] = [ // fifth area (third hall)
+                new(NotchType.Shop, "", this.getRandInt(), 0),
+                new(NotchType.Encounter, enc[5][2], this.getRandInt(), 0),
+            ];
+            hall[4] = [
+                new(NotchType.Shop, "", this.getRandInt(), 0),
+                new(NotchType.Encounter, enc[6][0], this.getRandInt(), 0),
+            ];
+            hall[5] = [
+                new(NotchType.PinnacleCutscene, enc[7][0], this.getRandInt(), 0),
+                new(NotchType.FinalBoss, enc[7][0], this.getRandInt(), NotchFlag.BOSS + NotchFlag.FINAL_BOSS),
+                new(NotchType.EndRun, "", this.getRandInt(), 0),
+            ];
+        }
+        else if (this.routeType == 0) { // BASE GAME / KINGDOM
             // get encounters
             string[] mainAreas = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
             this.hallRand.Shuffle(mainAreas);
@@ -915,7 +968,7 @@ public unsafe class Mod : IMod {
             // check and change hallway
             if (this.isNewHall(out var currentHallkey)) {
                 int stage = stageFromKey(currentHallkey);
-                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1))) {
+                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1) || (this.routeType == 0))) {
                     this.erasingPotions = true;
                     rnsReloaded.ExecuteScript("scr_itemsys_erase_potions", this.potionSelf, this.potionOther, []);
                     this.erasingPotions = false;

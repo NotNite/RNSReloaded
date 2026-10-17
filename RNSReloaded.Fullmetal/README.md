@@ -2,13 +2,12 @@
 
 **Limits online play.**
 
-For the truly dedicated.
+*For the truly dedicated.*
 Every encounter and area will now be visited. Gold and EXP are rebalanced.
 
 ## Important Notes
 - This is meant to be an accompaniment to Steelheart
 - Do not use toybox with this mod. If the game crashes on start, try starting a regular game in vanilla, then relaunching Fullmetal
-- Does not support choosing starting area. Just use Pale Keep
 - Overall gold and EXP will be more than a normal run. This is inevitable due to rounding
 - Topaz Charm, Gold Potions, and Tanzakus are more useful
 - Health bars in encounters with multiple enemies are known to desync. This is mainly a visual thing and shouldn't affect gameplay too much
@@ -20,11 +19,11 @@ Every encounter and area will now be visited. Gold and EXP are rebalanced.
 Because of hallway limitations, there are still 6 hallways in Fullmetal. However, all areas are included.
 Where Hallway 2 would usually contain one area, it contains 2 in Fullmetal. This is also true for Hallway 3. Hallway 4 contains 1 area.
 
-Hallway 1: Outskirts
-Hallway 2: Areas 1 & 2
-Hallway 3: Areas 3 & 4
-Hallway 4: Area 5
-Hallway 5: Pale Keep
+Hallway 1: Outskirts <br>
+Hallway 2: Areas 1 & 2 <br>
+Hallway 3: Areas 3 & 4 <br>
+Hallway 4: Area 5 <br>
+Hallway 5: Pale Keep <br>
 Hallway 6: Moonlit Pinnacle
 
 In the final route display of the game, only the first areas of each hallway is shown. That would be Outskirts, Area 1, Area 3, Area 5, and Pale Keep.
@@ -81,3 +80,19 @@ Levels and Notches of Each Area
 | 11        |              |              |              |              |              |       |           |
 | 12        |              |              |              |              |              |       |           |
 | 13        |              |              |              |              |              |       |           |
+
+# Special Thanks
+Thank you to the following people for helping me with the production of this mod
+
+**Development**
+- glassoup
+- fuzzything44
+- mino_dev
+
+**Testing**
+- kkx
+- ry_i
+- TomeKing
+- tranced
+- xgit
+- yuuniquea

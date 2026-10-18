@@ -13,8 +13,8 @@ public class Config : Configurable<Config> {
     [DefaultValue(false)]
     public bool LimitHealth { get; set; } = false;
 
-    [DisplayName("Max Speed -2")]
-    [Description("Restricts max movement speed to a base of -2")]
+    [DisplayName("Intended Speed")]
+    [Description("Restricts max movement speed to intended speeds")]
     [DefaultValue(false)]
     public bool LimitSpeed { get; set; } = false;
 

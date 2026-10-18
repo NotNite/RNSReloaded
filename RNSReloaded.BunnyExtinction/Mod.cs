@@ -25,7 +25,8 @@ namespace RNSReloaded.BunnyExtinction;
 
 public unsafe class Mod : IMod {
     private const int SCRIPTCONST = 100000;
-    private const double BBQSPEED = 6.30;
+    private const double BBQSPEEDBASE = 6.3; // 7.7 + 0.7 * -2 | Pre-DLC intended speed
+    private const double BBQSPEEDDLC = 7; // 7.7 + 0.7 * -1 | DLC intended speed
 
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
@@ -39,17 +40,19 @@ public unsafe class Mod : IMod {
     private bool invulnOn = false;
     private int deadPlayers = 0; // bitmask representing dead players
     private List<(int, long)> hpItems = [];
-    private double[] movementSpeeds = { BBQSPEED, BBQSPEED, BBQSPEED, BBQSPEED };
+    private double[] movementSpeeds = { BBQSPEEDDLC, BBQSPEEDDLC, BBQSPEEDDLC, BBQSPEEDDLC };
+
+    private double baseSpeed = BaseSpeedToPPS(false);
 
     private bool isTakingDamage = false;
     private int shiraSteelCount = 0;
 
-    private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
-    private List<string> disableScripts = [
+    private static readonly Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = [];
+    private readonly List<string> disableScripts = [
         "scr_char_set_forcedmarch",
         "bp_rabbit_queen1_steel_activate"
     ];
-    private List<string> bbqScripts = [
+    private readonly List<string> bbqScripts = [
         "scr_diffswitch", // max health
         "scr_player_charspeed_calc",  // speed limit
         "scrbp_movespeed_mult",
@@ -66,34 +69,37 @@ public unsafe class Mod : IMod {
         "scr_hbsflag_check",
         "scr_player_radius_calc" // hitbox
     ];
-    private List<string> limitHealthScripts = [
+    private readonly List<string> limitHealthScripts = [
         "scr_diffswitch", // max health
     ];
-    private List<string> limitSpeedScripts = [
+    private readonly List<string> limitSpeedScripts = [
         "scr_player_charspeed_calc",  // speed limit
         "scrbp_movespeed_mult",
         "ipat_hblade_2",
         "ipat_bruiser_3_pt2",
         "ipat_winged_cap",
+        "ipat_shadow_1",
+        "ipat_shadow_1_ruby",
+        "ipat_shadow_3_opal",
     ];
-    private List<string> bulletDeletionScripts = [
+    private readonly List<string> bulletDeletionScripts = [
         "scrbp_erase_radius", // bullet deletion
     ];
-    private List<string> permadeathScripts = [
+    private readonly List<string> permadeathScripts = [
         "scr_kotracker_draw_timer",  // permadeath
         "scr_kotracker_can_revive",
         "scrbp_time_repeating",
     ];
-    private List<string> invulnScripts = [
+    private readonly List<string> invulnScripts = [
         "scr_player_invuln", // invuln
         "scr_pattern_deal_damage_ally",
         "scrbp_warning_msg_enrage",
         "scr_hbsflag_check",
     ];
-    private List<string> setHitboxScripts = [
+    private readonly List<string> setHitboxScripts = [
         "scr_player_radius_calc" // hitbox
     ];
-    private List<string> steelheartScripts = [
+    private readonly List<string> steelheartScripts = [
         "bp_rabbit_queen1_steel_activate" // steelheart compatibility
     ];
 
@@ -122,7 +128,6 @@ public unsafe class Mod : IMod {
             && this.rnsReloadedRef.TryGetTarget(out IRNSReloaded? rnsReloaded)
         ) {
             rnsReloaded.LimitOnlinePlay();
-
             this.InitializeHooks();
         }
     }
@@ -176,6 +181,9 @@ public unsafe class Mod : IMod {
             { "scrbp_movespeed_mult", this.MovespeedMultDetour},
             { "ipat_hblade_2", this.Hblade2Detour},
             { "ipat_bruiser_3_pt2", this.Bruiser3pt2Detour},
+            { "ipat_shadow_1", this.Shadow1Detour},
+            { "ipat_shadow_1_ruby", this.Shadow1RubyDetour},
+            { "ipat_shadow_3_opal", this.Shadow3OpalDetour},
             { "scr_char_set_forcedmarch", this.ForcedmarchDetour},
             { "ipat_winged_cap", this.WingedCapDetour},
             // bullet deletion
@@ -210,6 +218,11 @@ public unsafe class Mod : IMod {
         }
 
         this.ConfigSetupHooks();
+    }
+
+    private static double BaseSpeedToPPS(bool isKingdom) {
+        if (isKingdom) return BBQSPEEDBASE;
+        return BBQSPEEDDLC;
     }
 
     private void ConfigSetupHooks() {
@@ -256,6 +269,11 @@ public unsafe class Mod : IMod {
     private RValue* EncounterDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scrdt_encounter"];
         this.inBattle = true;
+
+        // update speed based on base/dlc
+        bool isKingdom = SpeedLookup.IsKingdomEncounter(argv[0]->ToString());
+        this.baseSpeed = BaseSpeedToPPS(isKingdom);
+
         if (this.newRun) {
             // reset things
             this.ConfigSetupHooks(); // update settings at the start of every run
@@ -331,6 +349,7 @@ public unsafe class Mod : IMod {
         // goes through and removes +hp from items
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             RValue* itemStat = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "itemStat");
+            if (itemStat is null) return;
             RValue rlength = rnsReloaded.ArrayGetLength(itemStat) ?? new RValue(-1);
             for (int i = 0; i < utils.RValueToLong(&rlength); i++) {
                 RValue* itemHp = itemStat->Get(i)->Get(0)->Get(1); // location of hp stat
@@ -353,8 +372,8 @@ public unsafe class Mod : IMod {
             int id = (int) utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
             this.movementSpeeds[id] = utils.RValueToDouble(returnValue);
             // cap at -2
-            if (utils.RValueToDouble(returnValue) > BBQSPEED) {
-                *returnValue = new RValue(BBQSPEED);
+            if (utils.RValueToDouble(returnValue) > this.baseSpeed) {
+                *returnValue = new RValue(this.baseSpeed);
             }
         }
         return returnValue;
@@ -365,10 +384,10 @@ public unsafe class Mod : IMod {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             int id = (int) utils.RValueToLong(rnsReloaded.FindValue(self, "playerId"));
             // change mult to be based off original movement speed and cap at -2
-            if (argv[0]->Real * this.movementSpeeds[id] > BBQSPEED) {
+            if (argv[0]->Real * this.movementSpeeds[id] > this.baseSpeed) {
                 argv[0]->Real = 1.0;
             } else {
-                argv[0]->Real = argv[0]->Real * this.movementSpeeds[id] / BBQSPEED;
+                argv[0]->Real = argv[0]->Real * this.movementSpeeds[id] / this.baseSpeed;
             }
         }
         returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
@@ -391,6 +410,39 @@ public unsafe class Mod : IMod {
         return returnValue;
     }
 
+    private RValue* Shadow1Detour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["ipat_shadow_1"];
+        ScriptHooks["scr_char_set_forcedmarch"].Enable(); // only normalize march when these abilities are used
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        ScriptHooks["scr_char_set_forcedmarch"].Disable();
+        return returnValue;
+    }
+
+    private RValue* Shadow1RubyDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["ipat_shadow_1_ruby"];
+        ScriptHooks["scr_char_set_forcedmarch"].Enable(); // only normalize march when these abilities are used
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        ScriptHooks["scr_char_set_forcedmarch"].Disable();
+        return returnValue;
+    }
+
+    private RValue* Shadow3OpalDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = ScriptHooks["ipat_shadow_3_opal"];
+        ScriptHooks["scr_char_set_forcedmarch"].Enable(); // only normalize march when these abilities are used
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+        ScriptHooks["scr_char_set_forcedmarch"].Disable();
+        return returnValue;
+    }
+
+    // shadow
+    // ipat_shadow_1
+    // ipat_shadow_1_garnet
+    // ipat_shadow_1_pt2
+    // ipat_shadow_1_pt2_ruby
+    // ipat_shadow_1_ruby
+    // ipat_shadow_1_saph
+    // ipat_shadow_3_opal
+
     private RValue* ForcedmarchDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
         var hook = ScriptHooks["scr_char_set_forcedmarch"];
         
@@ -408,10 +460,10 @@ public unsafe class Mod : IMod {
             double deltaY = utils.RValueToDouble(argv[1]) - prevY;
 
             double currSpeed = Double.Hypot(deltaX, deltaY) / (time / 1000);
-            if (currSpeed > BBQSPEED * 60) { // impose speed limit if larger than BBQ speed
+            if (currSpeed > this.baseSpeed * 60) { // impose speed limit if larger than BBQ speed
                 double theta = Math.Atan2(deltaY, deltaX);
-                double newX = Math.Cos(theta) * BBQSPEED * 60 * time / 1000 + prevX;
-                double newY = Math.Sin(theta) * BBQSPEED * 60 * time / 1000 + prevY;
+                double newX = Math.Cos(theta) * this.baseSpeed * 60 * time / 1000 + prevX;
+                double newY = Math.Sin(theta) * this.baseSpeed * 60 * time / 1000 + prevY;
                 argv[0]->Real = newX;
                 argv[1]->Real = newY;
             }
@@ -464,7 +516,7 @@ public unsafe class Mod : IMod {
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             return returnValue;
         };
-    }   
+    }
 
     // invuln hooks
     private RValue* PlayerDmgDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {

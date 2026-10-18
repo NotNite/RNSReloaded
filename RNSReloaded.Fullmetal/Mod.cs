@@ -978,7 +978,8 @@ public unsafe class Mod : IMod {
             // check and change hallway
             if (this.isNewHall(out var currentHallkey)) {
                 int stage = stageFromKey(currentHallkey);
-                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1) || (this.routeType == 0))) {
+                // if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1))) { //  || (this.routeType == 0)
+                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1) || (this.routeType < 2))) {
                     this.erasingPotions = true;
                     rnsReloaded.ExecuteScript("scr_itemsys_erase_potions", this.potionSelf, this.potionOther, []);
                     this.erasingPotions = false;

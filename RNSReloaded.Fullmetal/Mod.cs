@@ -342,7 +342,7 @@ public unsafe class Mod : IMod {
 
         // structure each hall based on route type (since they have different amount of notches)
         string[][] enc = [];
-        if (true) { // DEBUG
+        if (false) { // DEBUG
             // get encounters
             string[] mainAreas = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
             this.hallRand.Shuffle(mainAreas);
@@ -390,7 +390,7 @@ public unsafe class Mod : IMod {
                 new(NotchType.Encounter, enc[6][0], this.getRandInt(), 0),
             ];
             hall[5] = [
-                new(NotchType.PinnacleCutscene, enc[7][0], this.getRandInt(), 0),
+                new(NotchType.PinnacleCutscene, "pinnacle", this.getRandInt(), 0),
                 new(NotchType.FinalBoss, enc[7][0], this.getRandInt(), NotchFlag.BOSS + NotchFlag.FINAL_BOSS),
                 new(NotchType.EndRun, "", this.getRandInt(), 0),
             ];
@@ -785,6 +785,16 @@ public unsafe class Mod : IMod {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             this.hallCount += 1;
+
+            var notches = rnsReloaded.FindValue(self, "notches");
+            Console.WriteLine(notches->ToString());
+            //RValue len = (RValue) rnsReloaded.ArrayGetLength(notches);
+            //var l2 = utils.RValueToLong(&len);
+            //for (int i = 0; i < l2; i++) {
+            //    var notch = notches[i];
+            //    Console.WriteLine(notch);
+            //}
+
             utils.setHallway(createNotches(this.hallCount), self, rnsReloaded);
         }
         return returnValue;

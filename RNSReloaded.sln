@@ -43,11 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.DamageTracker",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.BigFish", "RNSReloaded.BigFish\RNSReloaded.BigFish.csproj", "{207520C3-0A72-20C7-8869-2AD38FCC1881}"
 EndProject
-<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RNSReloaded.BunnyExtinction", "..\RNSReloaded post dlc\RNSReloaded.BunnyExtinction\RNSReloaded.BunnyExtinction.csproj", "{613ECBCA-7CF4-07AB-DE32-4C1C1859D614}"
 EndProject
-=======
->>>>>>> upstream/main
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,13 +131,10 @@ Global
 		{207520C3-0A72-20C7-8869-2AD38FCC1881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{207520C3-0A72-20C7-8869-2AD38FCC1881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{207520C3-0A72-20C7-8869-2AD38FCC1881}.Release|Any CPU.Build.0 = Release|Any CPU
-<<<<<<< HEAD
 		{613ECBCA-7CF4-07AB-DE32-4C1C1859D614}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{613ECBCA-7CF4-07AB-DE32-4C1C1859D614}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{613ECBCA-7CF4-07AB-DE32-4C1C1859D614}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{613ECBCA-7CF4-07AB-DE32-4C1C1859D614}.Release|Any CPU.Build.0 = Release|Any CPU
-=======
->>>>>>> upstream/main
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

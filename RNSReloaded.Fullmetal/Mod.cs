@@ -520,7 +520,7 @@ public unsafe class Mod : IMod {
             enc = [.. enc, this.getEncFromHallkey("hw_reflection")];
             // set hallkeys
             this.route = ["hw_geode", .. mainAreas, "hw_darkhall", "hw_reflection"];
-            this.hallkeys = ["hw_outskirts", .. mainAreas, "hw_darkhall", "hw_reflection"];
+            this.hallkeys = ["hw_geode", .. mainAreas, "hw_darkhall", "hw_reflection"];
 
             // create notches
             hall[0] = [
@@ -595,7 +595,7 @@ public unsafe class Mod : IMod {
             // set hallkeys
             this.route = [.. startAreas, .. mainAreas, .. endAreas, .. finalAreas];
             this.hallkeys = [startAreas[0], startAreas[1], mainAreas[2], mainAreas[5], mainAreas[7], finalAreas[0]];
-            this.hallkeys[1] = this.route[2];
+            // this.hallkeys[1] = this.route[2];
 
             // their encounters must be fetched independently though
             if (this.routeType == 2) { // TRUE RANDOM
@@ -736,6 +736,16 @@ public unsafe class Mod : IMod {
                 new(NotchType.EndRun, "", this.getRandInt(), 0),
             ];
         }
+
+        foreach (var h in hall) {
+            if (h == null) continue;
+            for (var i = 0; i < h.Count; i++) {
+                if (h[i].Encounter == "enc_sanct_flower0") {
+                    h[i] = new(NotchType.Encounter, "enc_sanct_flower0", h[i].Seed, NotchFlag.FLOWER_FIGHT);
+                }
+            }
+        }
+
         return hall;
     }
 
@@ -787,7 +797,7 @@ public unsafe class Mod : IMod {
             this.hallCount += 1;
 
             var notches = rnsReloaded.FindValue(self, "notches");
-            Console.WriteLine(notches->ToString());
+            // Console.WriteLine(notches->ToString());
             //RValue len = (RValue) rnsReloaded.ArrayGetLength(notches);
             //var l2 = utils.RValueToLong(&len);
             //for (int i = 0; i < l2; i++) {
@@ -1067,8 +1077,9 @@ public unsafe class Mod : IMod {
             this.potionSelf = self;
             this.potionOther = other;
         }
+        Console.WriteLine(this.hallCount);
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            if ((this.routeType != 2 && this.routeType != 3) || this.erasingPotions)
+            if ((this.routeType != 2 && this.routeType != 3) || (this.erasingPotions || this.hallCount == 3 || this.hallCount == 5))
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         }
         return returnValue;

@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 using Reloaded.Hooks.Definitions;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
+
 using RNSReloaded.Fullmetal.Config;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 /*
     🐀   🐀
@@ -25,7 +25,6 @@ public unsafe class Mod : IMod {
 
     private WeakReference<IRNSReloaded>? rnsReloadedRef;
     private WeakReference<IReloadedHooks>? hooksRef;
-    private ILoggerV1 logger = null!;
     private Configurator configurator = null!;
     private Config.Config config = null!;
     private Random hallRand = new();
@@ -34,24 +33,22 @@ public unsafe class Mod : IMod {
     private string[] hallkeys = [];
     private List<Notch>[] hallNotches = [];
     private int routeType = 0;
-    private int hallCount = -1;
     private int notchCount = 0;
+    private int hallCount = -1;
 
     private CInstance* potionSelf;
     private CInstance* potionOther;
     private bool potionStored = false;
     private bool erasingPotions = false;
 
-    private static Dictionary<string, IHook<ScriptDelegate>> ScriptHooks = new();
+    private readonly Dictionary<string, IHook<ScriptDelegate>> scriptHooks = [];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
         this.hooksRef = loader.GetController<IReloadedHooks>()!;
-        this.logger = loader.GetLogger();
 
-        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)) {
+        if (this.rnsReloadedRef.TryGetTarget(out var rnsReloaded))
             rnsReloaded.OnReady += this.Ready;
-        }
 
         this.configurator = new Configurator(((IModLoader) loader).GetModConfigDirectory(modConfig.ModId));
         this.config = this.configurator.GetConfiguration<Config.Config>(0);
@@ -65,10 +62,9 @@ public unsafe class Mod : IMod {
     public void Ready() {
         if (
             this.rnsReloadedRef != null
-            && this.rnsReloadedRef.TryGetTarget(out IRNSReloaded? rnsReloaded)
+            && this.rnsReloadedRef.TryGetTarget(out var rnsReloaded)
         ) {
             rnsReloaded.LimitOnlinePlay();
-
             this.InitializeHooks();
         }
     }
@@ -141,20 +137,18 @@ public unsafe class Mod : IMod {
             "scr_hallwaygen_mod",
         ];
 
-        foreach (string script in hallwaygenScripts) {
+        foreach (var script in hallwaygenScripts)
             detourMap[script] = this.MakeHallwayGenDetour(script);
-        }
 
         foreach (var detourPair in detourMap) {
             this.CreateAndEnableHook(detourPair.Key, detourPair.Value, out var hook);
-            if (hook != null) {
-                ScriptHooks[detourPair.Key] = hook;
-            }
+            if (hook != null) this.scriptHooks[detourPair.Key] = hook;
         }
     }
 
     private int getRandInt() => this.hallRand.Next(0, maxValue: int.MaxValue);
 
+    #region EncounterData
     private static readonly Dictionary<string, string[][]> EncFromKeyMap = new() {
         // first element of value is static enc, not to be randomized
         // subsequent ones are meant to be shuffled
@@ -285,8 +279,8 @@ public unsafe class Mod : IMod {
     ];
 
     private string[] getEncFromHallkey(string key) {
-        string[][] encList = EncFromKeyMap[key];
-        string[] newEnc = encList[0];
+        var encList = EncFromKeyMap[key];
+        var newEnc = encList[0];
         for (uint i = 1; i < encList.Length; i++) {
             this.hallRand.Shuffle(encList[i]);
             newEnc = [.. newEnc, .. encList[i]];
@@ -295,7 +289,7 @@ public unsafe class Mod : IMod {
     }
 
     private string[][] getEncChaotic() {
-        string[][] encChaotic = EncChaotic;
+        var encChaotic = EncChaotic;
         foreach (var encs in encChaotic)
             this.hallRand.Shuffle(encs);
         return encChaotic;
@@ -316,9 +310,11 @@ public unsafe class Mod : IMod {
             _ => ""
         };
     }
+    #endregion
 
+    #region Notches
     private List<Notch>[] CreateNotches(Config.Config.RouteConfig route) {
-        List<Notch>[] hall = new List<Notch>[7];
+        var hall = new List<Notch>[7];
 
         // determine which route type it is (base, dlc, true, chaotic)
         this.routeType = route switch {
@@ -341,80 +337,24 @@ public unsafe class Mod : IMod {
         };
 
         // structure each hall based on route type (since they have different amount of notches)
-        string[][] enc = [];
-        if (false) { // DEBUG
+        string[][] enc;
+        if (this.routeType == 0) { // BASE GAME / KINGDOM
             // get encounters
             string[] mainAreas = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
             this.hallRand.Shuffle(mainAreas);
             // choose route
-            string start = RouteConfigToHallkey(this.config.Route);
+            var start = RouteConfigToHallkey(this.config.Route);
             if (start != "") {
-                int index = Array.IndexOf(this.hallkeys, start);
-                if (index > 0) {
-                    // Swap the first element with the element at the found index
-                    string temp = this.hallkeys[0];
-                    this.hallkeys[0] = this.hallkeys[index];
-                    this.hallkeys[index] = temp;
-                }
+                var index = Array.IndexOf(this.hallkeys, start);
+                // Swap the first element with the element at the found index
+                if (index > 0)
+                    (this.hallkeys[index], this.hallkeys[0]) = (this.hallkeys[0], this.hallkeys[index]);
             }
             // set encounters
             enc = [this.getEncFromHallkey("hw_outskirts")];
-            foreach (var area in mainAreas) {
+            foreach (var area in mainAreas)
                 enc = [.. enc, this.getEncFromHallkey(area)];
-            }
-            enc = [.. enc, this.getEncFromHallkey("hw_keep")];
-            enc = [.. enc, this.getEncFromHallkey("hw_pinnacle")];
-            // set hallkeys
-            this.route = ["hw_outskirts", .. mainAreas, "hw_keep", "hw_pinnacle"];
-            this.hallkeys = ["hw_outskirts", mainAreas[0], mainAreas[2], mainAreas[4], "hw_keep", "hw_pinnacle"];
 
-            // create notches
-            hall[0] = [
-                new(NotchType.IntroRoom, "", this.getRandInt(), 0),
-                new(NotchType.Encounter, enc[0][0], this.getRandInt(), 0),
-            ];
-            hall[1] = [ // first and second area (first hall)
-                new(NotchType.Shop, "", this.getRandInt(), 0),
-                new(NotchType.Encounter, enc[1][2], this.getRandInt(), 0),
-            ];
-            hall[2] = [ // third and fourth area (second hall)
-                new(NotchType.Shop, "", this.getRandInt(), 0),
-                new(NotchType.Encounter, enc[3][2], this.getRandInt(), 0),
-            ];
-            hall[3] = [ // fifth area (third hall)
-                new(NotchType.Shop, "", this.getRandInt(), 0),
-                new(NotchType.Encounter, enc[5][2], this.getRandInt(), 0),
-            ];
-            hall[4] = [
-                new(NotchType.Shop, "", this.getRandInt(), 0),
-                new(NotchType.Encounter, enc[6][0], this.getRandInt(), 0),
-            ];
-            hall[5] = [
-                new(NotchType.PinnacleCutscene, "pinnacle", this.getRandInt(), 0),
-                new(NotchType.FinalBoss, enc[7][0], this.getRandInt(), NotchFlag.BOSS + NotchFlag.FINAL_BOSS),
-                new(NotchType.EndRun, "", this.getRandInt(), 0),
-            ];
-        }
-        else if (this.routeType == 0) { // BASE GAME / KINGDOM
-            // get encounters
-            string[] mainAreas = ["hw_nest", "hw_arsenal", "hw_lighthouse", "hw_streets", "hw_lakeside"];
-            this.hallRand.Shuffle(mainAreas);
-            // choose route
-            string start = RouteConfigToHallkey(this.config.Route);
-            if (start != "") {
-                int index = Array.IndexOf(this.hallkeys, start);
-                if (index > 0) {
-                    // Swap the first element with the element at the found index
-                    string temp = this.hallkeys[0];
-                    this.hallkeys[0] = this.hallkeys[index];
-                    this.hallkeys[index] = temp;
-                }
-            }
-            // set encounters
-            enc = [this.getEncFromHallkey("hw_outskirts")];
-            foreach (var area in mainAreas) {
-                enc = [.. enc, this.getEncFromHallkey(area)];
-            }
             enc = [.. enc, this.getEncFromHallkey("hw_keep")];
             enc = [.. enc, this.getEncFromHallkey("hw_pinnacle")];
             // set hallkeys
@@ -501,21 +441,18 @@ public unsafe class Mod : IMod {
             string[] mainAreas = ["hw_sanct", "hw_depths", "hw_aurum"];
             this.hallRand.Shuffle(mainAreas);
             // choose route
-            string start = RouteConfigToHallkey(this.config.Route);
+            var start = RouteConfigToHallkey(this.config.Route);
             if (start != "") {
-                int index = Array.IndexOf(this.hallkeys, start);
-                if (index > 0) {
-                    // Swap the first element with the element at the found index
-                    string temp = this.hallkeys[0];
-                    this.hallkeys[0] = this.hallkeys[index];
-                    this.hallkeys[index] = temp;
-                }
+                var index = Array.IndexOf(this.hallkeys, start);
+                // Swap the first element with the element at the found index
+                if (index > 0)
+                    (this.hallkeys[index], this.hallkeys[0]) = (this.hallkeys[0], this.hallkeys[index]);
             }
             // set encounters
             enc = [this.getEncFromHallkey("hw_geode")];
-            foreach (var area in mainAreas) {
+            foreach (var area in mainAreas)
                 enc = [.. enc, this.getEncFromHallkey(area)];
-            }
+
             enc = [.. enc, this.getEncFromHallkey("hw_darkhall")];
             enc = [.. enc, this.getEncFromHallkey("hw_reflection")];
             // set hallkeys
@@ -595,16 +532,14 @@ public unsafe class Mod : IMod {
             // set hallkeys
             this.route = [.. startAreas, .. mainAreas, .. endAreas, .. finalAreas];
             this.hallkeys = [startAreas[0], startAreas[1], mainAreas[2], mainAreas[5], mainAreas[7], finalAreas[0]];
-            // this.hallkeys[1] = this.route[2];
 
             // their encounters must be fetched independently though
             if (this.routeType == 2) { // TRUE RANDOM
                 enc = [[.. this.getEncFromHallkey(startAreas[0]), .. this.getEncFromHallkey(startAreas[1])]]; // since outskirts/geode has varying length, easier to combine them
-                foreach (var areaGroup in areas) {
-                    foreach (var area in areaGroup) {
+                foreach (var areaGroup in areas)
+                    foreach (var area in areaGroup)
                         enc = [.. enc, this.getEncFromHallkey(area)];
-                    }
-                }
+
             } else { // CHAOTIC RANDOM
                 var chaoticList = this.getEncChaotic();
                 enc = [
@@ -737,20 +672,46 @@ public unsafe class Mod : IMod {
             ];
         }
 
+        // search for and set notchflag for eternal bloom
         foreach (var h in hall) {
             if (h == null) continue;
-            for (var i = 0; i < h.Count; i++) {
-                if (h[i].Encounter == "enc_sanct_flower0") {
+            for (var i = 0; i < h.Count; i++)
+                if (h[i].Encounter == "enc_sanct_flower0")
                     h[i] = new(NotchType.Encounter, "enc_sanct_flower0", h[i].Seed, NotchFlag.FLOWER_FIGHT);
-                }
-            }
         }
 
         return hall;
     }
+    #endregion
+
+    #region HallwayLogic
+    private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
+        var hook = this.scriptHooks["scr_hallwayprogress_move_next"];
+        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
+            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+            this.updateEnemyLevel();
+
+            // check and change hallway
+            if (this.isNewHall(out var currentHallkey)) {
+                var stage = stageKeyFromHallkey(currentHallkey);
+                // ensure hall is deep enough for potion removal. Varies based on route
+                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1) || (this.routeType < 2))) {
+                    this.erasingPotions = true;
+                    rnsReloaded.ExecuteScript("scr_itemsys_erase_potions", this.potionSelf, this.potionOther, []);
+                    this.erasingPotions = false;
+                }
+                rnsReloaded.ExecuteScript("scr_stage_change", self, other, [new(stage), new(3000)]);
+                rnsReloaded.ExecuteScript("scr_stage_play_music", self, other, [new(stage)]);
+                RValue[] moveNextArgs = [new(1500), new(3000)]; // move player left to avoid accidental progression
+                rnsReloaded.ExecuteScript("scr_players_move_next_position", self, other, moveNextArgs);
+            }
+            this.notchCount += 1; // counts notch
+        }
+        return returnValue;
+    }
 
     private RValue* ChooseHallsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scr_hallwayprogress_choose_halls"];
+        var hook = this.scriptHooks["scr_hallwayprogress_choose_halls"];
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             // resets tracking variables
@@ -759,31 +720,27 @@ public unsafe class Mod : IMod {
             this.hallCount = -1; // used with notchCount for hallway switches and balancing thresholds
             
             // check if Toybox is on
-            RValue* hallkey = rnsReloaded.FindValue(self, "hallkey");
-            RValue hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new RValue(0);
+            var hallkey = rnsReloaded.FindValue(self, "hallkey");
+            var hallkeyLength = rnsReloaded.ArrayGetLength(hallkey) ?? new (0);
             if (utils.RValueToLong(&hallkeyLength) != 1) {
                 // randomizes hallkeys based on seed from host
-                RValue* mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-                long mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
+                var mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
+                var mapSeed = utils.RValueToLong(mapSeedR); // mapSeed is a different datatype for host/client
                 this.hallRand = new Random((int) mapSeed);
 
                 // determines notches for every area
                 this.hallNotches = this.CreateNotches(this.config.Route);
 
                 // sets hallkeys in game
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 0), this.hallkeys[0]);
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 1), this.hallkeys[1]);
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 2), this.hallkeys[2]);
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 3), this.hallkeys[3]);
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 4), this.hallkeys[4]);
-                rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, 5), this.hallkeys[5]);
+                for (var i = 0; i < 6; i++)
+                    rnsReloaded.CreateString(rnsReloaded.ArrayGetEntry(hallkey, i), this.hallkeys[i]);
             }
         }
         return returnValue;
     }
 
     private RValue* StartHallwayDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scr_hallwayprogress_start_hallway"];
+        var hook = this.scriptHooks["scr_hallwayprogress_start_hallway"];
         this.notchCount = 0;
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
@@ -795,28 +752,18 @@ public unsafe class Mod : IMod {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
             this.hallCount += 1;
-
-            var notches = rnsReloaded.FindValue(self, "notches");
-            // Console.WriteLine(notches->ToString());
-            //RValue len = (RValue) rnsReloaded.ArrayGetLength(notches);
-            //var l2 = utils.RValueToLong(&len);
-            //for (int i = 0; i < l2; i++) {
-            //    var notch = notches[i];
-            //    Console.WriteLine(notch);
-            //}
-
             utils.setHallway(createNotches(this.hallCount), self, rnsReloaded);
         }
         return returnValue;
     }
 
     private ScriptDelegate MakeHallwayGenDetour(string hookName) {
-        return (CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) => {
-            return this.GenericAreaDetour(ScriptHooks[hookName], count => this.hallNotches[count], self, other, returnValue, argc, argv);
+        return (self, other, returnValue, argc, argv) => {
+            return this.GenericAreaDetour(this.scriptHooks[hookName], count => this.hallNotches[count], self, other, returnValue, argc, argv);
         };
     }
 
-    private static int stageFromKey(string key) {
+    private static int stageKeyFromHallkey(string key) {
         return key switch {
             "hw_outskirts" => 1,
             "hw_nest" => 2,
@@ -837,17 +784,13 @@ public unsafe class Mod : IMod {
     }
 
     private bool isNewHallBase(out string currentHallkey) {
-        switch ((this.hallCount, this.notchCount)) {
-            case (1, 9):
-                currentHallkey = this.route[2];
-                return true;
-            case (2, 9):
-                currentHallkey = this.route[4];
-                return true;
-            default:
-                currentHallkey = "";
-                return false;
-        }
+        // check for midhall area start locations in base game routes
+        currentHallkey = (this.hallCount, this.notchCount) switch {
+            (1, 9) => this.route[2],
+            (2, 9) => this.route[4],
+            _ => ""
+        };
+        return currentHallkey != "";
     }
 
     private static readonly Dictionary<(int hall, int notch), int> NewHallRandomMap =
@@ -865,9 +808,10 @@ public unsafe class Mod : IMod {
     };
 
     private bool isNewHallRandom(out string currentHallkey) {
+        // check for midhall area start locations in random routes
         var key = (this.hallCount, this.notchCount);
         // check outskirts/geode first
-        bool geodeFirst = this.hallkeys[0] == "hw_geode";
+        var geodeFirst = this.hallkeys[0] == "hw_geode";
         if (key == (0, 11) && geodeFirst) {
             currentHallkey = this.route[1];
             return true;
@@ -895,7 +839,9 @@ public unsafe class Mod : IMod {
         currentHallKey = ""; // dlc never transitions midhall
         return false;
     }
+    #endregion
 
+    #region LevelExpRebalance
     private int getEnemyLevelBase() {
         return (this.hallCount, this.notchCount) switch {
             (0, 1)  => 2,   // outskirts
@@ -964,44 +910,19 @@ public unsafe class Mod : IMod {
         return this.routeType switch {
             0 => this.getEnemyLevelBase(),
             1 => this.getEnemyLevelDLC(),
-            2 => this.getEnemyLevelRandom(),
-            3 => this.getEnemyLevelRandom(),
+            2 or 3 => this.getEnemyLevelRandom(),
             _ => -1
         };
     }
 
     private void updateEnemyLevel() {
-        int level = this.getEnemyLevel();
+        var level = this.getEnemyLevel();
         if (level == -1) return;
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            RValue* enemyLevel = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyLevel");
-            *enemyLevel = new RValue(level);
+            var enemyLevel = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "enemyLevel");
+            enemyLevel->Int64 = level;
+            enemyLevel->Type = RValueType.Int64;
         }
-    }
-
-    private RValue* MoveNextDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scr_hallwayprogress_move_next"];
-        if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
-            this.updateEnemyLevel();
-
-            // check and change hallway
-            if (this.isNewHall(out var currentHallkey)) {
-                int stage = stageFromKey(currentHallkey);
-                // if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1))) { //  || (this.routeType == 0)
-                if (this.hallCount > 0 && ((this.hallCount == 1 && this.notchCount > 9) || (this.hallCount > 1) || (this.routeType < 2))) {
-                    this.erasingPotions = true;
-                    rnsReloaded.ExecuteScript("scr_itemsys_erase_potions", this.potionSelf, this.potionOther, []);
-                    this.erasingPotions = false;
-                }
-                rnsReloaded.ExecuteScript("scr_stage_change", self, other, [new(stage), new(3000)]);
-                rnsReloaded.ExecuteScript("scr_stage_play_music", self, other, [new(stage)]);
-                RValue[] moveNextArgs = [new(1500), new(3000)];
-                rnsReloaded.ExecuteScript("scr_players_move_next_position", self, other, moveNextArgs);
-            }
-            this.notchCount += 1; // counts notch
-        }
-        return returnValue;
     }
 
     private double getRewardScaleBase() {
@@ -1037,50 +958,47 @@ public unsafe class Mod : IMod {
         return this.routeType switch {
             0 => this.getRewardScaleBase(),
             1 => this.getRewardScaleDLC(),
-            2 => this.getRewardScaleRandom(),
-            3 => this.getRewardScaleRandom(),
+            2 or 3 => this.getRewardScaleRandom(),
             _ => -1
         };
     }
 
     private RValue* GiveRewardsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-        var hook = ScriptHooks["scr_rankbar_give_rewards"];
+        var hook = this.scriptHooks["scr_rankbar_give_rewards"];
         // gets scale factor based on hall
-        double enemyScale = this.getRewardScale();
-        RValue*[] newArgv = new RValue*[3];
-        newArgv[0] = argv[0]; // gold value
-        newArgv[1] = argv[1]; // exp value
-
+        var enemyScale = this.getRewardScale();
+        
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             // scales and stores values
-            double val1 = utils.RValueToDouble(argv[1]);
-            double val2 = utils.RValueToDouble(argv[2]);
-            RValue rval1 = new RValue(Math.Ceiling(val1 * enemyScale));
-            RValue rval2 = new RValue(Math.Ceiling(val2 * enemyScale));
-            newArgv[1] = &rval1;
-            newArgv[2] = &rval2;
-        }
+            var gold = utils.RValueToDouble(argv[1]); // gold value
+            gold = Math.Ceiling(gold * enemyScale);
+            argv[1]->Real = gold;
+            argv[1]->Type = RValueType.Real;
 
-        // updates reward values
-        fixed (RValue** newArgv2 = newArgv) {
-            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, newArgv2);
+            var exp = utils.RValueToDouble(argv[2]); // exp value
+            exp = Math.Ceiling(exp * enemyScale);
+            argv[2]->Real = exp;
+            argv[2]->Type = RValueType.Real;
         }
+        
+        returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         return returnValue;
     }
+    #endregion
 
     private RValue* ErasePotionsDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv)
         {
-        var hook = ScriptHooks["scr_itemsys_erase_potions"];
+        var hook = this.scriptHooks["scr_itemsys_erase_potions"];
         // only need to erase potions past outskirts
         if (!this.potionStored) {
             this.potionStored = true;
             this.potionSelf = self;
             this.potionOther = other;
         }
-        Console.WriteLine(this.hallCount);
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-            if ((this.routeType != 2 && this.routeType != 3) || (this.erasingPotions || this.hallCount == 3 || this.hallCount == 5))
-            returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
+            // allow natural erase potions on 4th and 6th hall for random routes
+            if (this.erasingPotions || (this.routeType != 2 && this.routeType != 3) || this.hallCount == 3 || this.hallCount == 5)
+                returnValue = hook!.OriginalFunction(self, other, returnValue, argc, argv);
         }
         return returnValue;
     }

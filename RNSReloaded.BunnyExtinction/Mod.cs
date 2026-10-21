@@ -196,6 +196,14 @@ public unsafe class Mod : IMod {
             { "bp_rabbit_queen1_pt6_s", this.CreatePostSteelDetour("bp_rabbit_queen1_pt6_s")},
             { "bp_rabbit_queen1_pt8", this.CreatePostSteelDetour("bp_rabbit_queen1_pt8")},
             { "bp_rabbit_queen1_pt8_s", this.CreatePostSteelDetour("bp_rabbit_queen1_pt8_s")},
+            { "bp_heart_witch1_pt6", this.CreatePostSteelDetour("bp_heart_witch1_pt6")},
+            { "bp_heart_witch1_pt6_s", this.CreatePostSteelDetour("bp_heart_witch1_pt6_s")},
+            { "bp_heart_witch1_pt7", this.CreatePostSteelDetour("bp_heart_witch1_pt7")},
+            { "bp_heart_witch1_pt7_s", this.CreatePostSteelDetour("bp_heart_witch1_pt7_s")},
+            { "bp_heart_witch1_pt8", this.CreatePostSteelDetour("bp_heart_witch1_pt8")},
+            { "bp_heart_witch1_pt8_s", this.CreatePostSteelDetour("bp_heart_witch1_pt8_s")},
+            { "bp_heart_witch1_pt9", this.CreatePostSteelDetour("bp_heart_witch1_pt9")},
+            { "bp_heart_witch1_pt9_s", this.CreatePostSteelDetour("bp_heart_witch1_pt9_s")},
             // steelheart compatibility
             // { "bp_rabbit_queen1_steel_activate", this.RabbitQueen1SteelActivateDetour},
             // hitbox

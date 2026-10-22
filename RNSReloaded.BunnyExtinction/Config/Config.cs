@@ -37,9 +37,4 @@ public class Config : Configurable<Config> {
     [Description("Fixes player hitbox to default size")]
     [DefaultValue(false)]
     public bool SetHitbox { get; set; } = false;
-
-    //[DisplayName("Steelheart Compatibility")]
-    //[Description("Reenables Shira's third Steel Yourself when Steelheart is on. Do not use without Steelheart")]
-    //[DefaultValue(false)]
-    //public bool Steelheart { get; set; } = false;
 }

@@ -16,7 +16,7 @@ To customize, **Infernal BBQ** must be disabled
 - Intended Speed
 - Hitbox size cannot be changed (Sunflower Crown and Evasion Potion)
 - Permadeath. Dying once in a run means you can no longer participate in future encounters
-- (deprecated) Shira "Steel Yourself" attacks are invulnable (must be placed above Steelheart)
+- Shira "Steel Yourself" attacks are invulnable when invulnerability is disabled
 
 ## About Speed
 Through many patches of the game mino_dev has designed fights around certain speeds. All Kingdom fights were originally designed around old `-1`. All Underground fights were designed around old `-1`. The **Intended Speed** setting caps your speed to these values for the respective fights.
@@ -30,11 +30,12 @@ Speed limit applies to all player abilities. _Heavyblade Special_ and _Bruiser D
 Mechanics that move you faster than the limit still function, such as knockbacks
 
 ## Steelheart Compatibility
-_Deprecated. To be reimplemented_
+_Steelheart_ forces you to tank attacks during the final boss.
+In _BunnyExtinction_, because maximum health is `1`, you cannot play it with default _Steelheart_ settings.
 
-Steelheart forces you to tank attacks during the final boss.
-In Bunny Extinction, because maximum health is `1`, these attacks can be invulned again or reenabled.
-Ensure that BunnyExtinction is placed above Steelheart within your mod arrangement and the config setting is enabled.
+_BunnyExtinction_ has a separate implementation of "**No Invulnerability**" from _Steelheart_, allowing you to survive Shira's or the Witch's attacks.
+
+In order to play with both mods at once, ensure you are playing with _Steelheart_'s "**Disable Invuln**" setting off.
 
 # Special Thanks
 Thank you to the following people for helping me with the production of this mod

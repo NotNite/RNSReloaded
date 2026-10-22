@@ -42,8 +42,7 @@ public unsafe class Mod : IMod {
     private double baseSpeed = BaseSpeedToPPS(false);
 
     private bool isTakingDamage = false;
-    // private int shiraSteelCount = 0;
-
+    
     private readonly Dictionary<string, IHook<ScriptDelegate>> scriptHooks = [];
     private readonly List<string> disableScripts = [
         "scr_char_set_forcedmarch",
@@ -89,9 +88,6 @@ public unsafe class Mod : IMod {
     private readonly List<string> setHitboxScripts = [
         "scr_player_radius_calc" // hitbox
     ];
-    //private readonly List<string> steelheartScripts = [
-    //    "bp_rabbit_queen1_steel_activate" // steelheart compatibility
-    //];
 
     public void StartEx(IModLoaderV1 loader, IModConfigV1 modConfig) {
         this.rnsReloadedRef = loader.GetController<IRNSReloaded>()!;
@@ -204,8 +200,6 @@ public unsafe class Mod : IMod {
             { "bp_heart_witch1_pt8_s", this.CreatePostSteelDetour("bp_heart_witch1_pt8_s")},
             { "bp_heart_witch1_pt9", this.CreatePostSteelDetour("bp_heart_witch1_pt9")},
             { "bp_heart_witch1_pt9_s", this.CreatePostSteelDetour("bp_heart_witch1_pt9_s")},
-            // steelheart compatibility
-            // { "bp_rabbit_queen1_steel_activate", this.RabbitQueen1SteelActivateDetour},
             // hitbox
             { "scr_player_radius_calc", this.PlayerRadiusCalcDetour}
         };
@@ -240,7 +234,6 @@ public unsafe class Mod : IMod {
             if (this.config.Permadeath) foreach (var script in this.permadeathScripts) this.scriptHooks[script].Enable();
             if (this.config.DisableInvuln) foreach (var script in this.invulnScripts) this.scriptHooks[script].Enable();
             if (this.config.SetHitbox) foreach (var script in this.setHitboxScripts) this.scriptHooks[script].Enable();
-            // if (this.config.Steelheart) foreach (var script in this.steelheartScripts) this.scriptHooks[script].Enable();
         }
     }
     #endregion
@@ -253,7 +246,6 @@ public unsafe class Mod : IMod {
         // for things that activate on run start, activate on the next encounter.
         this.inBattle = false;
         this.newRun = true;
-        // this.shiraSteelCount = 0;
         return hook!.OriginalFunction(self, other, returnValue, argc, argv);
     }
 
@@ -524,20 +516,6 @@ public unsafe class Mod : IMod {
         return returnValue;
     }
     #endregion
-
-    // steelheart compatibility
-    // currently deprecated
-
-    //private RValue* RabbitQueen1SteelActivateDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {
-    //    var hook = this.scriptHooks["bp_rabbit_queen1_steel_activate"];
-    //    if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
-    //        this.shiraSteelCount++;
-    //        if (this.shiraSteelCount == 4)
-    //            rnsReloaded.ExecuteScript("bp_rabbit_queen1_steel_activate", self, other, argc, argv);
-    //        returnValue = this.scriptHooks["bp_rabbit_queen1_steel_activate"].OriginalFunction(self, other, returnValue, argc, argv);
-    //    }
-    //    return returnValue;
-    //}
 
     #region HitboxControl
     private RValue* PlayerRadiusCalcDetour(CInstance* self, CInstance* other, RValue* returnValue, int argc, RValue** argv) {

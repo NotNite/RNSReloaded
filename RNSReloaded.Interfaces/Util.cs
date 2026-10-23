@@ -11,7 +11,7 @@ public enum NotchType {
     Chest = 5,
     Shop = 6,
     PinnacleCutscene = 7,
-    EndRun = 12,
+    EndRun = 13,
     ToyboxIntro = 14,
 }
 

@@ -296,12 +296,12 @@ public unsafe class Mod : IMod {
     private void EnforceDeath(CInstance* self, CInstance* other) {
         if (this.IsReady(out var rnsReloaded, out var hooks, out var utils, out var scrbp, out var bp)) {
             // setting hp to smite players
-            var playerHp = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "playerHp");
+            var playerHps = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "playerHp");
             for (var i = 0; i < utils.GetNumPlayers(); i++) { // iterate through bitmask
                 if ((this.deadPlayers & (1 << i)) != 0) { // check if player has died
-                    var player = rnsReloaded.ArrayGetEntry(rnsReloaded.ArrayGetEntry(playerHp, 0), i);
-                    player->Real = 0;
-                    player->Type = RValueType.Real;
+                    var playerHp = rnsReloaded.ArrayGetEntry(rnsReloaded.ArrayGetEntry(playerHps, 0), i);
+                    playerHp->Real = 0;
+                    playerHp->Type = RValueType.Real;
                 }
             }
         }

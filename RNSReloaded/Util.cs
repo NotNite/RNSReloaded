@@ -1,5 +1,3 @@
-using System.Drawing;
-using System.Runtime.InteropServices;
 using Reloaded.Mod.Interfaces.Internal;
 using RNSReloaded.Interfaces;
 using RNSReloaded.Interfaces.Structs;
@@ -128,5 +126,4 @@ public unsafe class Util : IUtil {
         notchNum->Real = hallway.Count;
         notchNum->Type = RValueType.Real;
     }
-
 }

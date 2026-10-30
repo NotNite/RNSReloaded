@@ -9,7 +9,7 @@ public class Config : Configurable<Config> {
     public long mapSeed { get; set; } = 0;
 
     [DisplayName("Turn on set seed")]
-    [Description("Limits online play if turned on")]
+    [Description("Forces modded game if turned on")]
     [DefaultValue(true)]
     public bool shouldSetSeed { get; set; } = true;
 

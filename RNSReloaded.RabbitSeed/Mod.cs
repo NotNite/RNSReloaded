@@ -47,22 +47,11 @@ public unsafe class Mod : IMod {
             && this.hooksRef.TryGetTarget(out var hooks)
         ) {
             if (this.config.shouldSetSeed) {
-                rnsReloaded.LimitOnlinePlay();
+                rnsReloaded.registerVanillaMod("RabbitSeed");
             }
-            var initScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_init_adventure_map") - 100000);
-            this.initAdventureHook =
-                hooks.CreateHook<ScriptDelegate>(this.initAdventureDetour, initScript->Functions->Function);
-            this.initAdventureHook.Activate();
-
-            var langStringScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scr_lang_string") - 100000);
-            this.langStringHook =
-                hooks.CreateHook<ScriptDelegate>(this.langStringDetour, langStringScript->Functions->Function);
-            this.langStringHook.Activate();
-
-            var encScript = rnsReloaded.GetScriptData(rnsReloaded.ScriptFindId("scrdt_encounter") - 100000);
-            this.encounterHook =
-                hooks.CreateHook<ScriptDelegate>(this.encounterDetour, encScript->Functions->Function);
-            this.encounterHook.Activate();
+            rnsReloaded.addScriptHook("scr_init_adventure_map", this.initAdventureDetour, out this.initAdventureHook);
+            rnsReloaded.addScriptHook("scr_lang_string", this.langStringDetour, out this.langStringHook);
+            rnsReloaded.addScriptHook("scrdt_encounter", this.encounterDetour, out this.encounterHook);
         }
     }
 
@@ -90,9 +79,9 @@ public unsafe class Mod : IMod {
         var key = argv[0]->ToString();
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded)
                 && (key == "vd_subtitle" || key == "vd_subtitle2")) {
-            var mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-            rnsReloaded.CreateString(returnValue,  $"MAP SEED: {mapSeedR->ToString()}");
-            return returnValue;
+            var mapSeedR = rnsReloaded.FindGlobalValue("mapSeed");
+            var str = new RValue($"MAP SEED: {mapSeedR->ToString()}");
+            return &str;
         } else {
             return returnValue;
         }
@@ -105,9 +94,8 @@ public unsafe class Mod : IMod {
         if (this.rnsReloadedRef!.TryGetTarget(out var rnsReloaded) && this.config.shouldChatSeed) {
             if (this.isFirstEncounter) {
                 this.isFirstEncounter = false;
-                var mapSeedR = rnsReloaded.FindValue(rnsReloaded.GetGlobalInstance(), "mapSeed");
-                var message = rnsReloaded.utils.CreateString($"Using map seed: {mapSeedR->ToString()}")!.Value;
-                rnsReloaded.ExecuteScript("scr_chat_add_mesage_system", null, null, [message]);
+                var mapSeedR = rnsReloaded.FindGlobalValue("mapSeed");
+                rnsReloaded.ExecuteScript("scr_chat_add_mesage_system", null, null, [$"Using map seed: {mapSeedR->ToString()}"]);
             }
         }
         return returnValue;
